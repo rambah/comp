@@ -12,11 +12,11 @@ const { mockServerApiGet, mockCreateSetupSession } = vi.hoisted(() => ({
 vi.mock('@/lib/api-server', () => ({ serverApi: { get: mockServerApiGet } }));
 vi.mock('./lib/setup-session', () => ({ createSetupSession: mockCreateSetupSession }));
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { NextRequest } from 'next/server';
+import { createMockSession, createMockUser, mockAuthApi } from '@/test-utils/mocks/auth';
 import { redirect } from 'next/navigation';
+import { NextRequest } from 'next/server';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { GET } from './route';
-import { mockAuthApi, createMockSession, createMockUser } from '@/test-utils/mocks/auth';
 
 const mockRedirect = vi.mocked(redirect);
 
@@ -39,6 +39,15 @@ describe('/setup route — CS-569 offboard guard vs invite precedence', () => {
       session: createMockSession(),
       user: createMockUser(),
     });
+  });
+
+  it('redirects unauthenticated users to the self-hosted auth page', async () => {
+    mockAuthApi.getSession.mockResolvedValue(null);
+
+    await expect(call('http://localhost/setup?inviteCode=inv_abc')).rejects.toThrow(
+      'REDIRECT:/auth?inviteCode=inv_abc',
+    );
+    expect(mockCreateSetupSession).not.toHaveBeenCalled();
   });
 
   it('redirects an offboarded user with no invite to access-removed', async () => {

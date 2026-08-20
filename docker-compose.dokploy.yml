@@ -1,0 +1,190 @@
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: 10m
+    max-file: '5'
+    compress: 'true'
+
+x-build-context: &build-context
+  context: ${COMP_BUILD_CONTEXT:-https://github.com/rambah/comp.git#codex/upgrade-v3.111.1}
+
+x-common-env: &common-env
+  DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+  PRISMA_ALLOW_INSECURE_TLS: ${PRISMA_ALLOW_INSECURE_TLS:-1}
+
+  APP_URL: https://comp.worklivery.at
+  NEXT_PUBLIC_APP_URL: https://comp.worklivery.at
+  PORTAL_URL: https://portal.comp.worklivery.at
+  NEXT_PUBLIC_PORTAL_URL: https://portal.comp.worklivery.at
+  BASE_URL: https://api.comp.worklivery.at
+  BACKEND_API_URL: https://api.comp.worklivery.at
+  API_BASE_URL: https://api.comp.worklivery.at
+  NEXT_PUBLIC_API_URL: https://api.comp.worklivery.at
+  BETTER_AUTH_URL: https://comp.worklivery.at
+  BETTER_AUTH_URL_PORTAL: https://portal.comp.worklivery.at
+  NEXT_PUBLIC_BETTER_AUTH_URL: https://api.comp.worklivery.at
+  APP_AUTH_URL: https://comp.worklivery.at
+  AUTH_COOKIE_DOMAIN: .comp.worklivery.at
+  AUTH_TRUSTED_ORIGINS: https://comp.worklivery.at,https://portal.comp.worklivery.at,https://api.comp.worklivery.at
+
+  AUTH_SECRET: ${AUTH_SECRET:?AUTH_SECRET is required}
+  SECRET_KEY: ${SECRET_KEY:?SECRET_KEY is required}
+  BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET is required}
+  INTERNAL_API_TOKEN: ${INTERNAL_API_TOKEN:?INTERNAL_API_TOKEN is required}
+  SERVICE_TOKEN_TRIGGER: ${SERVICE_TOKEN_TRIGGER:?SERVICE_TOKEN_TRIGGER is required}
+  SERVICE_TOKEN_PORTAL: ${SERVICE_TOKEN_PORTAL:?SERVICE_TOKEN_PORTAL is required}
+
+  RESEND_API_KEY: ${RESEND_API_KEY:?RESEND_API_KEY is required}
+  RESEND_DOMAIN: ${RESEND_DOMAIN:-worklivery.at}
+  RESEND_FROM_DEFAULT: ${RESEND_FROM_DEFAULT:?RESEND_FROM_DEFAULT is required}
+  RESEND_FROM_SYSTEM: ${RESEND_FROM_SYSTEM:?RESEND_FROM_SYSTEM is required}
+  RESEND_FROM_MARKETING: ${RESEND_FROM_MARKETING:-${RESEND_FROM_DEFAULT}}
+  RESEND_FROM_TRUST_PORTAL: ${RESEND_FROM_TRUST_PORTAL:-${RESEND_FROM_SYSTEM}}
+
+  REVALIDATION_SECRET: ${REVALIDATION_SECRET:?REVALIDATION_SECRET is required}
+  OPENAI_API_KEY: ${OPENAI_API_KEY:?OPENAI_API_KEY is required}
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  GROQ_API_KEY: ${GROQ_API_KEY:-}
+  FIRECRAWL_API_KEY: ${FIRECRAWL_API_KEY:?FIRECRAWL_API_KEY is required}
+  MACED_API_KEY: ${MACED_API_KEY:-mc_dev_disabled_self_hosted}
+
+  UPSTASH_REDIS_REST_URL: ${UPSTASH_REDIS_REST_URL:?UPSTASH_REDIS_REST_URL is required}
+  UPSTASH_REDIS_REST_TOKEN: ${UPSTASH_REDIS_REST_TOKEN:?UPSTASH_REDIS_REST_TOKEN is required}
+  UPSTASH_VECTOR_REST_URL: ${UPSTASH_VECTOR_REST_URL:-}
+  UPSTASH_VECTOR_REST_TOKEN: ${UPSTASH_VECTOR_REST_TOKEN:-}
+
+  APP_AWS_ACCESS_KEY_ID: ${APP_AWS_ACCESS_KEY_ID:?APP_AWS_ACCESS_KEY_ID is required}
+  APP_AWS_SECRET_ACCESS_KEY: ${APP_AWS_SECRET_ACCESS_KEY:?APP_AWS_SECRET_ACCESS_KEY is required}
+  APP_AWS_REGION: ${APP_AWS_REGION:?APP_AWS_REGION is required}
+  APP_AWS_BUCKET_NAME: ${APP_AWS_BUCKET_NAME:?APP_AWS_BUCKET_NAME is required}
+  APP_AWS_ORG_ASSETS_BUCKET: ${APP_AWS_ORG_ASSETS_BUCKET:?APP_AWS_ORG_ASSETS_BUCKET is required}
+  APP_AWS_QUESTIONNAIRE_UPLOAD_BUCKET: ${APP_AWS_QUESTIONNAIRE_UPLOAD_BUCKET:?APP_AWS_QUESTIONNAIRE_UPLOAD_BUCKET is required}
+  APP_AWS_KNOWLEDGE_BASE_BUCKET: ${APP_AWS_KNOWLEDGE_BASE_BUCKET:?APP_AWS_KNOWLEDGE_BASE_BUCKET is required}
+  APP_AWS_ENDPOINT: ${APP_AWS_ENDPOINT:-}
+
+  NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY:-}
+  NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-}
+  NEXT_PUBLIC_IS_DUB_ENABLED: 'false'
+  NEXT_PUBLIC_SELF_HOSTED: 'true'
+  SELF_HOSTED: 'true'
+  NEXT_OUTPUT_STANDALONE: 'true'
+
+services:
+  migrator:
+    build:
+      <<: *build-context
+      dockerfile: Dockerfile
+      target: migrator
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      PRISMA_ALLOW_INSECURE_TLS: ${PRISMA_ALLOW_INSECURE_TLS:-1}
+    restart: 'no'
+    logging: *default-logging
+
+  seeder:
+    build:
+      <<: *build-context
+      dockerfile: Dockerfile
+      target: migrator
+    environment:
+      DATABASE_URL: ${DATABASE_URL:?DATABASE_URL is required}
+      PRISMA_ALLOW_INSECURE_TLS: ${PRISMA_ALLOW_INSECURE_TLS:-1}
+    command: ['node', '/app/seed.mjs']
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+    restart: 'no'
+    logging: *default-logging
+
+  api:
+    build:
+      <<: *build-context
+      dockerfile: apps/api/Dockerfile.multistage
+      target: production
+    environment:
+      <<: *common-env
+      NODE_ENV: production
+      NODE_EXTRA_CA_CERTS: ''
+      PORT: '3333'
+      TRIGGER_SECRET_KEY: ${TRIGGER_API_SECRET_KEY:?TRIGGER_API_SECRET_KEY is required}
+    expose:
+      - '3333'
+    init: true
+    stop_grace_period: 30s
+    depends_on:
+      migrator:
+        condition: service_completed_successfully
+      seeder:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    logging: *default-logging
+
+  app:
+    build:
+      <<: *build-context
+      dockerfile: Dockerfile
+      target: app
+      args:
+        NEXT_PUBLIC_API_URL: https://api.comp.worklivery.at
+        NEXT_PUBLIC_BETTER_AUTH_URL: https://api.comp.worklivery.at
+        NEXT_PUBLIC_PORTAL_URL: https://portal.comp.worklivery.at
+        NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY:-}
+        NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-}
+        NEXT_PUBLIC_IS_DUB_ENABLED: 'false'
+        NEXT_PUBLIC_SELF_HOSTED: 'true'
+    environment:
+      <<: *common-env
+      NODE_ENV: production
+      PORT: '3000'
+      HOSTNAME: 0.0.0.0
+      TRIGGER_SECRET_KEY: ${TRIGGER_APP_SECRET_KEY:?TRIGGER_APP_SECRET_KEY is required}
+    expose:
+      - '3000'
+    init: true
+    stop_grace_period: 30s
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - node -e "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 5
+    logging: *default-logging
+
+  portal:
+    build:
+      <<: *build-context
+      dockerfile: Dockerfile
+      target: portal
+      args:
+        NEXT_PUBLIC_API_URL: https://api.comp.worklivery.at
+        NEXT_PUBLIC_BETTER_AUTH_URL: https://api.comp.worklivery.at
+        NEXT_PUBLIC_POSTHOG_KEY: ${NEXT_PUBLIC_POSTHOG_KEY:-}
+        NEXT_PUBLIC_POSTHOG_HOST: ${NEXT_PUBLIC_POSTHOG_HOST:-}
+    environment:
+      <<: *common-env
+      NODE_ENV: production
+      PORT: '3000'
+      HOSTNAME: 0.0.0.0
+    expose:
+      - '3000'
+    init: true
+    stop_grace_period: 30s
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - node -e "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 10s
+      start_period: 30s
+      retries: 5
+    logging: *default-logging

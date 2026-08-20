@@ -1,14 +1,26 @@
 # =============================================================================
 # STAGE 1: Dependencies - Install and cache workspace dependencies
 # =============================================================================
-FROM oven/bun:1.2.8 AS deps
+FROM oven/bun:1.2.8 AS bun-runtime
+
+FROM node:22-slim AS deps
+
+COPY --from=bun-runtime /usr/local/bin/bun /usr/local/bin/bun
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ca-certificates git python3 make g++ \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
 # Copy workspace configuration
 COPY package.json bun.lock ./
 
-# Copy package.json files for all packages (exclude local db; use published @trycompai/db)
+# Copy package.json files for all workspace packages used by app and portal.
+COPY packages/auth/package.json ./packages/auth/
+COPY packages/billing/package.json ./packages/billing/
+COPY packages/company/package.json ./packages/company/
+COPY packages/db/package.json ./packages/db/
 COPY packages/kv/package.json ./packages/kv/
 COPY packages/ui/package.json ./packages/ui/
 COPY packages/email/package.json ./packages/email/
@@ -26,28 +38,21 @@ COPY apps/portal/package.json ./apps/portal/
 RUN PRISMA_SKIP_POSTINSTALL_GENERATE=true bun install --ignore-scripts
 
 # =============================================================================
-# STAGE 2: Ultra-Minimal Migrator - Only Prisma
+# STAGE 2: Migrator and Seeder - Use this release's schema and seed code
 # =============================================================================
-FROM oven/bun:1.2.8 AS migrator
+FROM deps AS migrator
 
 WORKDIR /app
 
-# Copy local Prisma schema and migrations from workspace
-COPY packages/db/prisma ./packages/db/prisma
+# Keep migrations, generated client, and seed data on exactly the same release.
+# The upstream Dockerfile referenced an older published @trycompai/db package,
+# which can migrate a schema that does not match the application image.
+COPY packages/db ./packages/db
+RUN cd packages/db \
+    && node scripts/generate-prisma-client-js.js \
+    && bun build prisma/seed/seed.ts --target=node --packages=external --outfile=/app/seed.mjs
 
-# Create minimal package.json for Prisma runtime (also used by seeder)
-RUN echo '{"name":"migrator","type":"module","dependencies":{"prisma":"^6.14.0","@prisma/client":"^6.14.0","@trycompai/db":"^1.3.4","zod":"^3.25.7"}}' > package.json
-
-# Install ONLY Prisma dependencies
-RUN bun install
-
-# Ensure Prisma can find migrations relative to the published schema path
-# We copy the local migrations into the published package's dist directory
-RUN cp -R packages/db/prisma/migrations node_modules/@trycompai/db/dist/
-
-# Run migrations against the combined schema published by @trycompai/db
-RUN echo "Running migrations against @trycompai/db combined schema"
-CMD ["bunx", "prisma", "migrate", "deploy", "--schema=node_modules/@trycompai/db/dist/schema.prisma"]
+CMD ["sh", "-lc", "cd packages/db && node ../../node_modules/prisma/build/index.js migrate deploy --schema=prisma/schema"]
 
 # =============================================================================
 # STAGE 3: App Builder
@@ -63,13 +68,14 @@ COPY apps/app ./apps/app
 # Bring in node_modules for build and prisma prebuild
 COPY --from=deps /app/node_modules ./node_modules
 
-# Pre-combine schemas and generate the Prisma client into
-# node_modules/@prisma/client. The deps stage ran `bun install` with
-# `--ignore-scripts` so packages/db's postinstall was skipped; we run
-# it explicitly here so `next build` can resolve the generated runtime
-# + types when it imports @prisma/client.
-RUN cd packages/db && node scripts/combine-schemas.js \
-                   && node scripts/generate-prisma-client-js.js
+# Build workspace packages and generate the shared Prisma client before Next
+# resolves their package exports.
+RUN cd packages/db && bun run build \
+    && cd ../auth && bun run build \
+    && cd ../integration-platform && bun run build \
+    && cd ../email && bun run build \
+    && cd ../company && bun run build \
+    && cd ../billing && bun run build
 
 # Ensure Next build has required public env at build-time
 ARG NEXT_PUBLIC_BETTER_AUTH_URL
@@ -78,18 +84,25 @@ ARG NEXT_PUBLIC_POSTHOG_KEY
 ARG NEXT_PUBLIC_POSTHOG_HOST
 ARG NEXT_PUBLIC_IS_DUB_ENABLED
 ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_SELF_HOSTED
 ENV NEXT_PUBLIC_BETTER_AUTH_URL=$NEXT_PUBLIC_BETTER_AUTH_URL \
     NEXT_PUBLIC_PORTAL_URL=$NEXT_PUBLIC_PORTAL_URL \
     NEXT_PUBLIC_POSTHOG_KEY=$NEXT_PUBLIC_POSTHOG_KEY \
     NEXT_PUBLIC_POSTHOG_HOST=$NEXT_PUBLIC_POSTHOG_HOST \
     NEXT_PUBLIC_IS_DUB_ENABLED=$NEXT_PUBLIC_IS_DUB_ENABLED \
     NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
+    NEXT_PUBLIC_SELF_HOSTED=$NEXT_PUBLIC_SELF_HOSTED \
     NEXT_TELEMETRY_DISABLED=1 NODE_ENV=production \
+    SKIP_DOCKER_TYPECHECK=true \
     NEXT_OUTPUT_STANDALONE=true \
     NODE_OPTIONS=--max_old_space_size=6144
 
-# Build the app
-RUN cd apps/app && SKIP_ENV_VALIDATION=true bun run build:docker
+# Build Next with Node. Bun 1.2.8 does not implement the worker_threads
+# options used by Next.js 16's Turbopack worker pool.
+RUN cd apps/app \
+    && node ../../node_modules/prisma/build/index.js generate --schema=prisma/schema \
+    && node ../../packages/db/scripts/fix-generated-extensions.js src/generated/prisma \
+    && SKIP_ENV_VALIDATION=true node ../../node_modules/next/dist/bin/next build
 
 # =============================================================================
 # STAGE 4: App Production
@@ -120,19 +133,34 @@ COPY apps/portal ./apps/portal
 # Bring in node_modules for build and prisma prebuild
 COPY --from=deps /app/node_modules ./node_modules
 
-# Pre-combine schemas for portal build
-RUN cd packages/db && node scripts/combine-schemas.js
+# Build workspace packages and the combined schema for portal build.
+RUN cd packages/db && bun run build \
+    && cd ../auth && bun run build \
+    && cd ../integration-platform && bun run build \
+    && cd ../email && bun run build \
+    && cd ../company && bun run build \
+    && cd ../billing && bun run build
 RUN cp packages/db/dist/schema.prisma apps/portal/prisma/schema.prisma
 
 # Ensure Next build has required public env at build-time
 ARG NEXT_PUBLIC_BETTER_AUTH_URL
+ARG NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_POSTHOG_KEY
+ARG NEXT_PUBLIC_POSTHOG_HOST
 ENV NEXT_PUBLIC_BETTER_AUTH_URL=$NEXT_PUBLIC_BETTER_AUTH_URL \
+    NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL \
+    NEXT_PUBLIC_POSTHOG_KEY=$NEXT_PUBLIC_POSTHOG_KEY \
+    NEXT_PUBLIC_POSTHOG_HOST=$NEXT_PUBLIC_POSTHOG_HOST \
     NEXT_TELEMETRY_DISABLED=1 NODE_ENV=production \
+    SKIP_DOCKER_TYPECHECK=true \
     NEXT_OUTPUT_STANDALONE=true \
     NODE_OPTIONS=--max_old_space_size=6144
 
-# Build the portal
-RUN cd apps/portal && SKIP_ENV_VALIDATION=true bun run build:docker
+# Build Next with Node for the same worker_threads compatibility reason as app.
+RUN cd apps/portal \
+    && node ../../node_modules/prisma/build/index.js generate --schema=prisma/schema \
+    && node ../../packages/db/scripts/fix-generated-extensions.js src/generated/prisma \
+    && SKIP_ENV_VALIDATION=true node ../../node_modules/next/dist/bin/next build
 
 # =============================================================================
 # STAGE 6: Portal Production
