@@ -169,10 +169,10 @@ services:
     environment:
       <<: *common-env
       NODE_ENV: production
-      PORT: '3000'
+      PORT: '3002'
       HOSTNAME: 0.0.0.0
     expose:
-      - '3000'
+      - '3002'
     init: true
     stop_grace_period: 30s
     depends_on:
@@ -182,7 +182,7 @@ services:
     healthcheck:
       test:
         - CMD-SHELL
-        - node -e "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"
+        - node -e "fetch('http://127.0.0.1:3002/').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"
       interval: 30s
       timeout: 10s
       start_period: 30s
