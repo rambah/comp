@@ -133,14 +133,14 @@ COPY apps/portal ./apps/portal
 # Bring in node_modules for build and prisma prebuild
 COPY --from=deps /app/node_modules ./node_modules
 
-# Build workspace packages and the combined schema for portal build.
+# Build workspace packages and sync the split Prisma schema for the portal build.
 RUN cd packages/db && bun run build \
     && cd ../auth && bun run build \
     && cd ../integration-platform && bun run build \
     && cd ../email && bun run build \
     && cd ../company && bun run build \
     && cd ../billing && bun run build
-RUN cp packages/db/dist/schema.prisma apps/portal/prisma/schema.prisma
+RUN cd apps/portal && bun run db:getschema
 
 # Ensure Next build has required public env at build-time
 ARG NEXT_PUBLIC_BETTER_AUTH_URL
