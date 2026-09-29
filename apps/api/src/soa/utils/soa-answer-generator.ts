@@ -5,6 +5,7 @@ import {
 import type { SimilarContentResult } from '@/vector-store/lib';
 import { openai } from '@ai-sdk/openai';
 import { generateText } from 'ai';
+import { SOA_BATCH_PROVIDER_OPTIONS } from './soa-model-options';
 import {
   deduplicateSources,
   type Source,
@@ -227,6 +228,7 @@ export async function generateSOAControlAnswer(
   // Generate answer using LLM
   const { text } = await generateText({
     model: openai(SOA_BATCH_MODEL),
+    providerOptions: SOA_BATCH_PROVIDER_OPTIONS,
     system: SOA_BATCH_SYSTEM_PROMPT,
     prompt: `Based on the following context from our organization's policies and documentation, analyze this SOA question:
 
