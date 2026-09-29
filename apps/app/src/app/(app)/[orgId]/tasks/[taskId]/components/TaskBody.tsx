@@ -1,19 +1,27 @@
 'use client';
 
-import { useTaskAttachmentActions, useTaskAttachments } from '@/hooks/use-tasks-api';
-import { Button } from '@trycompai/ui/button';
+import { AttachmentPreviewDialog } from '@/components/attachments/AttachmentPreviewDialog';
+import type { PreviewAttachment } from '@/components/attachments/attachment-preview-types';
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@trycompai/ui/dialog';
-import { Camera, FileIcon, FileText, ImageIcon, Loader2, Upload, X } from 'lucide-react';
+} from '@trycompai/design-system';
+import {
+  Camera,
+  DocumentBlank as FileIcon,
+  Document as FileText,
+  Image as ImageIcon,
+  Upload,
+  Close as X,
+} from '@trycompai/design-system/icons';
 import type React from 'react';
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { useState } from 'react';
+import { useTaskEvidence } from './useTaskEvidence';
 
 interface TaskBodyProps {
   taskId: string;
@@ -22,12 +30,6 @@ interface TaskBodyProps {
   onTitleChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onDescriptionChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
   disabled?: boolean;
-}
-
-// Helper function to provide user-friendly error messages
-function getErrorMessage(errorMessage: string): string {
-  // Simplified error handling since API errors are already user-friendly
-  return errorMessage || 'Failed to upload file. Please try again.';
 }
 
 function formatUploadMonthYear(dateString: string): string {
@@ -44,244 +46,34 @@ export function TaskBody({
   onDescriptionChange,
   disabled,
 }: TaskBodyProps) {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const [isUploading, setIsUploading] = useState(false);
-  const [busyAttachmentId, setBusyAttachmentId] = useState<string | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [showReminderDialog, setShowReminderDialog] = useState(false);
-  const [pendingFiles, setPendingFiles] = useState<FileList | File[] | null>(null);
-
-  // Auto-resize function for textarea
-  const autoResizeTextarea = useCallback(() => {
-    const textarea = textareaRef.current;
-    if (textarea) {
-      textarea.style.height = 'auto';
-      textarea.style.height = `${Math.max(80, textarea.scrollHeight)}px`;
-    }
-  }, []);
-
-  // Auto-resize on mount and when description changes
-  useEffect(() => {
-    // Use requestAnimationFrame to ensure the DOM is ready
-    const resizeTimeout = requestAnimationFrame(() => {
-      autoResizeTextarea();
-    });
-
-    return () => cancelAnimationFrame(resizeTimeout);
-  }, [description, autoResizeTextarea]);
-
-  // Use SWR to fetch attachments with real-time updates
+  const [previewAttachment, setPreviewAttachment] = useState<PreviewAttachment | null>(null);
   const {
-    data: attachmentsData,
-    error: attachmentsError,
-    isLoading: attachmentsLoading,
-    mutate: refreshAttachments,
-  } = useTaskAttachments(taskId);
-
-  // Use API hooks for mutations
-  const { uploadAttachment, getDownloadUrl, deleteAttachment } = useTaskAttachmentActions(taskId);
-
-  // Extract attachments from SWR response
-  const attachments = attachmentsData?.data || [];
-
-  const resetState = () => {
-    setIsUploading(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  // Process files (used by both file input and drag & drop)
-  const processFiles = useCallback(
-    async (files: FileList | File[]) => {
-      if (!files || files.length === 0) return;
-      setIsUploading(true);
-
-      // Blocked file extensions for security
-      const BLOCKED_EXTENSIONS = [
-        'exe',
-        'bat',
-        'cmd',
-        'com',
-        'scr',
-        'msi', // Windows executables
-        'js',
-        'vbs',
-        'vbe',
-        'wsf',
-        'wsh',
-        'ps1', // Scripts
-        'sh',
-        'bash',
-        'zsh', // Shell scripts
-        'dll',
-        'sys',
-        'drv', // System files
-        'app',
-        'deb',
-        'rpm', // Application packages
-        'jar', // Java archives (can execute)
-        'pif',
-        'lnk',
-        'cpl', // Shortcuts and control panel
-        'hta',
-        'reg', // HTML apps and registry
-      ];
-
-      const uploadPromises = Array.from(files).map((file) => {
-        return new Promise((resolve) => {
-          // Check file extension
-          const fileExt = file.name.split('.').pop()?.toLowerCase();
-          if (fileExt && BLOCKED_EXTENSIONS.includes(fileExt)) {
-            toast.error(
-              `File "${file.name}" has a blocked extension (.${fileExt}) for security reasons.`,
-            );
-            return resolve(null);
-          }
-
-          const MAX_FILE_SIZE_MB = 100;
-          const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
-          if (file.size > MAX_FILE_SIZE_BYTES) {
-            toast.error(`File "${file.name}" exceeds the ${MAX_FILE_SIZE_MB}MB limit.`);
-            return resolve(null); // Resolve to skip this file
-          }
-
-          // Use the API hook's uploadAttachment method
-          uploadAttachment(file)
-            .then((result) => {
-              toast.success(`File "${file.name}" uploaded successfully.`);
-              // Refresh attachments via SWR after successful upload
-              refreshAttachments();
-              resolve(result);
-            })
-            .catch((error) => {
-              console.error(`Failed to upload ${file.name}:`, error);
-              const userFriendlyMessage = getErrorMessage(
-                error instanceof Error ? error.message : 'Unknown error',
-              );
-              toast.error(`Failed to upload ${file.name}: ${userFriendlyMessage}`);
-              resolve(null); // Resolve even if there's an error to not break Promise.all
-            });
-        });
-      });
-
-      await Promise.all(uploadPromises);
-
-      // Refresh attachments via SWR instead of manual router refresh
-      refreshAttachments();
-      resetState();
-    },
-    [uploadAttachment, refreshAttachments],
-  );
-
-  const initiateUpload = useCallback((files: FileList | File[]) => {
-    if (!files || files.length === 0) return;
-    setPendingFiles(files);
-    setShowReminderDialog(true);
-  }, []);
-
-  const handleReminderConfirm = useCallback(() => {
-    setShowReminderDialog(false);
-    if (pendingFiles) {
-      processFiles(pendingFiles);
-      setPendingFiles(null);
-    }
-  }, [pendingFiles, processFiles]);
-
-  const handleReminderClose = useCallback(() => {
-    setShowReminderDialog(false);
-    setPendingFiles(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  }, []);
-
-  const handleFileSelectMultiple = useCallback(
-    (event: React.ChangeEvent<HTMLInputElement>) => {
-      const files = event.target.files;
-      if (!files || files.length === 0) return;
-      initiateUpload(files);
-    },
-    [initiateUpload],
-  );
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
-
-  // Drag and drop handlers
-  const handleDragEnter = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (e.dataTransfer.items && e.dataTransfer.items.length > 0) {
-      setIsDragging(true);
-    }
-  }, []);
-
-  const handleDragLeave = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    // Only set dragging to false if we're leaving the drop zone itself
-    if (e.currentTarget === e.target) {
-      setIsDragging(false);
-    }
-  }, []);
-
-  const handleDragOver = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }, []);
-
-  const handleDrop = useCallback(
-    (e: React.DragEvent) => {
-      e.preventDefault();
-      e.stopPropagation();
-      setIsDragging(false);
-
-      if (isUploading || busyAttachmentId) return;
-
-      const files = e.dataTransfer.files;
-      if (files && files.length > 0) {
-        initiateUpload(Array.from(files));
-      }
-    },
-    [isUploading, busyAttachmentId, initiateUpload],
-  );
-
-  const handleDownloadClick = async (attachmentId: string) => {
-    setBusyAttachmentId(attachmentId);
-    try {
-      const downloadUrl = await getDownloadUrl(attachmentId);
-      window.open(downloadUrl, '_blank');
-    } catch (error) {
-      console.error('Failed to get download URL:', error);
-      toast.error('Failed to get download URL. Please try again.');
-    } finally {
-      setBusyAttachmentId(null);
-    }
-  };
-
-  const handleDeleteAttachment = useCallback(
-    async (attachmentId: string) => {
-      setBusyAttachmentId(attachmentId);
-      try {
-        await deleteAttachment(attachmentId);
-        toast.success('Attachment deleted successfully.');
-        // Refresh attachments via SWR instead of manual router refresh
-        refreshAttachments();
-      } catch (error) {
-        console.error('Failed to delete attachment:', error);
-        toast.error('Failed to delete attachment. Please try again.');
-      } finally {
-        setBusyAttachmentId(null);
-      }
-    },
-    [deleteAttachment, refreshAttachments],
-  );
+    fileInputRef,
+    isUploading,
+    busyAttachmentId,
+    isDragging,
+    showReminderDialog,
+    attachmentsData,
+    attachmentsError,
+    attachmentsLoading,
+    attachments,
+    handleFileSelectMultiple,
+    triggerFileInput,
+    handleDragEnter,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    handleDeleteAttachment,
+    handleReminderClose,
+    handleReminderConfirm,
+  } = useTaskEvidence(taskId);
 
   return (
     <div className="flex flex-col gap-4">
+      <AttachmentPreviewDialog
+        attachment={previewAttachment}
+        onClose={() => setPreviewAttachment(null)}
+      />
       <input
         type="file"
         ref={fileInputRef}
@@ -362,12 +154,12 @@ export function TaskBody({
                     <Button
                       variant="link"
                       size="sm"
-                      onClick={() => handleDownloadClick(attachment.id)}
+                      onClick={() => setPreviewAttachment(attachment)}
                       disabled={isBusy || isUploading}
-                      className="h-auto p-0 text-sm max-w-[200px] truncate"
+                      style={{ height: 'auto', padding: 0, maxWidth: 200, overflow: 'hidden' }}
                       title={attachment.name}
                     >
-                      {attachment.name}
+                      <span className="truncate">{attachment.name}</span>
                     </Button>
                     {uploadMonthYear && (
                       <span className="text-xs text-muted-foreground">({uploadMonthYear})</span>
@@ -377,13 +169,10 @@ export function TaskBody({
                       size="icon"
                       onClick={() => handleDeleteAttachment(attachment.id)}
                       disabled={isBusy || isUploading}
-                      className="h-auto w-auto p-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-transparent"
+                      aria-label={`Delete ${attachment.name}`}
+                      loading={isBusy}
                     >
-                      {isBusy ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <X className="h-3 w-3" />
-                      )}
+                      <X size={14} />
                     </Button>
                   </div>
                 );
@@ -400,16 +189,18 @@ export function TaskBody({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className="group w-full h-auto rounded-md border-dashed border-2 px-6 py-8 text-center transition-all hover:border-primary/50 hover:bg-accent/30"
+            width="full"
+            loading={isUploading}
             style={{
+              height: 'auto',
+              padding: '2rem 1.5rem',
+              borderStyle: 'dashed',
               borderColor: isDragging ? 'hsl(var(--primary))' : undefined,
               backgroundColor: isDragging ? 'hsl(var(--accent))' : undefined,
             }}
           >
             <div className="flex flex-col items-center gap-3 pointer-events-none">
-              {isUploading ? (
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              ) : (
+              {!isUploading && (
                 <div className="rounded-full bg-muted/50 p-3 transition-colors group-hover:bg-primary/10">
                   <Upload className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
                 </div>
@@ -434,7 +225,7 @@ export function TaskBody({
       </div>
 
       <Dialog open={showReminderDialog} onOpenChange={(open) => !open && handleReminderClose()}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent size="md">
           <DialogHeader>
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-primary/10 p-2">
@@ -442,7 +233,7 @@ export function TaskBody({
               </div>
               <DialogTitle>Screenshot Requirements</DialogTitle>
             </div>
-            <DialogDescription className="pt-2">
+            <DialogDescription>
               Ensure your organisation name is clearly visible within the screenshot.
             </DialogDescription>
           </DialogHeader>
