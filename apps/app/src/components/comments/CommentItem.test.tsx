@@ -1,6 +1,8 @@
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('@/utils/auth-client', () => ({ useSession: () => ({ data: { user: { id: 'usr_1' } } }) }));
+
 vi.mock('sonner', () => ({
   toast: { success: vi.fn(), error: vi.fn(), info: vi.fn() },
 }));
@@ -83,6 +85,16 @@ async function confirmDelete() {
 }
 
 describe('CommentItem delete error handling', () => {
+  it('hides edit and delete actions on another author’s comment', () => {
+    render(
+      <CommentItem
+        comment={{ ...baseComment, author: { ...baseComment.author, id: 'usr_other' } }}
+        refreshComments={vi.fn()}
+        entityType="task"
+      />,
+    );
+    expect(screen.queryByRole('button', { name: /comment options/i })).toBeNull();
+  });
   beforeEach(() => {
     vi.clearAllMocks();
   });

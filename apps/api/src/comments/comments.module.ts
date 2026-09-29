@@ -1,3 +1,5 @@
+import { CommentAttachmentsController } from './comment-attachments.controller';
+import { CommentAttachmentsService } from './comment-attachments.service';
 import { Module } from '@nestjs/common';
 import { AttachmentsModule } from '../attachments/attachments.module';
 import { AuthModule } from '../auth/auth.module';
@@ -9,9 +11,10 @@ import { NovuService } from '../notifications/novu.service';
 
 @Module({
   imports: [AuthModule, AttachmentsModule], // Import AuthModule for HybridAuthGuard dependencies
-  controllers: [CommentsController],
+  controllers: [CommentsController, CommentAttachmentsController],
   providers: [
     CommentsService,
+    CommentAttachmentsService,
     CommentsPermissionGuard,
     CommentMentionNotifierService,
     NovuService,
