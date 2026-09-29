@@ -26668,6 +26668,73 @@
           "name": "undo-vendor-revocation"
         }
       }
+    },
+    "/v1/comments/{commentId}/attachments": {
+      "post": {
+        "description": "Append a file to your existing comment without changing its text or existing attachments. AI clients upload via /v1/uploads/presign (purpose=attachment), then pass s3Key. Requires comment-author access.",
+        "operationId": "CommentAttachmentsController_addAttachment_v1",
+        "parameters": [
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "description": "ID of the existing comment",
+            "schema": {
+              "example": "cmt_abc123def456",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadAttachmentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Attachment added to the comment",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AttachmentResponseDto"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Caller cannot edit this comment"
+          },
+          "404": {
+            "description": "Comment not found in the current organization"
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Add an attachment to a comment",
+        "tags": [
+          "Comments"
+        ],
+        "x-speakeasy-mcp": {
+          "name": "add-comment-attachment"
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Add an attachment to a comment | Comp AI API",
+            "sidebarTitle": "Add an attachment to a comment",
+            "description": "Append a file to your existing comment without changing its text or existing attachments. AI clients upload via /v1/uploads/presign (purpose=attachment).",
+            "og:title": "Add an attachment to a comment | Comp AI API",
+            "og:description": "Append a file to your existing comment without changing its text or existing attachments. AI clients upload via /v1/uploads/presign (purpose=attachment)."
+          }
+        }
+      }
     }
   },
   "info": {

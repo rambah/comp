@@ -4,7 +4,7 @@ import { AttachmentPreviewDialog } from '@/components/attachments/AttachmentPrev
 import type { PreviewAttachment } from '@/components/attachments/attachment-preview-types';
 import { useCommentActions } from '@/hooks/use-comments-api';
 import { useMentionableMembers } from '@/hooks/use-mentionable-members';
-import type { JSONContent } from '@tiptap/react';
+import { useSession } from '@/utils/auth-client';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,7 +38,7 @@ import { toast } from 'sonner';
 import { formatRelativeTime } from '../../app/(app)/[orgId]/tasks/[taskId]/components/commentUtils';
 import { CommentAttachments } from './CommentAttachments';
 import { CommentContentView } from './CommentContentView';
-import { CommentRichTextField } from './CommentRichTextField';
+import { CommentEditor } from './CommentEditor';
 import type { CommentWithAuthor } from './Comments';
 
 // Helper function to generate gravatar URL
@@ -68,68 +68,14 @@ export function CommentItem({
 }: CommentItemProps) {
   const [previewAttachment, setPreviewAttachment] = useState<PreviewAttachment | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [editedContent, setEditedContent] = useState<JSONContent | null>(null);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
   // Use API hooks instead of server actions
-  const { updateComment, deleteComment } = useCommentActions();
+  const { deleteComment } = useCommentActions();
+  const { data: session } = useSession();
+  const isAuthor = session?.user.id === comment.author.id;
   const { members: mentionMembers } = useMentionableMembers(entityType);
-
-  // Parse comment content to JSONContent
-  const parseContent = (content: string): JSONContent | null => {
-    try {
-      const parsed = JSON.parse(content);
-      if (parsed && typeof parsed === 'object' && parsed.type === 'doc') {
-        return parsed as JSONContent;
-      }
-    } catch {
-      // Not JSON, return null
-    }
-    return null;
-  };
-
-  // Convert JSONContent to string for API
-  const contentToString = (content: JSONContent | null): string => {
-    if (!content) return '';
-    return JSON.stringify(content);
-  };
-
-  const handleEditToggle = () => {
-    if (!isEditing) {
-      // Parse existing content or create empty content
-      const parsed = parseContent(comment.content);
-      setEditedContent(parsed);
-    }
-    setIsEditing(!isEditing);
-  };
-
-  const handleCancelEdit = () => {
-    setIsEditing(false);
-  };
-
-  const handleSaveEdit = async () => {
-    const contentString = contentToString(editedContent);
-    const contentChanged = contentString !== comment.content;
-
-    if (!contentChanged) {
-      toast.info('No changes detected.');
-      setIsEditing(false);
-      return;
-    }
-
-    try {
-      // Use API hook directly instead of server action
-      await updateComment(comment.id, { content: contentString });
-
-      toast.success('Comment updated successfully.');
-      refreshComments();
-      setIsEditing(false);
-    } catch (error) {
-      toast.error('Failed to save comment changes.');
-      console.error('Save changes error:', error);
-    }
-  };
 
   const handleDeleteComment = async () => {
     setIsDeleting(true);
@@ -187,7 +133,7 @@ export function CommentItem({
                   {!isEditing ? formatRelativeTime(comment.createdAt) : 'Editing...'}
                 </span>
               </div>
-              {!isEditing && !readOnly && (
+              {!isEditing && !readOnly && isAuthor && (
                 <DropdownMenu>
                   <DropdownMenuTrigger
                     render={<Button variant="ghost" size="icon-sm" aria-label="Comment options" />}
@@ -195,7 +141,7 @@ export function CommentItem({
                     <MoreHorizontal size={16} />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleEditToggle}>
+                    <DropdownMenuItem onClick={() => setIsEditing(true)}>
                       <Pencil className="mr-2 h-3.5 w-3.5" />
                       Edit
                     </DropdownMenuItem>
@@ -211,12 +157,13 @@ export function CommentItem({
             {!isEditing ? (
               <CommentContentView content={comment.content} />
             ) : (
-              <CommentRichTextField
-                value={editedContent}
-                onChange={setEditedContent}
+              <CommentEditor
+                key={comment.id}
+                comment={comment}
                 members={mentionMembers}
-                disabled={false}
-                placeholder="Edit comment..."
+                onCancel={() => setIsEditing(false)}
+                onSaved={() => setIsEditing(false)}
+                refreshComments={refreshComments}
               />
             )}
 
@@ -225,17 +172,6 @@ export function CommentItem({
                 attachments={comment.attachments}
                 onPreview={setPreviewAttachment}
               />
-            )}
-
-            {isEditing && (
-              <div className="flex justify-end gap-2 pt-3">
-                <Button variant="ghost" size="sm" onClick={handleCancelEdit}>
-                  Cancel
-                </Button>
-                <Button size="sm" onClick={handleSaveEdit}>
-                  Save Changes
-                </Button>
-              </div>
             )}
           </div>
         </div>
