@@ -100,6 +100,11 @@ ENV NODE_EXTRA_CA_CERTS=/usr/local/share/aws-rds-ca-bundle.pem
 # Copy built NestJS app
 COPY --from=builder --chown=nestjs:nestjs /app/apps/api/dist ./dist
 
+# SOA's loader reads its ISO template from src, also in compiled deployments.
+COPY --from=builder --chown=nestjs:nestjs /app/apps/api/src/soa/seedJson ./src/soa/seedJson
+# Exercise the actual runtime loader so a missing template fails the build.
+RUN node -e 'require("./dist/src/soa/utils/transform-iso-config").loadISOConfig().then(c => { if (!c.questions.length) throw new Error("Empty ISO SOA template"); }).catch(e => { console.error(e); process.exit(1); })'
+
 # Copy prisma schema (for reference only — client is already generated in node_modules)
 COPY --from=builder --chown=nestjs:nestjs /app/apps/api/prisma ./prisma
 
