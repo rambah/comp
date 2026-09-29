@@ -17,16 +17,22 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from '@trycompai/design-system';
-import { Button } from '@trycompai/ui/button';
-import {
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@trycompai/ui/dropdown-menu';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@trycompai/ui/tooltip';
-import { AlertTriangle, MoreHorizontal, Pencil, Trash2 } from 'lucide-react';
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@trycompai/design-system';
+import {
+  WarningAlt as AlertTriangle,
+  OverflowMenuHorizontal as MoreHorizontal,
+  Edit as Pencil,
+  TrashCan as Trash2,
+} from '@trycompai/design-system/icons';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { formatRelativeTime } from '../../app/(app)/[orgId]/tasks/[taskId]/components/commentUtils';
@@ -158,11 +164,11 @@ export function CommentItem({
           {comment.author.deactivated && (
             <TooltipProvider>
               <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="absolute -bottom-0.5 -right-0.5 rounded-full">
-                    <AlertTriangle className="h-3.5 w-3.5 text-red-500 fill-yellow-400" />
-                  </div>
-                </TooltipTrigger>
+                <div className="absolute -bottom-0.5 -right-0.5 rounded-full">
+                  <TooltipTrigger aria-label="Deactivated user">
+                    <AlertTriangle size={14} />
+                  </TooltipTrigger>
+                </div>
                 <TooltipContent>
                   <p>This user is deactivated.</p>
                 </TooltipContent>
@@ -183,25 +189,17 @@ export function CommentItem({
               </div>
               {!isEditing && !readOnly && (
                 <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                      aria-label="Comment options"
-                    >
-                      <MoreHorizontal className="h-3.5 w-3.5" />
-                    </Button>
+                  <DropdownMenuTrigger
+                    render={<Button variant="ghost" size="icon-sm" aria-label="Comment options" />}
+                  >
+                    <MoreHorizontal size={16} />
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onSelect={handleEditToggle}>
+                    <DropdownMenuItem onClick={handleEditToggle}>
                       <Pencil className="mr-2 h-3.5 w-3.5" />
                       Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                      onSelect={() => setIsDeleteOpen(true)}
-                    >
+                    <DropdownMenuItem variant="destructive" onClick={() => setIsDeleteOpen(true)}>
                       <Trash2 className="mr-2 h-3.5 w-3.5" />
                       Delete
                     </DropdownMenuItem>

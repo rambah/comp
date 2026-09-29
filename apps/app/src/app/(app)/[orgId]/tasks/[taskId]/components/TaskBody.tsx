@@ -2,16 +2,23 @@
 
 import { AttachmentPreviewDialog } from '@/components/attachments/AttachmentPreviewDialog';
 import type { PreviewAttachment } from '@/components/attachments/attachment-preview-types';
-import { Button } from '@trycompai/ui/button';
 import {
+  Button,
   Dialog,
   DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@trycompai/ui/dialog';
-import { Camera, FileIcon, FileText, ImageIcon, Loader2, Upload, X } from 'lucide-react';
+} from '@trycompai/design-system';
+import {
+  Camera,
+  DocumentBlank as FileIcon,
+  Document as FileText,
+  Image as ImageIcon,
+  Upload,
+  Close as X,
+} from '@trycompai/design-system/icons';
 import type React from 'react';
 import { useState } from 'react';
 import { useTaskEvidence } from './useTaskEvidence';
@@ -149,10 +156,10 @@ export function TaskBody({
                       size="sm"
                       onClick={() => setPreviewAttachment(attachment)}
                       disabled={isBusy || isUploading}
-                      className="h-auto p-0 text-sm max-w-[200px] truncate"
+                      style={{ height: 'auto', padding: 0, maxWidth: 200, overflow: 'hidden' }}
                       title={attachment.name}
                     >
-                      {attachment.name}
+                      <span className="truncate">{attachment.name}</span>
                     </Button>
                     {uploadMonthYear && (
                       <span className="text-xs text-muted-foreground">({uploadMonthYear})</span>
@@ -162,13 +169,10 @@ export function TaskBody({
                       size="icon"
                       onClick={() => handleDeleteAttachment(attachment.id)}
                       disabled={isBusy || isUploading}
-                      className="h-auto w-auto p-0 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive hover:bg-transparent"
+                      aria-label={`Delete ${attachment.name}`}
+                      loading={isBusy}
                     >
-                      {isBusy ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <X className="h-3 w-3" />
-                      )}
+                      <X size={14} />
                     </Button>
                   </div>
                 );
@@ -185,16 +189,18 @@ export function TaskBody({
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
-            className="group w-full h-auto rounded-md border-dashed border-2 px-6 py-8 text-center transition-all hover:border-primary/50 hover:bg-accent/30"
+            width="full"
+            loading={isUploading}
             style={{
+              height: 'auto',
+              padding: '2rem 1.5rem',
+              borderStyle: 'dashed',
               borderColor: isDragging ? 'hsl(var(--primary))' : undefined,
               backgroundColor: isDragging ? 'hsl(var(--accent))' : undefined,
             }}
           >
             <div className="flex flex-col items-center gap-3 pointer-events-none">
-              {isUploading ? (
-                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              ) : (
+              {!isUploading && (
                 <div className="rounded-full bg-muted/50 p-3 transition-colors group-hover:bg-primary/10">
                   <Upload className="h-6 w-6 text-muted-foreground transition-colors group-hover:text-primary" />
                 </div>
@@ -219,7 +225,7 @@ export function TaskBody({
       </div>
 
       <Dialog open={showReminderDialog} onOpenChange={(open) => !open && handleReminderClose()}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent size="md">
           <DialogHeader>
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-primary/10 p-2">
@@ -227,7 +233,7 @@ export function TaskBody({
               </div>
               <DialogTitle>Screenshot Requirements</DialogTitle>
             </div>
-            <DialogDescription className="pt-2">
+            <DialogDescription>
               Ensure your organisation name is clearly visible within the screenshot.
             </DialogDescription>
           </DialogHeader>
