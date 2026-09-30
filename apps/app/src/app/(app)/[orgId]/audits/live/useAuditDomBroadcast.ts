@@ -51,7 +51,6 @@ export function useAuditDomBroadcast({
     let packing = false;
     let lastSnapshot = 0;
     let lastPdf = '';
-    const pathname = window.location.pathname;
     setError(null);
     const fail = () => {
       stop?.();
@@ -70,7 +69,7 @@ export function useAuditDomBroadcast({
         };
         stop = record({
           emit(event) {
-            if (disposed || !watchers.current.size || window.location.pathname !== pathname) return;
+            if (disposed || !watchers.current.size) return;
             if (event.type === 4) {
               epoch = crypto.randomUUID();
               batch = 0;

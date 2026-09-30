@@ -24,23 +24,30 @@ export function AuditFollowBar({
       className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/20 p-4"
     >
       <Text size="sm" weight="medium">
-        Follow a live workspace
+        Follow an auditor
       </Text>
       <div className="w-56">
         <Select
           value={observer.following ?? 'none'}
           disabled={disabled}
-          onValueChange={(value) => observer.setFollowing(value === 'none' ? null : value)}
+          onValueChange={(value) => {
+            // Base UI can emit null while the selected publisher reconnects.
+            // Only an explicit choice of My workspace ends following.
+            if (value !== null) observer.setFollowing(value === 'none' ? null : value);
+          }}
         >
           <SelectTrigger aria-label="Follow an auditor">
             <SelectValue>
               {observer.following
-                ? (observer.current?.name ?? 'Disconnected view')
+                ? (observer.current?.name ?? 'Reconnecting auditor…')
                 : 'My workspace'}
             </SelectValue>
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="none">My workspace</SelectItem>
+            {observer.following && !observer.current && (
+              <SelectItem value={observer.following}>Reconnecting auditor…</SelectItem>
+            )}
             {observer.participants.map((person) => (
               <SelectItem key={person.memberId} value={person.memberId}>
                 {person.name}
@@ -63,7 +70,7 @@ export function AuditFollowBar({
           {!observer.connected
             ? 'Live views are currently unavailable. You can continue auditing.'
             : observer.participants.length
-              ? 'Only views shared by their owner appear here.'
+              ? 'Follow the auditor across the organization’s pages.'
               : 'No active shared views.'}
         </Text>
       )}

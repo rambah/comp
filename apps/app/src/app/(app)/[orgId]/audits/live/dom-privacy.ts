@@ -1,8 +1,17 @@
-// Keep the workspace and its portalled dialogs/popovers. Everything else in the app is blocked.
-const surfaces = '[data-audit-workspace], [data-audit-live-surface]';
-// Keep the roots atomic: CSS forbids nesting :has() inside another :has().
-// Dialog backdrops contain no app content; their portal parents also contain the marked dialog.
-export const auditBlockSelector = `body *:not(:is(${surfaces}, [data-slot="dialog-overlay"])):not(:is(${surfaces}) *):not(:has(${surfaces})), [data-audit-live-private], input[type="password"], input[autocomplete="one-time-code"], input[autocomplete="cc-number"], iframe, object, embed`;
+// Capture the whole organization app, including navigation and portalled dialogs.
+// Private surfaces (including the observer itself) and credentials never enter the stream.
+export const auditBlockSelector = [
+  '[data-audit-live-private]',
+  'input[type="password"]',
+  'input[type="hidden"]',
+  'input[autocomplete="current-password"]',
+  'input[autocomplete="new-password"]',
+  'input[autocomplete="one-time-code"]',
+  'input[autocomplete^="cc-"]',
+  'iframe',
+  'object',
+  'embed',
+].join(', ');
 
 export function currentPdf() {
   const node = document.querySelector<HTMLElement>('[data-audit-pdf]');

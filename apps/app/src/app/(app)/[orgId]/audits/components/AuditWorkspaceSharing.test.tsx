@@ -1,6 +1,7 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { AuditLiveProvider } from '../live/AuditLiveProvider';
 import { AuditWorkspace } from './AuditWorkspace';
 
 const { post, broadcast, hasPermission } = vi.hoisted(() => ({
@@ -58,7 +59,11 @@ describe('Auditor workspace without sharing notices', () => {
   });
 
   it('starts automatically without a dialog, status, viewer names or sharing controls', async () => {
-    render(<AuditWorkspace organizationId="org1" initialData={null} />);
+    render(
+      <AuditLiveProvider organizationId="org1" canPublish canObserve={false}>
+        <AuditWorkspace organizationId="org1" initialData={null} />
+      </AuditLiveProvider>,
+    );
     await waitFor(() =>
       expect(broadcast).toHaveBeenLastCalledWith({
         organizationId: 'org1',
@@ -73,7 +78,11 @@ describe('Auditor workspace without sharing notices', () => {
 
   it('keeps initialization failures out of the auditor interface', async () => {
     post.mockRejectedValue(new Error('Offline'));
-    render(<AuditWorkspace organizationId="org1" initialData={null} />);
+    render(
+      <AuditLiveProvider organizationId="org1" canPublish canObserve={false}>
+        <AuditWorkspace organizationId="org1" initialData={null} />
+      </AuditLiveProvider>,
+    );
     await waitFor(() => expect(post).toHaveBeenCalledOnce());
     expect(screen.getByRole('main')).toHaveTextContent(/^Audit workspace$/);
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
@@ -82,7 +91,11 @@ describe('Auditor workspace without sharing notices', () => {
 
   it('retains following controls for authorized observers', async () => {
     hasPermission.mockReturnValue(true);
-    render(<AuditWorkspace organizationId="org1" initialData={null} />);
+    render(
+      <AuditLiveProvider organizationId="org1" canPublish canObserve>
+        <AuditWorkspace organizationId="org1" initialData={null} />
+      </AuditLiveProvider>,
+    );
     await waitFor(() =>
       expect(broadcast).toHaveBeenLastCalledWith({
         organizationId: 'org1',

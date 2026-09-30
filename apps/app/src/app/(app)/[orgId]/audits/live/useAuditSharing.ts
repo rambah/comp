@@ -12,7 +12,13 @@ interface Initialization {
   result: Promise<AuditSharingSession | null>;
 }
 
-export function useAuditSharing(organizationId: string) {
+export function useAuditSharing({
+  organizationId,
+  enabled = true,
+}: {
+  organizationId: string;
+  enabled?: boolean;
+}) {
   const pending = useRef<Initialization | null>(null);
   const [value, setValue] = useState<{
     initialization: Initialization;
@@ -21,6 +27,11 @@ export function useAuditSharing(organizationId: string) {
 
   useEffect(() => {
     let disposed = false;
+    if (!enabled) {
+      pending.current = null;
+      setValue(null);
+      return;
+    }
     // Reuse the request during Strict Mode effect replay to avoid competing nonces.
     if (pending.current?.organizationId !== organizationId) {
       pending.current = {
@@ -42,10 +53,11 @@ export function useAuditSharing(organizationId: string) {
     return () => {
       disposed = true;
     };
-  }, [organizationId]);
+  }, [organizationId, enabled]);
 
   return {
     session:
+      enabled &&
       value?.initialization === pending.current &&
       value?.initialization.organizationId === organizationId
         ? value.session

@@ -5,10 +5,8 @@ import { useState, useSyncExternalStore } from 'react';
 import '../audit-workspace.css';
 import { AuditDomReplay } from '../live/AuditDomReplay';
 import { AuditFollowBar } from '../live/AuditFollowBar';
+import { useAuditLiveObserver } from '../live/AuditLiveProvider';
 import type { AuditLiveView } from '../live/live-types';
-import { useAuditDomBroadcast } from '../live/useAuditDomBroadcast';
-import { useAuditDomObserver } from '../live/useAuditDomObserver';
-import { useAuditSharing } from '../live/useAuditSharing';
 import { AuditResearch } from '../research/AuditResearch';
 import { useAuditDraftGuard } from '../useAuditDraftGuard';
 import { useAuditWorkspace } from '../useAuditWorkspace';
@@ -39,14 +37,13 @@ export function AuditWorkspace({
     initialData,
   });
   const { hasPermission } = usePermissions();
-  const sharingSession = useAuditSharing(organizationId);
   const hydrated = useSyncExternalStore(
     subscribeHydration,
     () => true,
     () => false,
   );
   const canObserve = hydrated && hasPermission('auditWorkspace', 'observe');
-  const observer = useAuditDomObserver({ organizationId, enabled: canObserve });
+  const observer = useAuditLiveObserver();
   const canEdit = hydrated && hasPermission('auditWorkspace', 'update') && !observer.following;
   const [focusedFinding, setFocusedFinding] = useState<{ id: string } | null>(null);
   const [compareId, setCompareId] = useState<string | null>(null);
@@ -62,10 +59,6 @@ export function AuditWorkspace({
   const audit = data?.audits.find((a) => a.id === auditId) ?? data?.audits[0];
   const check = audit?.controls.find((c) => c.id === selected);
   const registerUrl = `/${organizationId}/documents/isms/internal-audit`;
-  useAuditDomBroadcast({
-    organizationId,
-    session: observer.following ? null : sharingSession.session,
-  });
   const locked = busy || !!observer.following;
   const handleSelect = (id: string) => {
     if (!locked) {

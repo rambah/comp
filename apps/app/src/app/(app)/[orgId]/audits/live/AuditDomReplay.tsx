@@ -18,6 +18,22 @@ export function AuditDomReplay({
   const stage = useRef<HTMLDivElement>(null);
   const [pdf, setPdf] = useState<PdfReference>(null);
   const [error, setError] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const [fullscreenError, setFullscreenError] = useState(false);
+  useEffect(() => {
+    const handleChange = () => setExpanded(document.fullscreenElement === container.current);
+    document.addEventListener('fullscreenchange', handleChange);
+    return () => document.removeEventListener('fullscreenchange', handleChange);
+  }, []);
+  const handleFullscreen = async () => {
+    setFullscreenError(false);
+    try {
+      if (document.fullscreenElement === container.current) await document.exitFullscreen();
+      else await container.current?.requestFullscreen();
+    } catch {
+      setFullscreenError(true);
+    }
+  };
   useEffect(() => {
     let disposed = false;
     let replay: Replayer | null = null;
@@ -62,7 +78,7 @@ export function AuditDomReplay({
               showDebug: false,
               UNSAFE_replayCanvas: false,
             });
-            replay.iframe.title = 'Live auditor workspace (read-only)';
+            replay.iframe.title = 'Live auditor view (read-only)';
             // Never mount the app here or grant scripts/forms: replay must not submit anything.
             replay.iframe.setAttribute('sandbox', 'allow-same-origin');
             replay.iframe.setAttribute('inert', '');
@@ -119,19 +135,20 @@ export function AuditDomReplay({
     >
       <div className="flex items-center justify-between gap-4 border-b p-4">
         <div>
-          <h2 className="font-medium">{observer.current?.name ?? 'Auditor'} · Live workspace</h2>
+          <h2 className="font-medium">{observer.current?.name ?? 'Auditor'} · Live view</h2>
           <p className="mt-1 text-xs text-muted-foreground">
             Read-only · Changes appear with a short buffer for smooth movement.
           </p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => void container.current?.requestFullscreen().catch(() => undefined)}
-        >
-          Expand view
+        <Button variant="outline" size="sm" onClick={() => void handleFullscreen()}>
+          {expanded ? 'Exit full screen' : 'Expand view'}
         </Button>
       </div>
+      {fullscreenError && (
+        <p role="status" className="px-4 pb-4 text-sm text-muted-foreground">
+          Full screen is unavailable. You can continue watching here.
+        </p>
+      )}
       {(!observer.ready || error) && (
         <p role="status" className="p-6 text-sm text-muted-foreground">
           {error
@@ -139,7 +156,7 @@ export function AuditDomReplay({
             : !observer.connected
               ? 'Connection interrupted. Reconnecting…'
               : !observer.current
-                ? 'Waiting for the auditor to share this workspace…'
+                ? 'Waiting for the auditor to reconnect…'
                 : 'Synchronizing the live view…'}
         </p>
       )}
