@@ -603,6 +603,10 @@ model IsmsAuditControl {
   // Null until the auditor records an outcome for the row.
   result IsmsAuditControlResult?
   notes  String? // external evidence, dates, or auditor commentary
+  reviewedAt DateTime?
+  reviewedBy String?
+  requests AuditRequest[]
+  evidenceLinks AuditEvidenceLink[]
 
   source      IsmsContextSource @default(derived)
   derivedFrom String? // provenance for seeded rows, e.g. "seed:clause_4_1_context"

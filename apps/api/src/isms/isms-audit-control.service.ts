@@ -1,3 +1,4 @@
+import { reopenWorkingAudit } from './workspace/audit-progress';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { db } from '@db';
 import type { Prisma } from '@db';
@@ -38,6 +39,7 @@ export class IsmsAuditControlService {
       const position =
         dto.position ?? (await this.nextPosition({ tx, auditId: audit.id }));
       await invalidateApprovalIfNeeded({ tx, documentId: audit.documentId });
+      await reopenWorkingAudit({ tx, auditId: audit.id });
       return tx.ismsAuditControl.create({
         data: {
           auditId: audit.id,
@@ -71,9 +73,12 @@ export class IsmsAuditControlService {
       // submission's completeness check.
       await lockDocument(tx, control.documentId);
       await invalidateApprovalIfNeeded({ tx, documentId: control.documentId });
+      await reopenWorkingAudit({ tx, auditId: control.auditId });
       return tx.ismsAuditControl.update({
         where: { id: controlId },
         data: {
+          reviewedAt: null,
+          reviewedBy: null,
           controlRef: dto.controlRef ?? undefined,
           whatWasTested: dto.whatWasTested ?? undefined,
           whereToFind: dto.whereToFind ?? undefined,
@@ -106,6 +111,7 @@ export class IsmsAuditControlService {
         where: { controlId, clauseOrControl: null },
         data: { clauseOrControl: control.controlRef },
       });
+      await reopenWorkingAudit({ tx, auditId: control.auditId });
       await tx.ismsAuditControl.delete({ where: { id: controlId } });
     });
     return { success: true };

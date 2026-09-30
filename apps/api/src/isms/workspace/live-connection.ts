@@ -1,0 +1,211 @@
+import { liveWireText } from './live-wire';
+import { db } from '@db';
+import { WebSocket } from 'ws';
+import { auditScope } from './workspace-access';
+import { AuditLiveAccess } from './live-access.service';
+import { AuditLiveBus } from './live-bus.service';
+import {
+  liveMessageSchema,
+  type LiveEvent,
+  type LiveIdentity,
+  type LiveMessage,
+} from './live.schema';
+
+/** One bounded sender per socket: slow networks discard old pointer positions. */
+export class AuditLiveConnection {
+  private closed = false;
+  private sequence = -1;
+  private viewKey = '';
+  private pendingView?: LiveMessage;
+  private pendingPointer?: LiveMessage;
+  private publishing = false;
+  private lastPointerAt = 0;
+  private stopSubscription?: () => void;
+  private checking = false;
+  private readonly timer: ReturnType<typeof setInterval>;
+  private readonly revoked = new Set<string>();
+  private readonly grants = new Map<string, number>();
+
+  constructor(
+    private readonly socket: WebSocket,
+    private readonly identity: LiveIdentity,
+    private readonly bus: AuditLiveBus,
+    private readonly access: AuditLiveAccess,
+  ) {
+    this.timer = setInterval(() => {
+      void this.checkAccess();
+    }, 4000);
+    socket.on('close', () => this.close());
+    socket.on('error', () => this.close());
+    socket.on('message', (raw) => {
+      if (identity.mode !== 'publish') return;
+      try {
+        this.receive(JSON.parse(liveWireText(raw)));
+      } catch {
+        this.close();
+      }
+    });
+    if (identity.mode === 'observe') {
+      this.stopSubscription = bus.subscribe({
+        organizationId: identity.organizationId,
+        onEvent: (event) => {
+          void this.forward(event).catch(() => this.close());
+        },
+        onError: () => this.close(),
+        onReady: () => this.send({ kind: 'ready' }),
+      });
+    } else this.send({ kind: 'ready' });
+  }
+
+  private send(event: unknown) {
+    if (
+      !this.closed &&
+      this.socket.readyState === WebSocket.OPEN &&
+      this.socket.bufferedAmount < 65536
+    ) {
+      this.socket.send(JSON.stringify(event));
+    }
+  }
+
+  private async checkAccess() {
+    if (this.checking || this.closed) return;
+    this.checking = true;
+    try {
+      if (!(await this.access.valid(this.identity))) this.close();
+      else this.send({ kind: 'heartbeat' });
+    } catch {
+      this.close();
+    } finally {
+      this.checking = false;
+    }
+  }
+
+  private receive(input: unknown) {
+    const parsed = liveMessageSchema.safeParse(input);
+    if (!parsed.success) return this.close();
+    const message = parsed.data;
+    if (message.sequence <= this.sequence) return;
+    this.sequence = message.sequence;
+    if (message.kind === 'pointer') {
+      if (Date.now() - this.lastPointerAt < 40) return;
+      this.lastPointerAt = Date.now();
+      this.pendingPointer = message;
+    } else this.pendingView = message;
+    void this.flush();
+  }
+
+  private async flush() {
+    if (this.publishing || this.closed) return;
+    this.publishing = true;
+    try {
+      while (!this.closed && (this.pendingView || this.pendingPointer)) {
+        const message = this.pendingView ?? this.pendingPointer!;
+        if (message.kind === 'view') this.pendingView = undefined;
+        else this.pendingPointer = undefined;
+        if (message.kind === 'view') {
+          const key = JSON.stringify([
+            message.view.auditId,
+            message.view.checkId,
+            message.view.evidenceId,
+          ]);
+          if (key !== this.viewKey) {
+            const audit = await db.ismsAudit.findFirst({
+              where: {
+                id: message.view.auditId,
+                ...auditScope(this.identity.organizationId),
+              },
+              select: {
+                controls: {
+                  select: { id: true, evidenceLinks: { select: { id: true } } },
+                },
+              },
+            });
+            const check = audit?.controls.find(
+              (c) => c.id === message.view.checkId,
+            );
+            if (
+              !audit ||
+              (message.view.checkId && !check) ||
+              (message.view.evidenceId &&
+                !check?.evidenceLinks.some(
+                  (e) => e.id === message.view.evidenceId,
+                ))
+            )
+              return this.close();
+            this.viewKey = key;
+          }
+        }
+        if (this.closed) break;
+        await this.bus.publish({
+          ...message,
+          organizationId: this.identity.organizationId,
+          memberId: this.identity.memberId,
+          name: this.identity.name,
+          nonce: this.identity.nonce,
+          sentAt: Date.now(),
+        });
+      }
+    } catch {
+      this.close();
+    } finally {
+      this.publishing = false;
+    }
+  }
+
+  private async forward(event: LiveEvent) {
+    if (
+      this.closed ||
+      event.organizationId !== this.identity.organizationId ||
+      event.memberId === this.identity.memberId
+    )
+      return;
+    if (event.kind === 'stop') {
+      if (event.revoked) this.revoked.add(event.nonce);
+      this.grants.delete(event.nonce);
+      this.send(event);
+      return;
+    }
+    if (this.revoked.has(event.nonce) || Date.now() - event.sentAt > 3000)
+      return;
+    if ((this.grants.get(event.nonce) ?? 0) < Date.now()) {
+      const consent = await db.auditViewConsent.findFirst({
+        where: {
+          memberId: event.memberId,
+          sessionNonce: event.nonce,
+          allowed: true,
+          member: {
+            organizationId: this.identity.organizationId,
+            isActive: true,
+            deactivated: false,
+          },
+        },
+      });
+      if (!consent || this.revoked.has(event.nonce)) return;
+      this.grants.set(event.nonce, Date.now() + 3000);
+    }
+    this.send(event);
+    // Bound caches even if a workspace is open all day.
+    if (this.grants.size > 100) this.grants.clear();
+    if (this.revoked.size > 100) this.close();
+  }
+
+  close() {
+    if (this.closed) return;
+    this.closed = true;
+    clearInterval(this.timer);
+    this.stopSubscription?.();
+    this.socket.close(1000);
+    if (this.identity.mode === 'publish') {
+      void this.bus
+        .publish({
+          kind: 'stop',
+          organizationId: this.identity.organizationId,
+          memberId: this.identity.memberId,
+          name: this.identity.name,
+          nonce: this.identity.nonce,
+          sentAt: Date.now(),
+        })
+        .catch(() => undefined);
+    }
+  }
+}

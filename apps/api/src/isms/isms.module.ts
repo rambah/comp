@@ -1,3 +1,13 @@
+import { AuditWorkspaceFinish } from './workspace/workspace-finish.service';
+import { AuditWorkspaceCompletion } from './workspace/workspace-completion.service';
+import { AuditLiveController } from './workspace/live.controller';
+import { AuditLiveAccess } from './workspace/live-access.service';
+import { AuditLiveBus } from './workspace/live-bus.service';
+import { AuditLiveGateway } from './workspace/live.gateway';
+import { AuditWorkspaceController } from './workspace/workspace.controller';
+import { AuditWorkspaceService } from './workspace/workspace.service';
+import { AuditWorkspaceRequestsService } from './workspace/workspace-requests.service';
+import { AuditWorkspaceEvidenceService } from './workspace/workspace-evidence.service';
 import { Module } from '@nestjs/common';
 import { IsmsController } from './isms.controller';
 import { IsmsRegistersController } from './isms-registers.controller';
@@ -29,11 +39,21 @@ import { AttachmentsModule } from '../attachments/attachments.module';
   // AttachmentsModule: S3 access for retaining per-version rendered exports.
   imports: [AuthModule, AttachmentsModule],
   controllers: [
+    AuditLiveController,
+    AuditWorkspaceController,
     IsmsController,
     IsmsRegistersController,
     IsmsProfileController,
   ],
   providers: [
+    AuditWorkspaceFinish,
+    AuditWorkspaceCompletion,
+    AuditLiveAccess,
+    AuditLiveBus,
+    AuditLiveGateway,
+    AuditWorkspaceService,
+    AuditWorkspaceRequestsService,
+    AuditWorkspaceEvidenceService,
     IsmsService,
     IsmsContextService,
     IsmsVersionService,

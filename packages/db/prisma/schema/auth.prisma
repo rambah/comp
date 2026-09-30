@@ -192,6 +192,7 @@ model Jwks {
 }
 
 model Member {
+  auditViewConsent AuditViewConsent?
   id             String       @id @default(dbgenerated("generate_prefixed_cuid('mem'::text)"))
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)

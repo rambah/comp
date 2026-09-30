@@ -26735,6 +26735,615 @@
           }
         }
       }
+    },
+    "/v1/audit-workspace": {
+      "get": {
+        "description": "Open the audit workspace in Comp AI.",
+        "operationId": "AuditWorkspaceController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Open the audit workspace",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Open the audit workspace | Comp AI API",
+            "sidebarTitle": "Open the audit workspace",
+            "description": "Open the audit workspace in Comp AI.",
+            "og:title": "Open the audit workspace | Comp AI API",
+            "og:description": "Open the audit workspace in Comp AI."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "list"
+        }
+      }
+    },
+    "/v1/audit-workspace/sources": {
+      "get": {
+        "description": "Search published policies, ISMS documents and existing evidence files to link to an audit check. Returns at most 50 sources per category.",
+        "operationId": "AuditWorkspaceController_sources_v1",
+        "parameters": [
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Find audit evidence",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Find audit evidence | Comp AI API",
+            "sidebarTitle": "Find audit evidence",
+            "description": "Search published policies, ISMS documents and existing evidence files to link to an audit check. Returns at most 50 sources per category.",
+            "og:title": "Find audit evidence | Comp AI API",
+            "og:description": "Search published policies, ISMS documents and existing evidence files to link to an audit check. Returns at most 50 sources per category."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "sources"
+        }
+      }
+    },
+    "/v1/audit-workspace/checks/{id}/review": {
+      "patch": {
+        "description": "Save review notes or complete a check with a conclusion. Uses optimistic conflict detection and requires outstanding requests to be reviewed.",
+        "operationId": "AuditWorkspaceController_review_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Save an audit review",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Save an audit review | Comp AI API",
+            "sidebarTitle": "Save an audit review",
+            "description": "Save review notes or complete a check with a conclusion. Uses optimistic conflict detection and requires outstanding requests to be reviewed.",
+            "og:title": "Save an audit review | Comp AI API",
+            "og:description": "Save review notes or complete a check with a conclusion. Uses optimistic conflict detection and requires outstanding requests to be reviewed."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "review"
+        }
+      }
+    },
+    "/v1/audit-workspace/checks/{id}/requests": {
+      "post": {
+        "description": "Ask a specific audit question, assign an eligible response coordinator and set a due date. Reopens the linked check for review.",
+        "operationId": "AuditWorkspaceController_createRequest_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Request audit evidence",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Request audit evidence | Comp AI API",
+            "sidebarTitle": "Request audit evidence",
+            "description": "Ask a specific audit question, assign an eligible response coordinator and set a due date. Reopens the linked check for review.",
+            "og:title": "Request audit evidence | Comp AI API",
+            "og:description": "Ask a specific audit question, assign an eligible response coordinator and set a due date. Reopens the linked check for review."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "create-request"
+        }
+      }
+    },
+    "/v1/audit-workspace/requests/{id}/responses": {
+      "post": {
+        "description": "Append an attributed response and submit it, request changes, accept it or reopen the request. Prior responses are retained.",
+        "operationId": "AuditWorkspaceController_respond_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditResponseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Respond to an audit request",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Respond to an audit request | Comp AI API",
+            "sidebarTitle": "Respond to an audit request",
+            "description": "Append an attributed response and submit it, request changes, accept it or reopen the request. Prior responses are retained.",
+            "og:title": "Respond to an audit request | Comp AI API",
+            "og:description": "Append an attributed response and submit it, request changes, accept it or reopen the request. Prior responses are retained."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "respond"
+        }
+      }
+    },
+    "/v1/audit-workspace/checks/{id}/evidence": {
+      "post": {
+        "description": "Capture a published document version or link an existing evidence file. Source documents remain unchanged and the check returns to review.",
+        "operationId": "AuditWorkspaceController_link_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditSourceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Link evidence to an audit check",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Link evidence to an audit check | Comp AI API",
+            "sidebarTitle": "Link evidence to an audit check",
+            "description": "Capture a published document version or link an existing evidence file. Source documents remain unchanged and the check returns to review.",
+            "og:title": "Link evidence to an audit check | Comp AI API",
+            "og:description": "Capture a published document version or link an existing evidence file. Source documents remain unchanged and the check returns to review."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "link"
+        }
+      }
+    },
+    "/v1/audit-workspace/checks/{id}/findings": {
+      "post": {
+        "description": "Create a finding in the existing internal audit register, linked to the tested check, with a follow-up owner and optional due date.",
+        "operationId": "AuditWorkspaceController_finding_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceFindingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Record an internal audit finding",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Record an internal audit finding | Comp AI API",
+            "sidebarTitle": "Record an internal audit finding",
+            "description": "Create a finding in the existing internal audit register, linked to the tested check, with a follow-up owner and optional due date.",
+            "og:title": "Record an internal audit finding | Comp AI API",
+            "og:description": "Create a finding in the existing internal audit register, linked to the tested check, with a follow-up owner and optional due date."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "finding"
+        }
+      }
+    },
+    "/v1/audit-workspace/findings/{id}": {
+      "patch": {
+        "description": "Update audit finding follow-up in Comp AI.",
+        "operationId": "AuditWorkspaceController_followup_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditFindingFollowupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Update audit finding follow-up",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Update audit finding follow-up | Comp AI API",
+            "sidebarTitle": "Update audit finding follow-up",
+            "description": "Update audit finding follow-up in Comp AI.",
+            "og:title": "Update audit finding follow-up | Comp AI API",
+            "og:description": "Update audit finding follow-up in Comp AI."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "followup"
+        }
+      }
+    },
+    "/v1/audit-workspace/audits/{id}/conclusion": {
+      "patch": {
+        "description": "Draft the audit conclusion in Comp AI.",
+        "operationId": "AuditWorkspaceController_conclusion_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditConclusionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Draft the audit conclusion",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Draft the audit conclusion | Comp AI API",
+            "sidebarTitle": "Draft the audit conclusion",
+            "description": "Draft the audit conclusion in Comp AI.",
+            "og:title": "Draft the audit conclusion | Comp AI API",
+            "og:description": "Draft the audit conclusion in Comp AI."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "conclusion"
+        }
+      }
+    },
+    "/v1/audit-workspace/live/consent": {
+      "post": {
+        "description": "Record your own explicit yes or no for this workspace visit. No immediately revokes previous sharing. Requires the person’s own browser session.",
+        "operationId": "AuditLiveController_consent_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditViewConsentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Choose audit view sharing",
+        "tags": [
+          "Audit workspace"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Choose audit view sharing | Comp AI API",
+            "sidebarTitle": "Choose audit view sharing",
+            "description": "Record your own explicit yes or no for this workspace visit. No immediately revokes previous sharing. Requires the person’s own browser session.",
+            "og:title": "Choose audit view sharing | Comp AI API",
+            "og:description": "Record your own explicit yes or no for this workspace visit. No immediately revokes previous sharing. Requires the person’s own browser session."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/live/ticket": {
+      "post": {
+        "description": "Issue a single-use 20-second WebSocket ticket. Publishing requires your current consent; observing requires auditWorkspace:observe. Requires a browser session.",
+        "operationId": "AuditLiveController_ticket_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditLiveTicketDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Connect a live audit view",
+        "tags": [
+          "Audit workspace"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Connect a live audit view | Comp AI API",
+            "sidebarTitle": "Connect a live audit view",
+            "description": "Issue a single-use 20-second WebSocket ticket. Publishing requires your current consent; observing requires auditWorkspace:observe. Requires a browser.",
+            "og:title": "Connect a live audit view | Comp AI API",
+            "og:description": "Issue a single-use 20-second WebSocket ticket. Publishing requires your current consent; observing requires auditWorkspace:observe. Requires a browser."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/evidence/{id}/preview": {
+      "get": {
+        "description": "Get short-lived preview and download links for the exact published PDF version attached to a check. Never substitutes a newer version.",
+        "operationId": "AuditWorkspaceController_preview_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Preview captured audit evidence",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Preview captured audit evidence | Comp AI API",
+            "sidebarTitle": "Preview captured audit evidence",
+            "description": "Get short-lived preview and download links for the exact published PDF version attached to a check. Never substitutes a newer version.",
+            "og:title": "Preview captured audit evidence | Comp AI API",
+            "og:description": "Get short-lived preview and download links for the exact published PDF version attached to a check. Never substitutes a newer version."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "preview"
+        }
+      }
+    },
+    "/v1/audit-workspace/audits/{id}/finish": {
+      "post": {
+        "description": "Confirm completed sampling and the saved conclusion under your own name. Blocks unfinished checks and requests. Does not publish or approve the document for management.",
+        "operationId": "AuditWorkspaceController_finish_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditFinishDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Complete your internal audit",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Complete your internal audit | Comp AI API",
+            "sidebarTitle": "Complete your internal audit",
+            "description": "Confirm completed sampling and the saved conclusion under your own name. Blocks unfinished checks and requests. Does not publish or approve the document.",
+            "og:title": "Complete your internal audit | Comp AI API",
+            "og:description": "Confirm completed sampling and the saved conclusion under your own name. Blocks unfinished checks and requests. Does not publish or approve the document."
+          }
+        }
+      }
     }
   },
   "info": {
@@ -31729,6 +32338,237 @@
             "description": "Key of an evidence file already uploaded via /v1/uploads/presign (purpose=evidence). The server fetches the bytes from storage — no base64 needed. Provide fileData or s3Key (not both)."
           }
         }
+      },
+      "AuditReviewDto": {
+        "type": "object",
+        "properties": {
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "Last observed check update timestamp, for conflict detection."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Sampling details, evidence examined and reviewer observations."
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "conformity_confirmed",
+              "nonconformity_raised",
+              "observation_raised",
+              "not_sampled"
+            ],
+            "description": "Omit to save a draft. Supply to complete the review."
+          }
+        },
+        "required": [
+          "expectedUpdatedAt",
+          "notes"
+        ]
+      },
+      "AuditRequestDto": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "Exact record, period or clarification requested."
+          },
+          "ownerMemberId": {
+            "type": "string",
+            "description": "Active organization member responsible for coordinating the response."
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "Due date in ISO format."
+          }
+        },
+        "required": [
+          "question",
+          "ownerMemberId",
+          "dueDate"
+        ]
+      },
+      "AuditResponseDto": {
+        "type": "object",
+        "properties": {
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "Last observed request update timestamp."
+          },
+          "content": {
+            "type": "string",
+            "description": "Response, clarification or reason for the review decision."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "submitted",
+              "changes_requested",
+              "accepted"
+            ]
+          }
+        },
+        "required": [
+          "expectedUpdatedAt",
+          "content",
+          "status"
+        ]
+      },
+      "AuditSourceDto": {
+        "type": "object",
+        "properties": {
+          "sourceType": {
+            "type": "string",
+            "enum": [
+              "attachment",
+              "policy",
+              "document"
+            ]
+          },
+          "sourceId": {
+            "type": "string",
+            "description": "Existing organization-scoped attachment, policy or ISMS document ID."
+          }
+        },
+        "required": [
+          "sourceType",
+          "sourceId"
+        ]
+      },
+      "WorkspaceFindingDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "nc_major",
+              "nc_minor",
+              "ofi",
+              "observation"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "Observed condition, supporting evidence and audit criterion."
+          },
+          "ownerMemberId": {
+            "type": "string",
+            "description": "Organization member responsible for follow-up."
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "Follow-up due date."
+          }
+        },
+        "required": [
+          "type",
+          "description"
+        ]
+      },
+      "AuditFindingFollowupDto": {
+        "type": "object",
+        "properties": {
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "Last observed finding update timestamp."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "in_progress",
+              "closed"
+            ]
+          },
+          "closureEvidence": {
+            "type": "string",
+            "description": "Follow-up actions and evidence of resolution. Required to close."
+          }
+        },
+        "required": [
+          "expectedUpdatedAt",
+          "status",
+          "closureEvidence"
+        ]
+      },
+      "AuditConclusionDto": {
+        "type": "object",
+        "properties": {
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "Last observed audit update timestamp."
+          },
+          "conclusionVerdict": {
+            "type": "string",
+            "enum": [
+              "conform",
+              "substantially_conform",
+              "not_yet_conform"
+            ]
+          },
+          "conclusionNotes": {
+            "type": "string",
+            "description": "Overall audit conclusion and limitations; saving does not sign or approve the report."
+          }
+        },
+        "required": [
+          "expectedUpdatedAt",
+          "conclusionVerdict",
+          "conclusionNotes"
+        ]
+      },
+      "AuditViewConsentDto": {
+        "type": "object",
+        "properties": {
+          "allowed": {
+            "type": "boolean",
+            "description": "The signed-in person’s explicit choice for this audit workspace visit."
+          }
+        },
+        "required": [
+          "allowed"
+        ]
+      },
+      "AuditLiveTicketDto": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "publish",
+              "observe"
+            ],
+            "description": "Publish a consented audit view or observe as an authorized administrator."
+          },
+          "nonce": {
+            "type": "string",
+            "description": "Consent nonce returned by the person’s own consent decision. Required to publish."
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "AuditFinishDto": {
+        "type": "object",
+        "properties": {
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "Last observed audit update timestamp."
+          },
+          "confirmed": {
+            "type": "boolean",
+            "description": "Explicit confirmation that you completed the audit and recorded its conclusion.",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "expectedUpdatedAt",
+          "confirmed"
+        ]
       }
     }
   },
