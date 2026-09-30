@@ -9,7 +9,6 @@ import type { IsmsDocumentType } from '@db';
 import { SubmitIsmsForApprovalDto } from './dto/submit-isms-for-approval.dto';
 import { deriveControlLinks, resolveDocumentPlans } from './utils/ensure-setup-plan';
 import { collectPlatformData } from './documents/data-source';
-import { runDerivation } from './documents/generate';
 import { roleValidationMessages, seedRolesIfMissing } from './documents/roles';
 import {
   metricValidationMessages,
@@ -491,16 +490,9 @@ export class IsmsService {
         throw new BadRequestException('Document is not pending your approval');
       }
 
-      // Re-derive in the same transaction so the persisted rows and the frozen
-      // snapshot come from one pass (otherwise the approved content can drift).
-      await runDerivation({
-        tx,
-        type: document.type,
-        documentId,
-        organizationId,
-        frameworkId: document.frameworkId,
-        data: snapshot,
-      });
+      // Approval freezes the reviewed draft. Derivation belongs only to the
+      // explicit Generate action: running it here would restore removed defaults
+      // and append generic rows beside the customer's edited register entries.
       await updateDraftSnapshot({ tx, documentId, snapshot });
 
       const reloaded = await tx.ismsDocument.findUniqueOrThrow({
