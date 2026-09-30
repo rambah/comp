@@ -113,16 +113,41 @@ actions:
       x-speakeasy-mcp:
         disabled: true
 
-  - target: "$.paths['/v1/audit-workspace/live/consent'].post"
+  - target: "$.paths['/v1/audit-workspace/session/initialize'].post"
     update:
       x-speakeasy-mcp:
         disabled: true
-  - target: "$.paths['/v1/audit-workspace/live/ticket'].post"
+  - target: "$.paths['/v1/audit-workspace/session/ticket'].post"
     update:
       x-speakeasy-mcp:
         disabled: true
 
   - target: "$.paths['/v1/audit-workspace/audits/{id}/finish'].post"
+    update:
+      x-speakeasy-mcp:
+        disabled: true
+
+  - target: "$.paths['/v1/audit-workspace/research/audits/{id}/threads'].get"
+    update:
+      x-speakeasy-mcp:
+        disabled: true
+
+  - target: "$.paths['/v1/audit-workspace/research/audits/{id}/threads'].post"
+    update:
+      x-speakeasy-mcp:
+        disabled: true
+
+  - target: "$.paths['/v1/audit-workspace/research/threads/{id}'].get"
+    update:
+      x-speakeasy-mcp:
+        disabled: true
+
+  - target: "$.paths['/v1/audit-workspace/research/threads/{id}/turns'].post"
+    update:
+      x-speakeasy-mcp:
+        disabled: true
+
+  - target: "$.paths['/v1/audit-workspace/research/threads/{id}/turns/{turnId}/sources/{label}'].get"
     update:
       x-speakeasy-mcp:
         disabled: true

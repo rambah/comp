@@ -10,18 +10,18 @@ import { AuditLiveAccess } from './live-access.service';
 import { AuditLiveTicketDto, AuditViewConsentDto } from './live.dto';
 
 @ApiTags('Audit workspace')
-@Controller({ path: 'audit-workspace/live', version: '1' })
+@Controller({ path: 'audit-workspace/session', version: '1' })
 @UseGuards(HybridAuthGuard, SessionOnlyGuard, PermissionGuard)
 export class AuditLiveController {
   constructor(private readonly live: AuditLiveAccess) {}
 
-  @Post('consent')
+  @Post('initialize')
   @RequirePermission('auditWorkspace', 'read')
   @ApiExtension('x-speakeasy-mcp', { disabled: true })
   @ApiOperation({
-    summary: 'Choose audit view sharing',
+    summary: 'Initialize an audit workspace session',
     description:
-      'Record your own explicit yes or no for this workspace visit. No immediately revokes previous sharing. Requires the person’s own browser session.',
+      'Initialize or disable live audit view sharing for this workspace visit. Disabling revokes the previous session. Requires your own browser session.',
   })
   @ApiBody({ type: AuditViewConsentDto })
   consent(
@@ -36,9 +36,9 @@ export class AuditLiveController {
   @RequirePermission('auditWorkspace', 'read')
   @ApiExtension('x-speakeasy-mcp', { disabled: true })
   @ApiOperation({
-    summary: 'Connect a live audit view',
+    summary: 'Connect an audit workspace session',
     description:
-      'Issue a single-use 20-second WebSocket ticket. Publishing requires your current consent; observing requires auditWorkspace:observe. Requires a browser session.',
+      'Issue a single-use 20-second WebSocket ticket for your browser session. Publish with a session nonce; observe with auditWorkspace:observe permission.',
   })
   @ApiBody({ type: AuditLiveTicketDto })
   ticket(

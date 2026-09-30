@@ -27175,82 +27175,6 @@
         }
       }
     },
-    "/v1/audit-workspace/live/consent": {
-      "post": {
-        "description": "Record your own explicit yes or no for this workspace visit. No immediately revokes previous sharing. Requires the person’s own browser session.",
-        "operationId": "AuditLiveController_consent_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AuditViewConsentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "summary": "Choose audit view sharing",
-        "tags": [
-          "Audit workspace"
-        ],
-        "x-speakeasy-mcp": {
-          "disabled": true
-        },
-        "x-mint": {
-          "metadata": {
-            "title": "Choose audit view sharing | Comp AI API",
-            "sidebarTitle": "Choose audit view sharing",
-            "description": "Record your own explicit yes or no for this workspace visit. No immediately revokes previous sharing. Requires the person’s own browser session.",
-            "og:title": "Choose audit view sharing | Comp AI API",
-            "og:description": "Record your own explicit yes or no for this workspace visit. No immediately revokes previous sharing. Requires the person’s own browser session."
-          }
-        }
-      }
-    },
-    "/v1/audit-workspace/live/ticket": {
-      "post": {
-        "description": "Issue a single-use 20-second WebSocket ticket. Publishing requires your current consent; observing requires auditWorkspace:observe. Requires a browser session.",
-        "operationId": "AuditLiveController_ticket_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AuditLiveTicketDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "summary": "Connect a live audit view",
-        "tags": [
-          "Audit workspace"
-        ],
-        "x-speakeasy-mcp": {
-          "disabled": true
-        },
-        "x-mint": {
-          "metadata": {
-            "title": "Connect a live audit view | Comp AI API",
-            "sidebarTitle": "Connect a live audit view",
-            "description": "Issue a single-use 20-second WebSocket ticket. Publishing requires your current consent; observing requires auditWorkspace:observe. Requires a browser.",
-            "og:title": "Connect a live audit view | Comp AI API",
-            "og:description": "Issue a single-use 20-second WebSocket ticket. Publishing requires your current consent; observing requires auditWorkspace:observe. Requires a browser."
-          }
-        }
-      }
-    },
     "/v1/audit-workspace/evidence/{id}/preview": {
       "get": {
         "description": "Get short-lived preview and download links for the exact published PDF version attached to a check. Never substitutes a newer version.",
@@ -27341,6 +27265,309 @@
             "description": "Confirm completed sampling and the saved conclusion under your own name. Blocks unfinished checks and requests. Does not publish or approve the document.",
             "og:title": "Complete your internal audit | Comp AI API",
             "og:description": "Confirm completed sampling and the saved conclusion under your own name. Blocks unfinished checks and requests. Does not publish or approve the document."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/session/initialize": {
+      "post": {
+        "description": "Initialize or disable live audit view sharing for this workspace visit. Disabling revokes the previous session. Requires your own browser session.",
+        "operationId": "AuditLiveController_consent_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditViewConsentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Initialize an audit workspace session",
+        "tags": [
+          "Audit workspace"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Initialize an audit workspace session | Comp AI API",
+            "sidebarTitle": "Initialize an audit workspace session",
+            "description": "Initialize or disable live audit view sharing for this workspace visit. Disabling revokes the previous session. Requires your own browser session.",
+            "og:title": "Initialize an audit workspace session | Comp AI API",
+            "og:description": "Initialize or disable live audit view sharing for this workspace visit. Disabling revokes the previous session. Requires your own browser session."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/session/ticket": {
+      "post": {
+        "description": "Issue a single-use 20-second WebSocket ticket for your browser session. Publish with a session nonce; observe with auditWorkspace:observe permission.",
+        "operationId": "AuditLiveController_ticket_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditLiveTicketDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Connect an audit workspace session",
+        "tags": [
+          "Audit workspace"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Connect an audit workspace session | Comp AI API",
+            "sidebarTitle": "Connect an audit workspace session",
+            "description": "Issue a single-use 20-second WebSocket ticket for your browser session. Publish with a session nonce; observe with auditWorkspace:observe permission.",
+            "og:title": "Connect an audit workspace session | Comp AI API",
+            "og:description": "Issue a single-use 20-second WebSocket ticket for your browser session. Publish with a session nonce; observe with auditWorkspace:observe permission."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/research/audits/{id}/threads": {
+      "get": {
+        "description": "Browser session: list shared research conversations for an audit and the configured AI model. Requires read access to all research source categories.",
+        "operationId": "AuditResearchController_list_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List saved audit research topics",
+        "tags": [
+          "Audit Research"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "List saved audit research topics | Comp AI API",
+            "sidebarTitle": "List saved audit research topics",
+            "description": "Browser session: list shared research conversations for an audit and the configured AI model. Requires read access to all research source categories.",
+            "og:title": "List saved audit research topics | Comp AI API",
+            "og:description": "Browser session: list shared research conversations for an audit and the configured AI model. Requires read access to all research source categories."
+          }
+        }
+      },
+      "post": {
+        "description": "Browser session: create a permanently saved research topic shared with authorized audit team members. Does not change evidence or audit conclusions.",
+        "operationId": "AuditResearchController_create_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditResearchThreadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Create an audit research topic",
+        "tags": [
+          "Audit Research"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Create an audit research topic | Comp AI API",
+            "sidebarTitle": "Create an audit research topic",
+            "description": "Browser session: create a permanently saved research topic shared with authorized audit team members. Does not change evidence or audit conclusions.",
+            "og:title": "Create an audit research topic | Comp AI API",
+            "og:description": "Browser session: create a permanently saved research topic shared with authorized audit team members. Does not change evidence or audit conclusions."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/research/threads/{id}": {
+      "get": {
+        "description": "Browser session: retrieve saved questions, answers, source excerpts and progress. Poll this endpoint while a research turn is running; interrupted partial answers remain saved.",
+        "operationId": "AuditResearchController_get_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Read audit research history",
+        "tags": [
+          "Audit Research"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Read audit research history | Comp AI API",
+            "sidebarTitle": "Read audit research history",
+            "description": "Browser session: retrieve saved questions, answers, source excerpts and progress. Poll this endpoint while a research turn is running; interrupted partial.",
+            "og:title": "Read audit research history | Comp AI API",
+            "og:description": "Browser session: retrieve saved questions, answers, source excerpts and progress. Poll this endpoint while a research turn is running; interrupted partial."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/research/threads/{id}/turns/{turnId}/sources/{label}": {
+      "get": {
+        "description": "Browser session: read the exact source excerpt retained with an AI answer, including its version and retrieval date. Requires access to all research source categories.",
+        "operationId": "AuditResearchController_source_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "turnId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "label",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Read a captured research source",
+        "tags": [
+          "Audit Research"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Read a captured research source | Comp AI API",
+            "sidebarTitle": "Read a captured research source",
+            "description": "Browser session: read the exact source excerpt retained with an AI answer, including its version and retrieval date. Requires access to all research source.",
+            "og:title": "Read a captured research source | Comp AI API",
+            "og:description": "Browser session: read the exact source excerpt retained with an AI answer, including its version and retrieval date. Requires access to all research source."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/research/threads/{id}/turns": {
+      "post": {
+        "description": "Browser session: start a read-only AI research turn. Returns runId; poll GET research/threads/{id}. Reuse requestId after an uncertain network outcome to avoid duplicate generation.",
+        "operationId": "AuditResearchController_ask_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditResearchPromptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "summary": "Ask an audit research question",
+        "tags": [
+          "Audit Research"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Ask an audit research question | Comp AI API",
+            "sidebarTitle": "Ask an audit research question",
+            "description": "Browser session: start a read-only AI research turn. Returns runId; poll GET research/threads/{id}. Reuse requestId after an uncertain network outcome.",
+            "og:title": "Ask an audit research question | Comp AI API",
+            "og:description": "Browser session: start a read-only AI research turn. Returns runId; poll GET research/threads/{id}. Reuse requestId after an uncertain network outcome."
           }
         }
       }
@@ -32523,7 +32750,7 @@
         "properties": {
           "allowed": {
             "type": "boolean",
-            "description": "The signed-in person’s explicit choice for this audit workspace visit."
+            "description": "Whether live audit view sharing is enabled for this workspace visit."
           }
         },
         "required": [
@@ -32539,11 +32766,11 @@
               "publish",
               "observe"
             ],
-            "description": "Publish a consented audit view or observe as an authorized administrator."
+            "description": "Publish an initialized audit view or observe as an authorized administrator."
           },
           "nonce": {
             "type": "string",
-            "description": "Consent nonce returned by the person’s own consent decision. Required to publish."
+            "description": "Session nonce returned by workspace initialization. Required to publish."
           }
         },
         "required": [
@@ -32568,6 +32795,37 @@
         "required": [
           "expectedUpdatedAt",
           "confirmed"
+        ]
+      },
+      "AuditResearchThreadDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Short topic for a persistent audit research conversation.",
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "AuditResearchPromptDto": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Question to research against organization evidence.",
+            "maxLength": 6000
+          },
+          "requestId": {
+            "type": "string",
+            "description": "Client-generated UUID. Reuse it when retrying an uncertain HTTP outcome."
+          }
+        },
+        "required": [
+          "prompt",
+          "requestId"
         ]
       }
     }

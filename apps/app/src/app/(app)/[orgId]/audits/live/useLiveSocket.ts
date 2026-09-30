@@ -47,7 +47,7 @@ export function useLiveSocket({
     const connect = async () => {
       if (disposed) return;
       const response = await apiClient.post<{ ticket: string }>(
-        '/v1/audit-workspace/live/ticket',
+        '/v1/audit-workspace/session/ticket',
         { mode, ...(nonce ? { nonce } : {}) },
         organizationId,
       );
@@ -63,7 +63,7 @@ export function useLiveSocket({
         return;
       }
       const url = new URL(
-        '/v1/audit-workspace/live/socket',
+        '/v1/audit-workspace/session/socket',
         env.NEXT_PUBLIC_API_URL || 'http://localhost:3333',
       );
       url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:';

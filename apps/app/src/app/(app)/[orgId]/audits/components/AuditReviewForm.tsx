@@ -149,11 +149,11 @@ export function AuditReviewForm({
     <form
       data-audit-live-target="review"
       onSubmit={handleComplete}
-      className="space-y-5 rounded-xl border bg-background p-6 shadow-sm xl:sticky xl:top-6"
+      className="audit-surface min-w-0 space-y-5 p-5 sm:p-6 xl:sticky xl:top-6"
     >
-      <div className="flex items-center justify-between">
+      <div className="audit-detail-heading flex items-center justify-between">
         <Text weight="medium">Your review</Text>
-        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+        <span className="rounded-full bg-primary/5 px-2.5 py-1 text-xs font-medium text-primary text-muted-foreground">
           Auto-save
         </span>
       </div>

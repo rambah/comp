@@ -59,7 +59,7 @@ export class AuditLiveGateway
     socket: Duplex,
     head: Buffer,
   ) => {
-    if (request.url?.split('?')[0] !== '/v1/audit-workspace/live/socket')
+    if (request.url?.split('?')[0] !== '/v1/audit-workspace/session/socket')
       return;
     const origin = request.headers.origin;
     // Browser origin validation is independent of the single-use session ticket.

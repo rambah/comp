@@ -1,15 +1,16 @@
 'use client';
 import { usePermissions } from '@/hooks/use-permissions';
 import { PageLayout } from '@trycompai/design-system';
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
+import '../audit-workspace.css';
 import { AuditFollowBar } from '../live/AuditFollowBar';
-import { AuditSharingConsent, type SharingChoice } from '../live/AuditSharingConsent';
 import type { AuditLiveView } from '../live/live-types';
-import { applyPanelScroll } from '../live/panel-scroll';
 import { RemotePointer } from '../live/RemotePointer';
-import { auditScrollContainer } from '../live/scroll-container';
 import { useAuditBroadcast } from '../live/useAuditBroadcast';
 import { useAuditObserver } from '../live/useAuditObserver';
+import { useAuditSharing } from '../live/useAuditSharing';
+import { useFollowedAuditView } from '../live/useFollowedAuditView';
+import { AuditResearch } from '../research/AuditResearch';
 import { useAuditDraftGuard } from '../useAuditDraftGuard';
 import { useAuditWorkspace } from '../useAuditWorkspace';
 import { auditRevision, nextCheck, type WorkspaceData } from '../workspace-types';
@@ -37,12 +38,10 @@ export function AuditWorkspace({
     initialData,
   });
   const { hasPermission } = usePermissions();
-  const [choice, setChoice] = useState<SharingChoice | null>(null);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [sharingPaused, setSharingPaused] = useState(false);
+  const sharingSession = useAuditSharing(organizationId);
   const root = useRef<HTMLDivElement>(null);
   const canObserve = hasPermission('auditWorkspace', 'observe');
-  const observer = useAuditObserver({ organizationId, enabled: canObserve && choice !== null });
+  const observer = useAuditObserver({ organizationId, enabled: canObserve });
   const canEdit = hasPermission('auditWorkspace', 'update') && !observer.following;
   const [focusedFinding, setFocusedFinding] = useState<{ id: string } | null>(null);
   const [compareId, setCompareId] = useState<string | null>(null);
@@ -51,38 +50,31 @@ export function AuditWorkspace({
   const [auditId, setAuditId] = useState(initialData?.audits[0]?.id ?? '');
   const [selected, setSelected] = useState<string | null>(null);
   const [tab, setTab] = useState<AuditLiveView['tab']>('checks');
+  const [researchThread, setResearchThread] = useState<string | null>(null);
+  const [researchSource, setResearchSource] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   useAuditDraftGuard(busy);
   const audit = data?.audits.find((a) => a.id === auditId) ?? data?.audits[0];
   const check = audit?.controls.find((c) => c.id === selected);
   const registerUrl = `/${organizationId}/documents/isms/internal-audit`;
   const live = observer.current?.view;
-  useEffect(() => {
-    if (observer.following && live?.revision) void mutate();
-  }, [observer.following, live?.revision, mutate]);
-  useEffect(() => {
-    if (!live) return;
-    setAuditId(live.auditId);
-    setSelected(live.checkId);
-    setTab(live.tab);
-    setPreviewId(live.evidenceId);
-    setCompareId(live.compareEvidenceId ?? null);
-    setCheckLayout(live.checkLayout ?? 'list');
-    // Let the selected view and any portalled reader mount before restoring scroll positions.
-    const frame = requestAnimationFrame(() => {
-      const scrolling = auditScrollContainer(root.current);
-      if (scrolling)
-        scrolling.scrollTop =
-          live.scrollRatio * Math.max(0, scrolling.scrollHeight - scrolling.clientHeight);
-      applyPanelScroll(live.panelScroll);
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [live]);
+  useFollowedAuditView({
+    live,
+    following: !!observer.following,
+    mutate,
+    root,
+    setAuditId,
+    setSelected,
+    setTab,
+    setPreviewId,
+    setCompareId,
+    setCheckLayout,
+  });
   useAuditBroadcast({
     organizationId,
-    choice,
+    session: sharingSession,
     root,
-    paused: sharingPaused || !!observer.following || settingsOpen,
+    paused: !!observer.following || tab === 'research',
     view: audit
       ? {
           auditId: audit.id,
@@ -107,11 +99,13 @@ export function AuditWorkspace({
   };
   return (
     <PageLayout
+      data-audit-workspace
+      padding="lg"
       maxWidth="2xl"
       header={
         <AuditWorkspaceHeader
           audit={audit}
-          disabled={locked || choice === null || settingsOpen}
+          disabled={locked}
           registerUrl={registerUrl}
           onNavigate={(item) => {
             setCompareId(null);
@@ -120,25 +114,11 @@ export function AuditWorkspace({
             setPreviewId(item.evidenceId);
             setTab(item.tab);
           }}
-          onSettings={() => {
-            setSharingPaused(true);
-            setSettingsOpen(true);
-          }}
         />
       }
     >
       {canObserve && <AuditFollowBar observer={observer} disabled={busy} />}
       <div ref={root} className="relative space-y-6">
-        <AuditSharingConsent
-          organizationId={organizationId}
-          open={choice === null || settingsOpen}
-          onPause={() => setSharingPaused(true)}
-          onChoice={(value) => {
-            setChoice(value);
-            setSharingPaused(false);
-            setSettingsOpen(false);
-          }}
-        />
         {observer.following && observer.current && (
           <RemotePointer position={observer.pointer} root={root} name={observer.current.name} />
         )}
@@ -159,6 +139,8 @@ export function AuditWorkspace({
               onChange={(id) => {
                 setCompareId(null);
                 setAuditId(id);
+                setResearchThread(null);
+                setResearchSource(null);
                 setSelected(null);
                 setPreviewId(null);
               }}
@@ -174,6 +156,19 @@ export function AuditWorkspace({
                 setCompareId(null);
               }}
             />
+            {tab === 'research' && (
+              <AuditResearch
+                key={audit.id}
+                organizationId={organizationId}
+                auditId={audit.id}
+                canEdit={canEdit}
+                following={!!observer.following}
+                threadId={researchThread}
+                sourceKey={researchSource}
+                onThread={setResearchThread}
+                onSource={setResearchSource}
+              />
+            )}
             {tab === 'evidence' && (
               <AuditEvidenceLibrary
                 key={audit.id}

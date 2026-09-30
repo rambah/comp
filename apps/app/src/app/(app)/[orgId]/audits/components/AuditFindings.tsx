@@ -1,11 +1,13 @@
 'use client';
 import { Badge, Button, Text } from '@trycompai/design-system';
+import { Flag } from '@trycompai/design-system/icons';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import type { WorkspaceMutation } from '../workspace-types';
 import { formatAuditDate, type WorkspaceAudit, type WorkspaceData } from '../workspace-types';
 import { findingTypes } from './AuditFindingDialog';
 import { AuditFollowupDialog } from './AuditFollowupDialog';
+import { AuditEmptyState, AuditSectionHeading } from './AuditPresentation';
 export function AuditFindings({
   audit,
   focus,
@@ -39,26 +41,22 @@ export function AuditFindings({
   );
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <p className="mb-2 text-xs font-medium uppercase tracking-widest text-primary">
-            Findings & follow-up
-          </p>
-          <h2 className="text-xl font-semibold tracking-tight">From observation to resolution.</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            A clear owner, a next action and evidence of closure.
-          </p>
-        </div>
-        <Button variant="outline" render={<Link href={registerUrl} />}>
-          View audit programme
-        </Button>
-      </div>
-      <div className="flex gap-2">
+      <AuditSectionHeading
+        eyebrow="Findings & follow-up"
+        title="Turn observations into progress."
+        description="A clear owner, a next action and evidence of closure. Keep every finding moving forward."
+        actions={
+          <Button variant="outline" render={<Link href={registerUrl} />}>
+            View audit programme
+          </Button>
+        }
+      />
+      <div className="audit-toolbar">
         {(['open', 'closed', 'all'] as const).map((key) => (
           <Button
             key={key}
             size="sm"
-            variant={view === key ? 'default' : 'outline'}
+            variant={view === key ? 'secondary' : 'ghost'}
             aria-pressed={view === key}
             onClick={() => setView(key)}
           >
@@ -81,17 +79,17 @@ export function AuditFindings({
         </div>
       )}
       {!audit.findings.length && (
-        <div className="rounded-lg border border-dashed p-8">
-          <Text variant="muted">
-            No findings recorded. Raise a finding from the relevant check.
-          </Text>
-        </div>
+        <AuditEmptyState
+          icon={<Flag size={24} />}
+          title="Your observations belong here."
+          description="No findings recorded yet. Raise a finding from the relevant check to track ownership, follow-up and closure."
+        />
       )}
       {visible.map((f) => (
         <div
           key={f.id}
           id={`audit-finding-${f.id}`}
-          className={`space-y-4 rounded-xl border bg-background p-6 shadow-sm ${focusId === f.id ? 'ring-1 ring-primary/40' : ''}`}
+          className={`audit-card space-y-4 p-5 sm:p-6 ${focusId === f.id ? 'ring-1 ring-primary/40' : ''}`}
         >
           <div className="flex flex-wrap justify-between gap-2">
             <Text weight="medium">
@@ -99,14 +97,16 @@ export function AuditFindings({
             </Text>
             <Badge variant="secondary">{f.status.replaceAll('_', ' ')}</Badge>
           </div>
-          <p className="max-w-4xl whitespace-pre-wrap text-sm leading-7">{f.description}</p>
+          <p className="max-w-4xl whitespace-pre-wrap break-words text-sm leading-7">
+            {f.description}
+          </p>
           <Text size="xs" variant="muted">
             {f.clauseOrControl} ·{' '}
             {members.find((m) => m.id === f.ownerMemberId)?.name || 'Unassigned'} · Due{' '}
             {formatAuditDate(f.dueDate)}
           </Text>
           {f.closureEvidence && (
-            <p className="whitespace-pre-wrap rounded-md bg-muted/30 p-3 text-sm">
+            <p className="whitespace-pre-wrap break-words rounded-xl bg-primary/5 p-4 text-sm leading-6">
               Closure evidence: {f.closureEvidence}
             </p>
           )}

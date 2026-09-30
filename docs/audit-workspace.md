@@ -61,10 +61,10 @@ permissions. Creating a finding retains the existing `finding:create` restrictio
 Live consent, tickets and auditor completion require the user's own browser
 session; impersonation and MCP/API-key callers cannot perform those actions.
 
-At every workspace visit a non-dismissible Yes/No notice explains live following.
-No leaves the full audit workspace available. Audit settings lets the person
-change their choice. No live data is sent before consent. The notice explicitly
-states that there is no ongoing viewer indicator.
+Live following starts automatically on each workspace visit without a confirmation
+dialog. The browser initializes a sharing session through the existing live access
+endpoint before publishing. The workspace stays usable if initialization fails.
+There is no ongoing viewer indicator. Leaving the workspace ends transmission.
 
 Following shares the current audit, check, tab, linked evidence preview, scroll
 position and pointer. It renders saved audit records in a read-only view; it is
@@ -86,11 +86,13 @@ saving works independently of the live service.
    normal prebuild copies the shared Prisma schema and generates its client.
 3. Configure the existing `UPSTASH_REDIS_REST_URL` and
    `UPSTASH_REDIS_REST_TOKEN` on each API replica. REST Pub/Sub must be supported.
-4. Allow WebSocket upgrades at `/v1/audit-workspace/live/socket` through the API
+4. Allow WebSocket upgrades at `/v1/audit-workspace/session/socket` through the API
    reverse proxy, use TLS, and allow the app origin in the existing trusted-origin
    configuration. Do not cache the socket or live ticket endpoints.
-5. Verify a real auditor and an owner in separate browser sessions: No sends no
-   live frames; Yes enables following; changing to No stops it; removing access
+   Deploy API and frontend together for the session endpoint rename, and update
+   any proxy rules that previously matched `/v1/audit-workspace/live/socket`.
+5. Verify a real auditor and an owner in separate browser sessions: opening the
+   workspace enables following without a prompt; leaving stops it; removing access
    terminates it. Check cross-replica following and reconnect after a proxy restart.
 
 Without Redis or WebSocket proxy support, the audit workflow remains usable but
@@ -101,7 +103,7 @@ live following is unavailable. The owner sees the disconnected state.
 API tests cover tenant isolation, consent, revocation, bounded queues, review
 conflicts, exact-version previews, completion and OpenAPI contracts. Real local
 WebSocket tests cover handshake tickets, replay rejection and payload validation;
-their Redis transport is mocked. Frontend tests cover consent, reconnect, stale
+their Redis transport is mocked. Frontend tests cover automatic sharing, reconnect, stale
 views, autosave/conflicts and route permissions. The additive migration was
 applied to an isolated PostgreSQL fixture including existing records and cascade
 checks. Chrome component checks use synthetic data, not the production database.

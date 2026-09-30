@@ -1,6 +1,5 @@
 'use client';
 import {
-  Badge,
   Button,
   Input,
   Select,
@@ -20,6 +19,7 @@ import { useState } from 'react';
 import { CHECK_LABELS, checkStatus, type WorkspaceAudit } from '../workspace-types';
 import { AuditAttention } from './AuditAttention';
 import { AuditOverview } from './AuditOverview';
+import { AuditCheckStatus } from './AuditPresentation';
 import { AuditReviewBoard } from './AuditReviewBoard';
 
 export function AuditQueue({
@@ -48,7 +48,7 @@ export function AuditQueue({
       `${c.controlRef} ${c.whatWasTested}`.toLowerCase().includes(search.toLowerCase()),
   );
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <AuditOverview
         audit={audit}
         onSelect={onSelect}
@@ -60,19 +60,24 @@ export function AuditQueue({
         className={`grid items-start gap-6 ${layout === 'list' ? 'xl:grid-cols-[minmax(0,1fr)_300px]' : ''}`}
       >
         <section className="min-w-0 space-y-4">
-          <div className="flex items-baseline justify-between">
-            <h2 className="text-lg font-semibold tracking-tight">Your review plan</h2>
+          <div className="flex flex-wrap items-baseline justify-between gap-2">
+            <div>
+              <h2 className="text-lg font-semibold tracking-tight">Your review plan</h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                One check at a time. Every decision backed by evidence.
+              </p>
+            </div>
             <span className="text-xs text-muted-foreground">
               {visible.length} of {audit.controls.length} checks
             </span>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap gap-2" aria-label="Quick check filters">
+            <div className="flex flex-wrap gap-1" aria-label="Quick check filters">
               {(['all', 'ready', 'waiting', 'no_evidence'] as const).map((key) => (
                 <Button
                   key={key}
                   size="sm"
-                  variant={filter === key ? 'default' : 'outline'}
+                  variant={filter === key ? 'secondary' : 'ghost'}
                   aria-pressed={filter === key}
                   onClick={() => setFilter(key)}
                 >
@@ -115,8 +120,8 @@ export function AuditQueue({
               </Button>
             </div>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <div className="min-w-48 flex-1">
+          <div className="audit-toolbar">
+            <div className="w-full min-w-0 flex-1 sm:min-w-48">
               <Input
                 aria-label="Search audit checks"
                 placeholder="Find a check, criterion or keyword…"
@@ -124,7 +129,7 @@ export function AuditQueue({
                 onChange={(e) => setSearch(e.target.value)}
               />
             </div>
-            <div className="w-52">
+            <div className="w-full sm:w-52">
               <Select
                 value={filter}
                 onValueChange={(v) =>
@@ -152,10 +157,23 @@ export function AuditQueue({
               </Select>
             </div>
           </div>
-          {layout === 'board' ? (
+          {!visible.length && layout === 'board' ? (
+            <div className="audit-surface p-10 text-center">
+              <p className="mb-4 text-sm text-muted-foreground">No checks match this view.</p>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSearch('');
+                  setFilter('all');
+                }}
+              >
+                Clear filters
+              </Button>
+            </div>
+          ) : layout === 'board' ? (
             <AuditReviewBoard checks={visible} onSelect={onSelect} />
           ) : (
-            <div className="overflow-x-auto rounded-lg border">
+            <div className="audit-surface overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -179,9 +197,7 @@ export function AuditQueue({
                         </p>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={checkStatus(c) === 'reviewed' ? 'default' : 'secondary'}>
-                          {CHECK_LABELS[checkStatus(c)]}
-                        </Badge>
+                        <AuditCheckStatus status={checkStatus(c)} />
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2 text-muted-foreground">

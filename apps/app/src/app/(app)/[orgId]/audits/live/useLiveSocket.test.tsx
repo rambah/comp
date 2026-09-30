@@ -52,7 +52,7 @@ describe('Live socket lifecycle', () => {
     hook.rerender(options);
     await flush();
     const socket = FakeSocket.instances[0];
-    expect(socket.url).toBe('wss://api.example.test/v1/audit-workspace/live/socket');
+    expect(socket.url).toBe('wss://api.example.test/v1/audit-workspace/session/socket');
     act(() => socket.onopen?.());
     expect(socket.send).toHaveBeenCalledWith(JSON.stringify({ ticket: 'single-use' }));
     hook.unmount();

@@ -11,9 +11,9 @@ export function AuditProgressRing({
 }) {
   const length = 2 * Math.PI * 54;
   return (
-    <div className="flex flex-col items-center justify-center gap-3 p-6 sm:p-8">
+    <div className="flex items-center justify-center gap-5 p-5 sm:p-6 md:flex-col md:gap-2.5">
       <div
-        className="relative h-36 w-36"
+        className="relative h-28 w-28 shrink-0 md:h-32 md:w-32"
         role="progressbar"
         aria-label="Checks with a recorded outcome"
         aria-valuenow={reviewed + excluded}
@@ -48,19 +48,21 @@ export function AuditProgressRing({
             {progress}
             <span className="text-lg">%</span>
           </span>
-          <span className="mt-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          <span className="mt-1 text-[10px] font-medium text-muted-foreground">
             Review progress
           </span>
         </div>
       </div>
-      <p className="text-sm">
-        <strong>{reviewed}</strong> reviewed{' '}
-        <span className="text-muted-foreground">of {total} checks</span>
-      </p>
-      <p className="max-w-52 text-center text-[11px] leading-5 text-muted-foreground">
-        {excluded ? `${excluded} explicitly not sampled. ` : ''}Recorded outcomes, not a compliance
-        score.
-      </p>
+      <div className="space-y-2 md:text-center">
+        <p className="text-sm">
+          <strong>{reviewed}</strong> reviewed{' '}
+          <span className="text-muted-foreground">of {total} checks</span>
+        </p>
+        <p className="max-w-52 text-xs leading-5 text-muted-foreground">
+          {excluded ? `${excluded} explicitly not sampled. ` : ''}Recorded outcomes, not a
+          compliance score.
+        </p>
+      </div>
     </div>
   );
 }

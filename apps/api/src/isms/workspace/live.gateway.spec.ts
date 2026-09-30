@@ -49,7 +49,7 @@ describe('Live gateway over a real WebSocket', () => {
     const address = http.address();
     if (!address || typeof address === 'string')
       throw new Error('Missing test server port');
-    url = `ws://127.0.0.1:${address.port}/v1/audit-workspace/live/socket`;
+    url = `ws://127.0.0.1:${address.port}/v1/audit-workspace/session/socket`;
     gateway = new AuditLiveGateway(
       {
         httpAdapter: { getHttpServer: () => http },

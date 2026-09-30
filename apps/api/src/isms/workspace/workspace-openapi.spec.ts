@@ -1,3 +1,6 @@
+import { AuditResearchController } from './research/research.controller';
+import { AuditResearchService } from './research/research.service';
+jest.mock('./research/research-runner.service', () => ({ AuditResearchRunner: class {} }));
 import { AuditWorkspaceFinish } from './workspace-finish.service';
 import 'reflect-metadata';
 import { VersioningType } from '@nestjs/common';
@@ -43,10 +46,11 @@ jest.mock('../../auth/permission.guard', () => ({
 }));
 
 describe('Audit workspace API contract', () => {
-  it('documents all bodies, enforces permissions, and excludes consent from agent tools', async () => {
+  it('documents all bodies, enforces permissions, and excludes browser sessions from agent tools', async () => {
     const module = await Test.createTestingModule({
-      controllers: [AuditWorkspaceController, AuditLiveController],
+      controllers: [AuditWorkspaceController, AuditLiveController, AuditResearchController],
       providers: [
+        AuditResearchService,
         AuditWorkspaceService,
         AuditWorkspaceRequestsService,
         AuditWorkspaceEvidenceService,
@@ -81,7 +85,7 @@ describe('Audit workspace API contract', () => {
           ).toBeTruthy();
       }
     }
-    for (const controller of [AuditWorkspaceController, AuditLiveController]) {
+    for (const controller of [AuditWorkspaceController, AuditLiveController, AuditResearchController]) {
       for (const method of Object.getOwnPropertyNames(
         controller.prototype,
       ).filter((k) => k !== 'constructor')) {
@@ -93,8 +97,17 @@ describe('Audit workspace API contract', () => {
       }
     }
     expect(
-      spec.paths['/v1/audit-workspace/live/consent'].post?.['x-speakeasy-mcp'],
+      spec.paths['/v1/audit-workspace/session/initialize'].post?.[
+        'x-speakeasy-mcp'
+      ],
     ).toEqual({ disabled: true });
+    expect(
+      spec.paths['/v1/audit-workspace/session/ticket'].post?.[
+        'x-speakeasy-mcp'
+      ],
+    ).toEqual({ disabled: true });
+    expect(spec.paths['/v1/audit-workspace/live/consent']).toBeUndefined();
+    expect(spec.paths['/v1/audit-workspace/live/ticket']).toBeUndefined();
     expect(spec.components?.schemas?.AuditViewConsentDto).toEqual(
       expect.objectContaining({ required: ['allowed'] }),
     );
@@ -114,6 +127,8 @@ describe('Audit workspace API contract', () => {
       );
       const existing = JSON.parse(readFileSync(path, 'utf8'));
       applyPublicOpenApiMetadata(spec);
+      delete existing.paths['/v1/audit-workspace/live/consent'];
+      delete existing.paths['/v1/audit-workspace/live/ticket'];
       Object.assign(existing.paths, spec.paths);
       Object.assign(existing.components.schemas, spec.components?.schemas);
       writeFileSync(path, JSON.stringify(existing, null, 2));

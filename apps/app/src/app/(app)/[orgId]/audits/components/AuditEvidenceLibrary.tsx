@@ -21,6 +21,7 @@ import {
 } from '../audit-evidence';
 import { formatAuditDate, type WorkspaceAudit } from '../workspace-types';
 import { AuditEvidenceCompare } from './AuditEvidenceCompare';
+import { AuditMetric, AuditSectionHeading } from './AuditPresentation';
 import { EvidenceSnapshot } from './EvidenceSnapshot';
 export function AuditEvidenceLibrary({
   audit,
@@ -66,26 +67,21 @@ export function AuditEvidenceLibrary({
   };
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div>
-          <p className="mb-2 text-xs font-medium uppercase tracking-widest text-primary">
-            Evidence library
-          </p>
-          <h2 className="text-2xl font-semibold tracking-tight">Every source. In context.</h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-            Find the version used in your review, trace it to a check, and compare retained text
-            without losing your place.
-          </p>
-        </div>
-        <Button
-          variant="outline"
-          iconLeft={<Download size={16} />}
-          onClick={handleExport}
-          disabled={!entries.length}
-        >
-          Export evidence index
-        </Button>
-      </div>
+      <AuditSectionHeading
+        eyebrow="Evidence library"
+        title="Every source, connected."
+        description="Find the exact version behind a review. Read, compare and trace evidence back to its check."
+        actions={
+          <Button
+            variant="outline"
+            iconLeft={<Download size={16} />}
+            onClick={handleExport}
+            disabled={!entries.length}
+          >
+            Export evidence index
+          </Button>
+        }
+      />
       <div className="grid gap-3 sm:grid-cols-3">
         {[
           [String(entries.length), 'Evidence references', 'Every link retains its check context'],
@@ -100,15 +96,11 @@ export function AuditEvidenceLibrary({
             'Documents, policies and files',
           ],
         ].map(([value, title, detail]) => (
-          <div key={title} className="rounded-xl border bg-muted/15 p-5">
-            <p className="text-2xl font-semibold tabular-nums">{value}</p>
-            <h3 className="mt-1 text-sm font-medium">{title}</h3>
-            <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
-          </div>
+          <AuditMetric key={title} value={value} label={title} detail={detail} />
         ))}
       </div>
-      <div className="flex flex-wrap gap-3">
-        <div className="min-w-56 flex-1">
+      <div className="audit-toolbar">
+        <div className="w-full min-w-0 flex-1 sm:min-w-56">
           <Input
             aria-label="Search evidence library"
             placeholder="Search by title, version or check…"
@@ -116,7 +108,7 @@ export function AuditEvidenceLibrary({
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
-        <div className="w-48">
+        <div className="w-full sm:w-48">
           <Select value={type} onValueChange={(value) => setType(value ?? 'all')}>
             <SelectTrigger aria-label="Evidence type">
               <SelectValue>
@@ -139,12 +131,9 @@ export function AuditEvidenceLibrary({
           const { evidence: e, check } = entry;
           const comparisons = comparableEvidence({ entry, entries });
           return (
-            <article
-              key={e.id}
-              className="flex flex-col rounded-xl border bg-background shadow-sm transition-colors hover:border-primary/30"
-            >
-              <div className="flex flex-1 items-start gap-4 p-5">
-                <div className="rounded-xl border bg-primary/5 p-3 text-primary">
+            <article key={e.id} className="audit-card flex min-w-0 flex-col overflow-hidden">
+              <div className="flex flex-1 items-start gap-3 p-4 sm:gap-4 sm:p-5">
+                <div className="shrink-0 rounded-xl bg-primary/5 p-3 text-primary">
                   <Document size={23} />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -207,7 +196,7 @@ export function AuditEvidenceLibrary({
         })}
       </div>
       {!filtered.length && (
-        <div className="rounded-xl border border-dashed p-12 text-center">
+        <div className="audit-surface px-5 py-12 text-center">
           <h3 className="text-base font-medium">
             {entries.length ? 'No matching evidence' : 'Build your evidence trail'}
           </h3>

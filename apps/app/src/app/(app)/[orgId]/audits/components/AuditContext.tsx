@@ -7,8 +7,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@trycompai/design-system';
-import { Calendar, DocumentTasks, User } from '@trycompai/design-system/icons';
+import { Calendar, DocumentTasks } from '@trycompai/design-system/icons';
 import { formatAuditDate, type WorkspaceAudit } from '../workspace-types';
+
 export function AuditContext({
   audit,
   audits,
@@ -22,18 +23,27 @@ export function AuditContext({
   canEdit: boolean;
   onChange: (id: string) => void;
 }) {
+  const name = audit.auditorName || 'Auditor not assigned';
+  const initials =
+    audit.auditorName
+      ?.split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((part) => part[0])
+      .join('') || '—';
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border bg-muted/15 px-5 py-4">
-      <div className="flex min-w-0 items-center gap-3">
-        <div className="hidden rounded-lg border bg-background p-2.5 text-primary sm:block">
-          <DocumentTasks size={22} />
+    <section
+      aria-label="Current audit"
+      className="audit-surface flex flex-wrap items-center justify-between gap-5 p-4 sm:px-6 sm:py-5"
+    >
+      <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+        <div className="hidden rounded-xl bg-primary/5 p-3 text-primary sm:block">
+          <DocumentTasks size={24} />
         </div>
-        <div className="space-y-1.5">
-          <p className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
-            Internal audit programme
-          </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="w-44">
+        <div className="min-w-0 space-y-2">
+          <p className="audit-eyebrow">Current audit</p>
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="w-44 max-w-full">
               <Select value={audit.id} disabled={locked} onValueChange={(v) => v && onChange(v)}>
                 <SelectTrigger aria-label="Select audit">
                   <SelectValue>{audit.reference}</SelectValue>
@@ -47,23 +57,43 @@ export function AuditContext({
                 </SelectContent>
               </Select>
             </div>
-            <Badge variant={audit.status === 'complete' ? 'default' : 'secondary'}>
-              {audit.status.replaceAll('_', ' ')}
-            </Badge>
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/5 px-2.5 py-1 text-xs font-medium text-primary">
+              <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-current" />
+              {audit.status === 'complete'
+                ? 'Completed'
+                : audit.status === 'in_progress'
+                  ? 'In progress'
+                  : audit.status.replaceAll('_', ' ')}
+            </span>
             {!canEdit && <Badge variant="outline">Read-only</Badge>}
           </div>
         </div>
       </div>
-      <div className="flex flex-wrap gap-x-6 gap-y-2 text-xs text-muted-foreground">
-        <span className="flex items-center gap-2">
-          <User size={15} />
-          {audit.auditorName || 'Auditor not assigned'}
-        </span>
-        <span className="flex items-center gap-2">
-          <Calendar size={15} />
-          {formatAuditDate(audit.plannedStartDate)} — {formatAuditDate(audit.plannedEndDate)}
-        </span>
+      <div className="flex flex-wrap items-center gap-5 sm:gap-8">
+        <div className="flex min-w-0 items-center gap-2.5">
+          <span
+            aria-hidden="true"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border bg-muted/60 text-xs font-semibold"
+          >
+            {initials}
+          </span>
+          <div className="min-w-0">
+            <p className="text-xs text-muted-foreground">Lead auditor</p>
+            <p className="mt-1 max-w-48 truncate text-sm font-medium" title={name}>
+              {name}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2.5">
+          <Calendar size={18} className="text-muted-foreground" />
+          <div>
+            <p className="text-xs text-muted-foreground">Audit period</p>
+            <p className="mt-1 text-sm font-medium">
+              {formatAuditDate(audit.plannedStartDate)} – {formatAuditDate(audit.plannedEndDate)}
+            </p>
+          </div>
+        </div>
       </div>
-    </div>
+    </section>
   );
 }

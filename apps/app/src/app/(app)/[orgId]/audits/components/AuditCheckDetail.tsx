@@ -1,12 +1,11 @@
 'use client';
 import { usePermissions } from '@/hooks/use-permissions';
-import { Badge, Button, Heading, Section, Text } from '@trycompai/design-system';
+import { Button, Heading, Section, Text } from '@trycompai/design-system';
 import { Add, Document, Launch } from '@trycompai/design-system/icons';
 import Link from 'next/link';
 import { useCallback, useState } from 'react';
 import { checkSourceRoutes } from '../check-source-routes';
 import {
-  CHECK_LABELS,
   checkStatus,
   type AuditCheck,
   type WorkspaceAudit,
@@ -14,6 +13,7 @@ import {
   type WorkspaceMutation,
 } from '../workspace-types';
 import { AuditFindingDialog } from './AuditFindingDialog';
+import { AuditCheckStatus } from './AuditPresentation';
 import { AuditRequestDialog } from './AuditRequestDialog';
 import { AuditRequests } from './AuditRequests';
 import { AuditReviewForm } from './AuditReviewForm';
@@ -60,15 +60,15 @@ export function AuditCheckDetail({
   );
   return (
     <div data-audit-live-target="check-detail" className="space-y-6">
-      <div className="space-y-3 rounded-xl border bg-muted/15 p-6">
+      <div className="audit-surface audit-focus-card space-y-3 p-5 sm:p-7">
         <div className="flex flex-wrap items-center gap-3">
           <Heading level="2">{check.controlRef}</Heading>
-          <Badge variant="secondary">{CHECK_LABELS[checkStatus(check)]}</Badge>
+          <AuditCheckStatus status={checkStatus(check)} />
         </div>
         <Text variant="muted">{check.whatWasTested}</Text>
       </div>
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_420px]">
-        <div className="min-w-0 space-y-7 rounded-xl border bg-background p-6">
+        <div className="audit-surface min-w-0 space-y-8 p-5 sm:p-7">
           <Section
             title="Where to look"
             description={check.whereToFind || 'Link the source records used to test this check.'}
@@ -108,7 +108,7 @@ export function AuditCheckDetail({
               {check.evidenceLinks.map((e) => (
                 <div
                   key={e.id}
-                  className="flex items-center justify-between gap-3 rounded-lg border bg-muted/10 p-4 transition-colors hover:bg-muted/30"
+                  className="audit-card flex flex-wrap items-center justify-between gap-3 p-4"
                 >
                   <div className="flex min-w-0 items-start gap-3">
                     <Document size={20} />

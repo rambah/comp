@@ -19,7 +19,7 @@ export function AuditWorkspaceState({
       {error && (
         <div
           role="alert"
-          className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-muted/20 p-5"
+          className="flex flex-wrap items-center justify-between gap-3 audit-surface p-5"
         >
           <div>
             <p className="text-sm font-medium">We couldn't refresh this workspace.</p>
@@ -40,7 +40,7 @@ export function AuditWorkspaceState({
         </div>
       )}
       {empty && (
-        <section className="flex flex-col items-center rounded-xl border bg-gradient-to-b from-primary/5 to-background px-6 py-16 text-center">
+        <section className="audit-surface audit-focus-card flex flex-col items-center px-6 py-16 text-center">
           <div className="mb-5 rounded-xl border bg-background p-4 text-primary">
             <DocumentTasks size={28} />
           </div>

@@ -47,18 +47,18 @@ export function AuditReadiness({
     },
   ];
   return (
-    <section className="rounded-xl border bg-background p-6">
+    <section className="audit-surface p-5 sm:p-6">
       <div className="mb-5 flex items-baseline justify-between gap-3">
         <h3 className="text-sm font-semibold">Completion checklist</h3>
         <span className="text-xs text-muted-foreground">
           {rows.filter((r) => r.complete).length} / {rows.length}
         </span>
       </div>
-      <ol className="space-y-5">
+      <ol className="space-y-6">
         {rows.map((r, i) => (
           <li key={r.title} className="flex items-start gap-3">
             <span
-              className={`mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs ${r.complete ? 'bg-primary/10 text-primary' : 'border text-muted-foreground'}`}
+              className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs ${r.complete ? 'bg-primary/10 text-primary' : 'border text-muted-foreground'}`}
             >
               {r.complete ? <Checkmark size={15} /> : i + 1}
             </span>

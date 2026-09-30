@@ -23,90 +23,132 @@ export function AuditOverview({
   const title = finished
     ? 'Your audit review is complete.'
     : insight.responses.length
-      ? 'A fresh response is ready for you.'
+      ? 'New responses. Ready to review.'
       : insight.next
-        ? insight.next.controlRef
+        ? 'Continue your audit review.'
         : insight.remaining
-          ? 'Your questions are with the team.'
+          ? 'Waiting for your team’s response.'
           : audit.controls.length
-            ? 'Your review is ready to wrap up.'
-            : 'Start with your review plan.';
+            ? 'Ready for your overall conclusion.'
+            : 'Start with a clear review plan.';
+  const description = finished
+    ? 'Revisit your completed checks, evidence and conclusions.'
+    : insight.responses.length
+      ? `${insight.responses.length} ${insight.responses.length === 1 ? 'response is' : 'responses are'} ready to review. Start with ${insight.next?.controlRef ?? 'your evidence inbox'}.`
+      : insight.next
+        ? insight.next.whatWasTested
+        : insight.remaining
+          ? 'Track outstanding requests while your team gathers the evidence.'
+          : audit.controls.length
+            ? 'Bring your observations together and prepare your overall conclusion.'
+            : 'Add your checks in the audit programme to begin reviewing.';
+  const handleContinue = () => {
+    if (finished) return onReport();
+    if (insight.next) return onSelect(insight.next.id);
+    if (insight.remaining) return onRequests();
+    onReport();
+  };
+  const metrics = [
+    {
+      label: 'Ready to review',
+      value: insight.ready,
+      icon: Checkmark,
+      action: () => (insight.next ? onSelect(insight.next.id) : onReport()),
+      detail: 'Continue your checks',
+    },
+    {
+      label: 'Evidence references',
+      value: insight.evidence,
+      icon: Document,
+      action: onEvidence,
+      detail: 'Explore your library',
+    },
+    {
+      label: 'Responses received',
+      value: insight.responses.length,
+      icon: Chat,
+      action: onRequests,
+      detail: 'Open your evidence inbox',
+    },
+    {
+      label: 'Awaiting a response',
+      value: insight.waiting,
+      icon: Time,
+      action: onRequests,
+      detail: 'Follow up with your team',
+    },
+  ];
   return (
-    <section
-      aria-label="Audit overview"
-      className="overflow-hidden rounded-xl border bg-background shadow-sm"
-    >
-      <div className="grid lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="relative space-y-6 bg-primary p-6 text-primary-foreground sm:p-9">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-primary-foreground/75">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />
-            {finished ? 'Audit completed' : 'Suggested next step'}
+    <section aria-label="Audit overview" className="space-y-4">
+      <div className="audit-surface overflow-hidden">
+        <div className="grid md:grid-cols-3">
+          <div className="audit-focus-card relative overflow-hidden p-6 sm:p-8 md:col-span-2">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute -right-16 -top-24 h-80 w-80 rounded-full border border-primary/5"
+            />
+            <div className="relative space-y-5">
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/10 bg-background/70 px-3 py-1.5 text-xs font-medium text-primary">
+                <ArrowRight size={14} />
+                {finished ? 'Audit completed' : 'Your next step'}
+              </span>
+              <div className="space-y-2.5">
+                <h2 className="max-w-xl text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+                  {title}
+                </h2>
+                <p className="max-w-xl text-sm leading-6 text-muted-foreground">{description}</p>
+              </div>
+              <div className="flex flex-wrap items-center gap-3">
+                <Button iconRight={<ArrowRight size={16} />} onClick={handleContinue}>
+                  {finished
+                    ? 'Open audit record'
+                    : insight.responses.length
+                      ? 'Review latest response'
+                      : insight.next
+                        ? 'Continue review'
+                        : insight.remaining
+                          ? 'View outstanding requests'
+                          : 'Prepare your conclusion'}
+                </Button>
+                <Button variant="ghost" iconLeft={<Document size={16} />} onClick={onEvidence}>
+                  Browse evidence
+                </Button>
+              </div>
+            </div>
           </div>
-          <div className="space-y-2">
-            <h2 className="max-w-2xl text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
-              {title}
-            </h2>
-            <p className="max-w-xl text-sm leading-6 text-primary-foreground/80">
-              {finished
-                ? 'Your completed checks, evidence and conclusions are ready to revisit.'
-                : insight.next?.whatWasTested ||
-                  (insight.remaining
-                    ? 'Keep track of outstanding evidence requests while the team prepares its responses.'
-                    : audit.controls.length
-                      ? 'Bring your observations together and check what remains before sign-off.'
-                      : 'Add the planned checks in Audit programme, then return here to start reviewing.')}
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center gap-4">
-            <Button
-              variant="secondary"
-              iconRight={<ArrowRight size={16} />}
-              onClick={() =>
-                insight.next && !finished
-                  ? onSelect(insight.next.id)
-                  : insight.remaining
-                    ? onRequests()
-                    : onReport()
-              }
-            >
-              {finished
-                ? 'Open audit record'
-                : insight.responses.length
-                  ? 'Review latest response'
-                  : insight.next
-                    ? 'Continue review'
-                    : insight.remaining
-                      ? 'View outstanding requests'
-                      : 'Prepare your conclusion'}
-            </Button>
-            <Button variant="secondary" iconLeft={<Document size={16} />} onClick={onEvidence}>
-              Browse evidence
-            </Button>
+          <div className="border-t md:border-l md:border-t-0">
+            <AuditProgressRing
+              progress={insight.progress}
+              reviewed={insight.reviewed}
+              total={audit.controls.length}
+              excluded={insight.excluded}
+            />
           </div>
         </div>
-        <AuditProgressRing
-          progress={insight.progress}
-          reviewed={insight.reviewed}
-          total={audit.controls.length}
-          excluded={insight.excluded}
-        />
       </div>
-      <div className="grid grid-cols-2 divide-x border-t lg:grid-cols-4">
-        {[
-          { label: 'Ready to review', value: insight.ready, icon: Checkmark },
-          { label: 'Evidence references', value: insight.evidence, icon: Document },
-          { label: 'Responses received', value: insight.responses.length, icon: Chat },
-          { label: 'Awaiting a response', value: insight.waiting, icon: Time },
-        ].map(({ label, value, icon: Icon }) => (
-          <div key={label} className="flex items-center gap-3 p-4 sm:px-6">
-            <div className="rounded-lg bg-muted/60 p-2 text-primary">
-              <Icon size={18} />
+      <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
+        {metrics.map(({ label, value, icon: Icon, action, detail }) => (
+          <button
+            key={label}
+            type="button"
+            onClick={action}
+            aria-label={`${label}: ${value}. ${detail}`}
+            className="audit-card group min-w-0 p-4 text-left sm:p-5"
+          >
+            <div className="flex items-center justify-between gap-2">
+              <p className="text-3xl font-semibold tracking-tight tabular-nums">{value}</p>
+              <span className="rounded-lg bg-primary/5 p-2 text-primary">
+                <Icon size={18} />
+              </span>
             </div>
-            <div>
-              <p className="text-xl font-semibold tabular-nums">{value}</p>
-              <p className="text-xs text-muted-foreground">{label}</p>
+            <div className="mt-3 flex items-center justify-between gap-2">
+              <p className="text-xs font-medium text-muted-foreground">{label}</p>
+              <ArrowRight
+                size={16}
+                className="text-muted-foreground/50 transition-colors group-hover:text-primary"
+              />
             </div>
-          </div>
+          </button>
         ))}
       </div>
     </section>

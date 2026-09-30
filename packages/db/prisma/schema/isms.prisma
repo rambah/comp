@@ -569,6 +569,7 @@ model IsmsAudit {
 
   controls IsmsAuditControl[]
   findings IsmsAuditFinding[]
+  researchThreads AuditResearchThread[]
 
   // References are generated under the per-document lock, so this never fires
   // in practice; it keeps concurrent creates honest at the database layer.

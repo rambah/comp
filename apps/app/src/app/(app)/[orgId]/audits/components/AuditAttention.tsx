@@ -21,7 +21,7 @@ export function AuditAttention({
   const activity = auditActivity(audit);
   return (
     <aside className={horizontal ? 'grid items-start gap-5 md:grid-cols-2' : 'space-y-5'}>
-      <section className="rounded-xl border bg-background p-5">
+      <section className="audit-surface p-5 sm:p-6">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-sm font-semibold">Needs your attention</h3>
           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
@@ -29,7 +29,7 @@ export function AuditAttention({
           </span>
         </div>
         {info.responses.length > 0 && (
-          <div className="mb-4 rounded-lg bg-primary/5 p-4">
+          <div className="mb-4 rounded-xl border border-primary/10 bg-primary/5 p-4">
             <p className="text-sm font-medium">
               {info.responses.length} response{info.responses.length !== 1 ? 's' : ''} to review
             </p>
@@ -50,7 +50,7 @@ export function AuditAttention({
         )}
         {info.overdue.slice(0, 3).map((r) => (
           <div key={r.id} className="border-b py-3 last:border-0">
-            <div className="mb-1 flex items-center gap-2 text-xs text-muted-foreground">
+            <div className="mb-1 flex items-center gap-2 text-xs text-amber-700 dark:text-amber-400">
               <Time size={14} />
               Overdue · {formatAuditDate(r.dueDate)}
             </div>
@@ -77,18 +77,18 @@ export function AuditAttention({
           </div>
         )}
       </section>
-      <section className="rounded-xl border bg-background p-5">
+      <section className="audit-surface p-5 sm:p-6">
         <h3 className="mb-4 text-sm font-semibold">Latest saved activity</h3>
         {activity.length ? (
           <ol className="space-y-4">
             {activity.map((item) => (
-              <li key={item.id} className="relative border-l pl-4">
+              <li key={item.id} className="relative border-l border-border/80 pl-5">
                 <span className="absolute -left-1 top-1 h-2 w-2 rounded-full bg-primary/40" />
                 <p className="text-xs leading-5 text-muted-foreground">{item.title}</p>
                 <Button variant="link" size="sm" onClick={() => onSelect(item.checkId)}>
                   <span className="line-clamp-2 text-left">{item.detail}</span>
                 </Button>
-                <p className="mt-1 text-[11px] text-muted-foreground">{formatAuditDate(item.at)}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{formatAuditDate(item.at)}</p>
               </li>
             ))}
           </ol>

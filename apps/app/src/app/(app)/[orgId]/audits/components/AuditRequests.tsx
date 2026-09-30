@@ -10,6 +10,7 @@ import {
   type WorkspaceData,
   type WorkspaceMutation,
 } from '../workspace-types';
+import { AuditEmptyState, AuditSectionHeading } from './AuditPresentation';
 import { AuditResponseDialog } from './AuditResponseDialog';
 
 export function AuditRequests({
@@ -53,16 +54,12 @@ export function AuditRequests({
     <div className="space-y-4">
       {!controlId && (
         <div className="space-y-4">
-          <div>
-            <p className="mb-2 text-xs font-medium uppercase tracking-widest text-primary">
-              Evidence inbox
-            </p>
-            <h2 className="text-xl font-semibold tracking-tight">Keep the conversation moving.</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
-              Review new responses first. Every question stays connected to its check and owner.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-between gap-3">
+          <AuditSectionHeading
+            eyebrow="Evidence inbox"
+            title="Keep your review moving."
+            description="New responses first. Every question connected to the right check and the right person."
+          />
+          <div className="audit-toolbar justify-between">
             <div className="flex flex-wrap gap-2">
               {(
                 [
@@ -75,7 +72,7 @@ export function AuditRequests({
                 <Button
                   key={item.key}
                   size="sm"
-                  variant={view === item.key ? 'default' : 'outline'}
+                  variant={view === item.key ? 'secondary' : 'ghost'}
                   aria-pressed={view === item.key}
                   onClick={() => setView(item.key)}
                 >
@@ -83,7 +80,7 @@ export function AuditRequests({
                 </Button>
               ))}
             </div>
-            <div className="w-72 max-w-full">
+            <div className="w-full sm:w-72">
               <Input
                 aria-label="Search evidence requests"
                 placeholder="Find a question or owner…"
@@ -110,14 +107,18 @@ export function AuditRequests({
         </div>
       )}
       {!requests.length && (
-        <div className="rounded-lg border border-dashed p-6">
-          <Text size="sm" variant="muted">
-            No evidence requests yet. Questions stay linked to the check they support.
-          </Text>
-        </div>
+        <AuditEmptyState
+          icon={<Chat size={24} />}
+          title="A clear conversation starts here."
+          description="No evidence requests yet. Ask a question from a check to keep the conversation and supporting evidence together."
+        />
       )}
       {visible.map((r) => (
-        <div key={r.id} className="space-y-4 rounded-xl border bg-background p-5 shadow-sm">
+        <div
+          key={r.id}
+          data-awaiting-review={r.status === 'submitted'}
+          className="audit-card space-y-4 p-5 sm:p-6"
+        >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <Text size="sm" weight="medium">
               {r.controlRef}
@@ -126,14 +127,16 @@ export function AuditRequests({
               {REQUEST_LABELS[r.status]}
             </Badge>
           </div>
-          <p className="max-w-4xl whitespace-pre-wrap text-sm leading-6">{r.question}</p>
+          <p className="max-w-4xl whitespace-pre-wrap break-words text-sm leading-7">
+            {r.question}
+          </p>
           <div className="flex flex-wrap items-center justify-between gap-3">
             <Text size="xs" variant="muted">
               {members.find((m) => m.id === r.ownerMemberId)?.name ?? 'Former member'} · Due{' '}
               {formatAuditDate(r.dueDate)} · {r.messages.length}{' '}
               {r.messages.length === 1 ? 'response' : 'responses'}
             </Text>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               {!controlId && (
                 <Button
                   variant="ghost"

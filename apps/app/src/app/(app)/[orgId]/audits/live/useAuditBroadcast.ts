@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useRef, useState, type RefObject } from 'react';
-import type { SharingChoice } from './AuditSharingConsent';
+import type { AuditSharingSession } from './useAuditSharing';
 import type { AuditLiveView, AuditPointer } from './live-types';
 import { readPanelScroll } from './panel-scroll';
 import { auditScrollContainer } from './scroll-container';
@@ -8,13 +8,13 @@ import { useLiveSocket } from './useLiveSocket';
 
 export function useAuditBroadcast({
   organizationId,
-  choice,
+  session,
   root,
   view,
   paused,
 }: {
   organizationId: string;
-  choice: SharingChoice | null;
+  session: AuditSharingSession | null;
   root: RefObject<HTMLDivElement | null>;
   view: AuditLiveView | null;
   paused: boolean;
@@ -32,8 +32,8 @@ export function useAuditBroadcast({
   const { send, connected } = useLiveSocket({
     organizationId,
     mode: 'publish',
-    nonce: choice?.nonce,
-    enabled: !!choice?.allowed && !paused && visible,
+    nonce: session?.nonce,
+    enabled: !!session?.allowed && !paused && visible,
   });
   useEffect(() => {
     if (!connected) return;

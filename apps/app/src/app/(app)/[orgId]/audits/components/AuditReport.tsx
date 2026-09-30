@@ -9,6 +9,7 @@ import type { WorkspaceMutation } from '../workspace-types';
 import { checkStatus, type WorkspaceAudit, type WorkspaceData } from '../workspace-types';
 import { AuditConclusionForm } from './AuditConclusionForm';
 import { AuditFinishDialog } from './AuditFinishDialog';
+import { AuditMetric, AuditSectionHeading } from './AuditPresentation';
 import { AuditReadiness } from './AuditReadiness';
 
 export function AuditReport({
@@ -52,39 +53,28 @@ export function AuditReport({
   };
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-start justify-between gap-4">
-        <div className="space-y-2">
-          <p className="text-xs font-medium uppercase tracking-widest text-primary">
-            The audit record
-          </p>
-          <Heading level="2">Bring your work together.</Heading>
-          <Text variant="muted">
-            Your sampling, evidence and findings — with a clear path to completion.
-          </Text>
-        </div>
-        <Button variant="outline" iconLeft={<Download size={16} />} onClick={handleDownload}>
-          Download working record
-        </Button>
-      </div>
+      <AuditSectionHeading
+        eyebrow="The audit record"
+        title="Bring your work together."
+        description="Your sampling, evidence and findings — with a clear path to completion."
+        actions={
+          <Button variant="outline" iconLeft={<Download size={16} />} onClick={handleDownload}>
+            Download working record
+          </Button>
+        }
+      />
       <div className="grid gap-4 sm:grid-cols-3">
         {[
           [`${reviewed} / ${audit.controls.length}`, 'Checks reviewed'],
           [String(notSampled), 'Not sampled'],
           [String(pending), 'Requests not yet accepted'],
         ].map(([value, label]) => (
-          <div key={label} className="space-y-1 rounded-lg border p-5">
-            <Text size="lg" weight="medium">
-              {value}
-            </Text>
-            <Text size="sm" variant="muted">
-              {label}
-            </Text>
-          </div>
+          <AuditMetric key={label} value={value} label={label} />
         ))}
       </div>
       <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
-        <section className="space-y-6 rounded-xl border bg-background p-6 sm:p-8">
-          <div className="space-y-2">
+        <section className="audit-surface min-w-0 space-y-6 p-5 sm:p-8">
+          <div className="audit-detail-heading space-y-2">
             <Heading level="3">Your overall conclusion</Heading>
             <p className="text-sm leading-6 text-muted-foreground">
               Summarise what your sampling supports, where limitations remain, and which findings
@@ -135,7 +125,7 @@ export function AuditReport({
             onChecks={onChecks}
             onRequests={onRequests}
           />
-          <section className="space-y-4 rounded-xl border bg-muted/15 p-6">
+          <section className="audit-surface space-y-4 p-6">
             <h3 className="text-sm font-semibold">Scope & criteria</h3>
             <p className="whitespace-pre-wrap text-xs leading-6 text-muted-foreground">
               {audit.scope}
