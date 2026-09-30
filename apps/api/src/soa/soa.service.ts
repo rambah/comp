@@ -6,7 +6,7 @@ import {
   NotFoundException,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { db } from '@db';
+import { db, type Prisma } from '@db';
 import { isMemberOrgParticipant } from '../utils/org-participation';
 import { SaveSOAAnswerDto } from './dto/save-soa-answer.dto';
 import { CreateSOADocumentDto } from './dto/create-soa-document.dto';
@@ -74,6 +74,12 @@ export class SOAService {
 
     if (!document) {
       throw new NotFoundException('SOA document not found');
+    }
+
+    if (document.status === 'needs_review') {
+      throw new BadRequestException(
+        'This SoA is awaiting approval and cannot be edited',
+      );
     }
 
     // The question must belong to this document's configuration, so answers
@@ -152,7 +158,11 @@ export class SOAService {
               : 'untouched',
           answerVersion: nextVersion,
           isLatestAnswer: true,
-          createdBy: existingAnswer ? undefined : userId,
+          sources:
+            existingAnswer?.sources == null
+              ? undefined
+              : (existingAnswer.sources as Prisma.InputJsonValue),
+          createdBy: existingAnswer?.createdBy ?? userId,
           updatedBy: userId,
         },
       }),
@@ -556,7 +566,9 @@ export class SOAService {
           closure,
           title: question.columnMapping?.title ?? null,
           control_objective: question.columnMapping?.control_objective ?? null,
-          isApplicable: useRemoteDefault ? false : (answer?.isApplicable ?? null),
+          isApplicable: useRemoteDefault
+            ? false
+            : (answer?.isApplicable ?? null),
           justification,
         },
         answer: justification,

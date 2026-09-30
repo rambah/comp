@@ -1,20 +1,15 @@
 'use client';
-
-import { Loader2 } from 'lucide-react';
+import { TableCell, TableRow } from '@trycompai/design-system';
+import { EditableSOAFields } from './EditableSOAFields';
+import { SOAJustification } from './SOAJustification';
+import { resolveSoaDisplay } from './soa-display';
 import type {
   SOAFieldSavePayload,
   SOAProcessedResult,
   SOATableAnswerData,
-} from './EditableSOAFields';
-import { EditableSOAFields } from './EditableSOAFields';
-import { resolveSoaDisplay } from './soa-display';
+} from './soa-field-types';
 
-type SOAColumn = {
-  name: string;
-  type: 'string' | 'boolean' | 'text';
-};
-
-type SOAQuestion = {
+export type SOAQuestion = {
   id: string;
   text: string;
   columnMapping: {
@@ -25,10 +20,9 @@ type SOAQuestion = {
     justification?: string | null;
   };
 };
-
-interface SOATableRowProps {
+export interface SOATableRowProps {
   question: SOAQuestion;
-  columns: SOAColumn[];
+  columns?: { name: string; type: 'string' | 'boolean' | 'text' }[];
   answerData?: SOATableAnswerData;
   questionStatus?: string;
   processedResult?: SOAProcessedResult;
@@ -38,114 +32,73 @@ interface SOATableRowProps {
   organizationId: string;
   onUpdate?: (payload: SOAFieldSavePayload) => void;
 }
-
-export function SOATableRow({
-  question,
-  columns,
-  answerData,
-  questionStatus,
-  processedResult,
-  isFullyRemote,
-  documentId,
-  isPendingApproval,
-  organizationId,
-  onUpdate,
-}: SOATableRowProps) {
-  const isProcessing = questionStatus === 'processing';
-  const isInsufficientData = questionStatus === 'insufficient_data' as any;
-  const hasInsufficientData = processedResult && 'insufficientData' in processedResult && processedResult.insufficientData === true;
-  
-  // For controls with closure starting with "7." and fully remote org, always show NO
-  const controlClosure = question.columnMapping.closure || '';
-  const isControl7 = controlClosure.startsWith('7.');
-  
-  // Applicability + justification are per-organization values (from this
-  // document's own answers or an in-session autofill result), never from the
-  // shared framework configuration.
+export function useSOARow(props: SOATableRowProps) {
   const { displayIsApplicable, justificationValue } = resolveSoaDisplay({
-    answerData,
-    processedResult,
-    isFullyRemote,
-    isControl7,
+    answerData: props.answerData,
+    processedResult: props.processedResult,
+    isFullyRemote: props.isFullyRemote,
+    isControl7: (props.question.columnMapping.closure || '').startsWith('7.'),
   });
-
+  return {
+    documentId: props.documentId,
+    questionId: props.question.id,
+    organizationId: props.organizationId,
+    isPendingApproval: props.isPendingApproval,
+    isApplicable: displayIsApplicable,
+    justification: justificationValue,
+    onUpdate: props.onUpdate,
+    controlLabel: `${props.question.columnMapping.closure} · ${props.question.columnMapping.title}`,
+    controlObjective: props.question.columnMapping.control_objective,
+  };
+}
+export function SOAControlTitle({ question }: { question: SOAQuestion }) {
   return (
-    <tr className="border-b transition-colors hover:bg-muted/30 last:border-b-0">
-      {columns.map((column, colIndex) => {
-        const columnKey = column.name as keyof typeof question.columnMapping;
-        let value = question.columnMapping[columnKey];
-        
-        // For isApplicable column, use displayIsApplicable
-        if (column.name === 'isApplicable') {
-          value = displayIsApplicable;
-        }
-        
-        // For justification column, use justificationValue
-        if (column.name === 'justification') {
-          value = justificationValue;
-        }
-        
-        // Show spinner for isApplicable and justification columns if processing
-        const showSpinner = (column.name === 'isApplicable' || column.name === 'justification') && isProcessing;
-        
-        return (
-          <td
-            key={column.name}
-            className={`py-4 text-sm ${
-              colIndex === 0 ? 'pl-6 pr-6' : colIndex === columns.length - 1 ? 'px-6 pr-6' : 'px-6'
-            } ${column.name === 'isApplicable' ? 'bg-muted/10 text-center' : ''}`}
-          >
-            {showSpinner ? (
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">Processing...</span>
-              </div>
-            ) : column.name === 'isApplicable' ? (
-              isProcessing ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Processing...</span>
-                </div>
-              ) : (
-                <EditableSOAFields
-                  documentId={documentId}
-                  questionId={question.id}
-                  isApplicable={displayIsApplicable}
-                  justification={justificationValue}
-                  isPendingApproval={isPendingApproval}
-                  organizationId={organizationId}
-                  onUpdate={onUpdate}
-                />
-              )
-            ) : column.name === 'justification' ? (
-              // Show justification text for both Applicable and Not Applicable rows so ISO 27001's
-              // requirement of a justification for every control on the SoA is visible in the UI.
-              isProcessing ? (
-                <div className="flex items-center gap-2">
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  <span className="text-xs text-muted-foreground">Processing...</span>
-                </div>
-              ) : (
-                <p className="text-sm leading-relaxed text-foreground whitespace-pre-wrap break-words">
-                  {justificationValue || '—'}
-                </p>
-              )
-            ) : (
-              // For other columns (title, control_objective), show "Insufficient data" if question has insufficient data
-              (isInsufficientData || hasInsufficientData) && column.name !== 'title' && column.name !== 'control_objective' ? (
-                <span className="text-xs text-muted-foreground italic">Insufficient data</span>
-              ) : (
-                <span className={`leading-relaxed whitespace-pre-wrap ${
-                  value ? 'text-foreground' : 'text-muted-foreground'
-                }`}>
-                  {value || '—'}
-                </span>
-              )
-            )}
-          </td>
-        );
-      })}
-    </tr>
+    <div className="space-y-3">
+      <span className="inline-flex rounded-md bg-muted px-2 py-1 font-mono text-xs font-medium">
+        {question.columnMapping.closure}
+      </span>
+      <p className="text-sm font-semibold leading-6">{question.columnMapping.title}</p>
+      {question.columnMapping.control_objective && (
+        <details className="text-sm text-muted-foreground">
+          <summary className="cursor-pointer rounded-sm text-xs font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            Control objective
+          </summary>
+          <p className="mt-2 leading-6">{question.columnMapping.control_objective}</p>
+        </details>
+      )}
+    </div>
   );
 }
-
+export function SOATableRow(props: SOATableRowProps) {
+  const fields = useSOARow(props);
+  const processing = props.questionStatus === 'processing';
+  return (
+    <TableRow>
+      <TableCell style={{ verticalAlign: 'top' }}>
+        <div className="whitespace-normal py-3">
+          <SOAControlTitle question={props.question} />
+        </div>
+      </TableCell>
+      <TableCell style={{ verticalAlign: 'top' }}>
+        <div className="whitespace-normal py-3">
+          {processing ? (
+            <p role="status" className="text-sm text-muted-foreground">
+              Generating…
+            </p>
+          ) : (
+            <EditableSOAFields {...fields} />
+          )}
+        </div>
+      </TableCell>
+      <TableCell style={{ verticalAlign: 'top' }}>
+        <div className="whitespace-normal py-3">
+          {processing ? (
+            <p className="text-sm text-muted-foreground">Researching this control…</p>
+          ) : (
+            <SOAJustification {...fields} />
+          )}
+        </div>
+      </TableCell>
+    </TableRow>
+  );
+}
