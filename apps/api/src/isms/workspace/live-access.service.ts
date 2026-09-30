@@ -96,7 +96,7 @@ export class AuditLiveAccess {
       sessionId: request.sessionId!,
       name: member.user.name || member.user.email,
       mode: dto.mode,
-      nonce: dto.nonce ?? '',
+      nonce: dto.mode === 'observe' ? randomUUID() : (dto.nonce ?? ''),
     };
     if (!(await this.valid(identity)))
       throw new ForbiddenException('Live access is no longer authorized.');

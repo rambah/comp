@@ -145,7 +145,7 @@ export function AuditQueue({
                         : CHECK_LABELS[filter]}
                   </SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent data-audit-live-surface>
                   <SelectItem value="all">All checks</SelectItem>
                   <SelectItem value="no_evidence">No linked evidence</SelectItem>
                   {Object.entries(CHECK_LABELS).map(([key, label]) => (

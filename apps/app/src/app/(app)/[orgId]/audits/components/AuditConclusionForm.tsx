@@ -93,7 +93,7 @@ export function AuditConclusionForm({
                   }
                 </SelectValue>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent data-audit-live-surface>
                 <SelectItem value="conform">Conforms</SelectItem>
                 <SelectItem value="substantially_conform">
                   Substantially conforms, with recorded nonconformities

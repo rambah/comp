@@ -23,6 +23,8 @@ export function useLiveSocket({
   const [connected, setConnected] = useState(false);
   const ready = useRef(false);
   const sequence = useRef(0);
+  const queue = useRef<string[]>([]);
+  const queuedBytes = useRef(0);
 
   useEffect(() => {
     if (!enabled) {
@@ -34,13 +36,24 @@ export function useLiveSocket({
     let watchdog: ReturnType<typeof setInterval> | undefined;
     let attempt = 0;
     let lastReceived = Date.now();
+    const flush = setInterval(() => {
+      const ws = socket.current;
+      if (!ready.current || ws?.readyState !== WebSocket.OPEN) return;
+      while (queue.current.length && ws.bufferedAmount < 128000) {
+        const message = queue.current.shift()!;
+        queuedBytes.current -= message.length;
+        ws.send(message);
+      }
+    }, 25);
     const schedule = () => {
       ready.current = false;
+      queue.current = [];
+      queuedBytes.current = 0;
       setConnected(false);
       if (watchdog) clearInterval(watchdog);
       if (!disposed)
         retry = setTimeout(
-          () => void connect(),
+          () => void connect().catch(schedule),
           Math.min(15000, 1000 * 2 ** attempt++) + Math.random() * 250,
         );
     };
@@ -98,12 +111,15 @@ export function useLiveSocket({
         if (Date.now() - lastReceived > 12000) ws.close();
       }, 2000);
     };
-    void connect();
+    void connect().catch(schedule);
     return () => {
       disposed = true;
       ready.current = false;
       clearTimeout(retry);
       clearInterval(watchdog);
+      clearInterval(flush);
+      queue.current = [];
+      queuedBytes.current = 0;
       socket.current?.close();
       socket.current = null;
     };
@@ -111,9 +127,15 @@ export function useLiveSocket({
 
   const send = useCallback((message: object) => {
     const ws = socket.current;
-    if (ready.current && ws?.readyState === WebSocket.OPEN && ws.bufferedAmount < 16000) {
-      ws.send(JSON.stringify({ ...message, sequence: ++sequence.current }));
+    if (!ready.current || ws?.readyState !== WebSocket.OPEN) return false;
+    const value = JSON.stringify({ ...message, sequence: ++sequence.current });
+    if (queuedBytes.current + value.length > 8000000) {
+      ws.close();
+      return false;
     }
+    queue.current.push(value);
+    queuedBytes.current += value.length;
+    return true;
   }, []);
   return { connected, send };
 }

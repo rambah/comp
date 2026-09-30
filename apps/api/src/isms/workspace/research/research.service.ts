@@ -116,7 +116,8 @@ export class AuditResearchService {
     const memberId = actor.memberId;
     const outcome = await db.$transaction(async (tx) => {
       // Serialize per organization across API replicas: idempotency, one turn/topic, bounded concurrency.
-      await tx.$queryRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`audit-research:${organizationId}`}, 0))`;
+      // This function returns PostgreSQL void, which Prisma cannot deserialize as a result column.
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtextextended(${`audit-research:${organizationId}`}, 0))`;
       const thread = await tx.auditResearchThread.findFirst({
         where: { id: threadId, audit: auditScope(organizationId) },
         include: { audit: { select: { scope: true, criteria: true } } },

@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { CONTROL_RESULT_LABELS } from '../../documents/isms/components/internal-audit-constants';
 import type { AuditCheck } from '../workspace-types';
+import { formatAuditDateTime } from '../workspace-types';
 
 const schema = z.object({
   notes: z.string().max(20000),
@@ -237,7 +238,7 @@ export function AuditReviewForm({
                   {field.value ? CONTROL_RESULT_LABELS[field.value] : 'Choose a conclusion'}
                 </SelectValue>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent data-audit-live-surface>
                 <SelectItem value="unset">Choose a conclusion</SelectItem>
                 {Object.entries(CONTROL_RESULT_LABELS).map(([key, label]) => (
                   <SelectItem key={key} value={key}>
@@ -275,7 +276,7 @@ export function AuditReviewForm({
       )}
       {check.reviewedAt && (
         <Text size="xs" variant="muted">
-          Reviewed by {check.reviewedBy} · {new Date(check.reviewedAt).toLocaleString()}
+          Reviewed by {check.reviewedBy} · {formatAuditDateTime(check.reviewedAt)}
         </Text>
       )}
     </form>

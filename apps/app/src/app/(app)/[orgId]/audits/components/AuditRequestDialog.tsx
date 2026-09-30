@@ -60,7 +60,7 @@ export function AuditRequestDialog({
         if (!open && !form.formState.isSubmitting) onClose();
       }}
     >
-      <DialogContent size="2xl" showCloseButton={false}>
+      <DialogContent data-audit-live-surface size="2xl" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>Request evidence</DialogTitle>
           <DialogDescription>
@@ -93,7 +93,7 @@ export function AuditRequestDialog({
                         {members.find((m) => m.id === field.value)?.name}
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent data-audit-live-surface>
                       {eligible.map((m) => (
                         <SelectItem key={m.id} value={m.id}>
                           {m.name}

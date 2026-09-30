@@ -115,7 +115,7 @@ export function AuditEvidenceLibrary({
                 {type === 'all' ? 'All sources' : SOURCE_LABELS[type as keyof typeof SOURCE_LABELS]}
               </SelectValue>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent data-audit-live-surface>
               <SelectItem value="all">All sources</SelectItem>
               {Object.entries(SOURCE_LABELS).map(([key, title]) => (
                 <SelectItem key={key} value={key}>

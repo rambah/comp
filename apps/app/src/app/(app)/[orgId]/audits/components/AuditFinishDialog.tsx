@@ -46,7 +46,7 @@ export function AuditFinishDialog({
           if (!saving) setOpen(value);
         }}
       >
-        <DialogContent size="lg" showCloseButton={!saving}>
+        <DialogContent data-audit-live-surface size="lg" showCloseButton={!saving}>
           <DialogHeader>
             <DialogTitle>Complete {audit.reference}?</DialogTitle>
             <DialogDescription>

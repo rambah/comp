@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { evidenceCitation } from '../audit-evidence';
 import { snapshotText } from '../snapshot-text';
 import type { EvidenceLink } from '../workspace-types';
+import { formatAuditDateTime } from '../workspace-types';
 import { AuditDocumentReader } from './AuditDocumentReader';
 import { AuditPdfPreview } from './AuditPdfPreview';
 
@@ -53,6 +54,7 @@ export function EvidenceSnapshot({
       }}
     >
       <DialogContent
+        data-audit-live-surface
         showCloseButton={false}
         data-audit-live-target="evidence-preview"
         style={{
@@ -66,7 +68,7 @@ export function EvidenceSnapshot({
           <DialogHeader>
             <DialogTitle>{evidence.title}</DialogTitle>
             <DialogDescription>
-              {evidence.versionLabel} · Captured {new Date(evidence.createdAt).toLocaleString()} by{' '}
+              {evidence.versionLabel} · Captured {formatAuditDateTime(evidence.createdAt)} by{' '}
               {evidence.capturedBy}
             </DialogDescription>
           </DialogHeader>

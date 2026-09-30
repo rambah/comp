@@ -10,6 +10,7 @@ import {
 } from '@trycompai/design-system/icons';
 import { useEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { formatAuditDate } from '../workspace-types';
 import { ResearchComposer } from './ResearchComposer';
 import { ResearchConversation } from './ResearchConversation';
 import { ResearchSourceDialog } from './ResearchSources';
@@ -161,7 +162,7 @@ function ResearchWorkspace({
                   <span className="line-clamp-2 text-xs font-medium leading-5">{topic.title}</span>
                   <span className="mt-1 block text-xs text-muted-foreground">
                     {topic._count.turns} {topic._count.turns === 1 ? 'question' : 'questions'} ·{' '}
-                    {new Date(topic.updatedAt).toLocaleDateString()}
+                    {formatAuditDate(topic.updatedAt)}
                   </span>
                 </button>
               ))}

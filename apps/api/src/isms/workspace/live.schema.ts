@@ -1,6 +1,11 @@
 import { z } from 'zod';
+import {
+  domMessageSchema,
+  presenceMessageSchema,
+  watchMessageSchema,
+} from './live-dom.schema';
 
-export const LIVE_NOTICE_VERSION = 1;
+export const LIVE_NOTICE_VERSION = 2;
 export const liveViewSchema = z
   .object({
     auditId: z.string().min(1).max(100),
@@ -31,6 +36,9 @@ export const pointerSchema = z
   })
   .strict();
 export const liveMessageSchema = z.discriminatedUnion('kind', [
+  domMessageSchema,
+  presenceMessageSchema,
+  watchMessageSchema,
   z
     .object({
       kind: z.literal('view'),

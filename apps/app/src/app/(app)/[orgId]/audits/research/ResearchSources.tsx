@@ -13,6 +13,7 @@ import { ArrowUpRight, Copy, Document, Time } from '@trycompai/design-system/ico
 import { toast } from 'sonner';
 import useSWR from 'swr';
 import { AuditDocumentReader } from '../components/AuditDocumentReader';
+import { formatAuditDateTime } from '../workspace-types';
 import { citationSchema, trustedSourceUrl, type ResearchCitation } from './research-types';
 export function ResearchSources({
   sources,
@@ -97,7 +98,7 @@ export function ResearchSourceDialog({
         if (!open) onClose();
       }}
     >
-      <DialogContent size="4xl">
+      <DialogContent data-audit-live-surface size="4xl">
         <DialogHeader>
           <DialogTitle>{source?.title ?? 'Source'}</DialogTitle>
           <DialogDescription>
@@ -136,8 +137,7 @@ export function ResearchSourceDialog({
             </div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <Time size={14} />
-              Retrieved {new Date(source.retrievedAt).toLocaleString()} · character{' '}
-              {source.offset + 1}
+              Retrieved {formatAuditDateTime(source.retrievedAt)} · character {source.offset + 1}
             </div>
             <div
               className="max-h-[65vh] overflow-y-auto p-1"

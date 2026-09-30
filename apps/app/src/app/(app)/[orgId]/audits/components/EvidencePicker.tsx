@@ -61,7 +61,7 @@ export function EvidencePicker({
         if (!open && !saving) onClose();
       }}
     >
-      <DialogContent size="3xl">
+      <DialogContent data-audit-live-surface size="3xl">
         <DialogHeader>
           <DialogTitle>Link evidence</DialogTitle>
           <DialogDescription>

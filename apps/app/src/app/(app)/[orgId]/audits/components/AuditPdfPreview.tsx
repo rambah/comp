@@ -35,7 +35,7 @@ export function AuditPdfPreview({
       </div>
     );
   return (
-    <div className="space-y-3">
+    <div data-audit-pdf={evidenceId} data-audit-pdf-title={title} className="space-y-3">
       <Button
         variant="outline"
         size="sm"

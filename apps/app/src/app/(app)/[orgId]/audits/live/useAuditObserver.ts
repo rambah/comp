@@ -19,6 +19,7 @@ export function useAuditObserver({
   const sequences = useRef(new Map<string, number>());
   const stoppedAt = useRef(new Map<string, number>());
   const handleEvent = useCallback((event: AuditLiveEvent) => {
+    if (event.kind === 'dom' || event.kind === 'presence' || event.kind === 'watch') return;
     if (event.kind === 'stop') {
       stoppedAt.current.set(event.nonce, event.sentAt);
       if (stoppedAt.current.size > 100) stoppedAt.current.clear();

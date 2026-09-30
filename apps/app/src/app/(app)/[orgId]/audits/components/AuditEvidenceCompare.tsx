@@ -38,6 +38,7 @@ export function AuditEvidenceCompare({
       }}
     >
       <DialogContent
+        data-audit-live-surface
         showCloseButton={false}
         style={{
           width: 'calc(100vw - 3rem)',
@@ -85,7 +86,7 @@ export function AuditEvidenceCompare({
                     <SelectTrigger aria-label="Comparison version">
                       <SelectValue>{evidence.versionLabel}</SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent data-audit-live-surface>
                       {alternatives.map((e) => (
                         <SelectItem key={e.id} value={e.id}>
                           {e.versionLabel} · {formatAuditDate(e.createdAt)}

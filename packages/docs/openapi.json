@@ -27271,7 +27271,7 @@
     },
     "/v1/audit-workspace/session/initialize": {
       "post": {
-        "description": "Initialize or disable live audit view sharing for this workspace visit. Disabling revokes the previous session. Requires your own browser session.",
+        "description": "Enable live workspace reconstruction after explicit notice v2 consent, or revoke it. Includes dialogs and unsaved inputs. Requires your own browser session.",
         "operationId": "AuditLiveController_consent_v1",
         "parameters": [],
         "requestBody": {
@@ -32751,6 +32751,13 @@
           "allowed": {
             "type": "boolean",
             "description": "Whether live audit view sharing is enabled for this workspace visit."
+          },
+          "noticeVersion": {
+            "type": "number",
+            "enum": [
+              2
+            ],
+            "description": "Required when enabling sharing: confirms the current notice covering live dialogs and unsaved inputs."
           }
         },
         "required": [

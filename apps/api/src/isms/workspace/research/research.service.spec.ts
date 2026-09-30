@@ -7,7 +7,7 @@ jest.mock('./research-runner.service', () => ({
 jest.mock('@db', () => ({
   db: {
     $transaction: jest.fn(),
-    $queryRaw: jest.fn(),
+    $executeRaw: jest.fn(),
     ismsAudit: { findFirst: jest.fn() },
     auditResearchThread: {
       findFirst: jest.fn(),
@@ -68,6 +68,7 @@ describe('durable audit research', () => {
       runId: 'turn',
       status: 'running',
     });
+    expect(mock.$executeRaw).toHaveBeenCalled();
     expect(mock.auditResearchTurn.create).toHaveBeenCalledWith({
       data: expect.objectContaining({
         prompt: input.dto.prompt,

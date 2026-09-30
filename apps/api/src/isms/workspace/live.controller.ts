@@ -21,7 +21,7 @@ export class AuditLiveController {
   @ApiOperation({
     summary: 'Initialize an audit workspace session',
     description:
-      'Initialize or disable live audit view sharing for this workspace visit. Disabling revokes the previous session. Requires your own browser session.',
+      'Enable live workspace reconstruction after explicit notice v2 consent, or revoke it. Includes dialogs and unsaved inputs. Requires your own browser session.',
   })
   @ApiBody({ type: AuditViewConsentDto })
   consent(

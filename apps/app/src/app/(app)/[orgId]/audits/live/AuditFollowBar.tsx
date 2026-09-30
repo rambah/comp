@@ -9,19 +9,22 @@ import {
   SelectValue,
   Text,
 } from '@trycompai/design-system';
-import type { useAuditObserver } from './useAuditObserver';
+import type { useAuditDomObserver } from './useAuditDomObserver';
 
 export function AuditFollowBar({
   observer,
   disabled,
 }: {
-  observer: ReturnType<typeof useAuditObserver>;
+  observer: ReturnType<typeof useAuditDomObserver>;
   disabled: boolean;
 }) {
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/20 p-4">
+    <div
+      data-audit-live-private
+      className="flex flex-wrap items-center gap-3 rounded-lg border bg-muted/20 p-4"
+    >
       <Text size="sm" weight="medium">
-        Follow an audit view
+        Follow a live workspace
       </Text>
       <div className="w-56">
         <Select
@@ -49,7 +52,7 @@ export function AuditFollowBar({
       {observer.following ? (
         <>
           <Badge variant="outline">
-            {observer.current && observer.connected ? 'Live · read-only' : 'Connection interrupted'}
+            {observer.ready && observer.connected ? 'Live · read-only' : 'Synchronizing'}
           </Badge>
           <Button variant="ghost" size="sm" onClick={() => observer.setFollowing(null)}>
             Stop following

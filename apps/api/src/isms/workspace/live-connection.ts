@@ -19,6 +19,10 @@ export class AuditLiveConnection {
   private pendingView?: LiveMessage;
   private pendingPointer?: LiveMessage;
   private publishing = false;
+  private pendingDom: LiveMessage[] = [];
+  private forwardChain = Promise.resolve();
+  private forwardCount = 0;
+  private watchWindow = { since: Date.now(), count: 0 };
   private lastPointerAt = 0;
   private stopSubscription?: () => void;
   private checking = false;
@@ -38,33 +42,36 @@ export class AuditLiveConnection {
     socket.on('close', () => this.close());
     socket.on('error', () => this.close());
     socket.on('message', (raw) => {
-      if (identity.mode !== 'publish') return;
       try {
         this.receive(JSON.parse(liveWireText(raw)));
       } catch {
         this.close();
       }
     });
-    if (identity.mode === 'observe') {
-      this.stopSubscription = bus.subscribe({
-        organizationId: identity.organizationId,
-        onEvent: (event) => {
-          void this.forward(event).catch(() => this.close());
-        },
-        onError: () => this.close(),
-        onReady: () => this.send({ kind: 'ready' }),
-      });
-    } else this.send({ kind: 'ready' });
+    this.stopSubscription = bus.subscribe({
+      organizationId: identity.organizationId,
+      onEvent: (event) => {
+        if (++this.forwardCount > 256) return this.close();
+        this.forwardChain = this.forwardChain
+          .then(() => this.forward(event))
+          .catch(() => this.close())
+          .finally(() => {
+            this.forwardCount--;
+          });
+      },
+      onError: () => this.close(),
+      onReady: () => this.send({ kind: 'ready' }),
+    });
   }
 
   private send(event: unknown) {
     if (
       !this.closed &&
       this.socket.readyState === WebSocket.OPEN &&
-      this.socket.bufferedAmount < 65536
+      this.socket.bufferedAmount < 1048576
     ) {
       this.socket.send(JSON.stringify(event));
-    }
+    } else if (!this.closed) this.close();
   }
 
   private async checkAccess() {
@@ -84,9 +91,23 @@ export class AuditLiveConnection {
     const parsed = liveMessageSchema.safeParse(input);
     if (!parsed.success) return this.close();
     const message = parsed.data;
+    if (this.identity.mode === 'observe' && message.kind !== 'watch')
+      return this.close();
+    if (this.identity.mode === 'publish' && message.kind === 'watch')
+      return this.close();
+    if (message.kind === 'watch') {
+      if (Date.now() - this.watchWindow.since > 10000)
+        this.watchWindow = { since: Date.now(), count: 0 };
+      if (++this.watchWindow.count > 20) return this.close();
+    }
+    if (message.kind === 'dom' && message.part >= message.parts)
+      return this.close();
     if (message.sequence <= this.sequence) return;
     this.sequence = message.sequence;
-    if (message.kind === 'pointer') {
+    if (message.kind === 'dom' || message.kind === 'watch') {
+      if (this.pendingDom.length >= 256) return this.close();
+      this.pendingDom.push(message);
+    } else if (message.kind === 'pointer') {
       if (Date.now() - this.lastPointerAt < 40) return;
       this.lastPointerAt = Date.now();
       this.pendingPointer = message;
@@ -98,10 +119,27 @@ export class AuditLiveConnection {
     if (this.publishing || this.closed) return;
     this.publishing = true;
     try {
-      while (!this.closed && (this.pendingView || this.pendingPointer)) {
-        const message = this.pendingView ?? this.pendingPointer!;
-        if (message.kind === 'view') this.pendingView = undefined;
-        else this.pendingPointer = undefined;
+      while (
+        !this.closed &&
+        (this.pendingDom.length || this.pendingView || this.pendingPointer)
+      ) {
+        if (this.pendingDom.length > 1) {
+          await this.bus.publishMany(
+            this.pendingDom.splice(0, 16).map((message) => ({
+              ...message,
+              organizationId: this.identity.organizationId,
+              memberId: this.identity.memberId,
+              name: this.identity.name,
+              nonce: this.identity.nonce,
+              sentAt: Date.now(),
+            })),
+          );
+          continue;
+        }
+        const message =
+          this.pendingDom.shift() ?? this.pendingView ?? this.pendingPointer!;
+        if (message === this.pendingView) this.pendingView = undefined;
+        else if (message.kind === 'pointer') this.pendingPointer = undefined;
         if (message.kind === 'view') {
           const key = JSON.stringify([
             message.view.auditId,
@@ -159,13 +197,23 @@ export class AuditLiveConnection {
       event.memberId === this.identity.memberId
     )
       return;
+    if (event.kind === 'watch') {
+      if (
+        this.identity.mode === 'publish' &&
+        event.targetNonce === this.identity.nonce &&
+        Date.now() - event.sentAt < 10000
+      )
+        this.send(event);
+      return;
+    }
+    if (this.identity.mode !== 'observe') return;
     if (event.kind === 'stop') {
       if (event.revoked) this.revoked.add(event.nonce);
       this.grants.delete(event.nonce);
       this.send(event);
       return;
     }
-    if (this.revoked.has(event.nonce) || Date.now() - event.sentAt > 3000)
+    if (this.revoked.has(event.nonce) || Date.now() - event.sentAt > 15000)
       return;
     if ((this.grants.get(event.nonce) ?? 0) < Date.now()) {
       const consent = await db.auditViewConsent.findFirst({
@@ -173,6 +221,7 @@ export class AuditLiveConnection {
           memberId: event.memberId,
           sessionNonce: event.nonce,
           allowed: true,
+          noticeVersion: 2,
           member: {
             organizationId: this.identity.organizationId,
             isActive: true,

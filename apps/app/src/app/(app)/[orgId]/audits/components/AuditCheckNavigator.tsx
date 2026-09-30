@@ -46,7 +46,7 @@ export function AuditCheckNavigator({
             <SelectTrigger aria-label="Jump to audit check">
               <SelectValue>{audit.controls[index]?.controlRef}</SelectValue>
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent data-audit-live-surface>
               {audit.controls.map((c) => (
                 <SelectItem key={c.id} value={c.id}>
                   {c.controlRef} · {CHECK_LABELS[checkStatus(c)]}

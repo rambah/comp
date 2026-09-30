@@ -19,6 +19,25 @@ export interface AuditPointer {
 }
 const base = { memberId: z.string(), name: z.string(), nonce: z.string(), sentAt: z.number() };
 export const liveEventSchema = z.discriminatedUnion('kind', [
+  z.object({ ...base, kind: z.literal('presence'), sequence: z.number() }),
+  z.object({
+    ...base,
+    kind: z.literal('watch'),
+    sequence: z.number(),
+    targetNonce: z.string(),
+    watching: z.boolean(),
+    requestSnapshot: z.boolean(),
+  }),
+  z.object({
+    ...base,
+    kind: z.literal('dom'),
+    sequence: z.number(),
+    epoch: z.string(),
+    batch: z.number().int().nonnegative(),
+    part: z.number().int().nonnegative(),
+    parts: z.number().int().min(1).max(256),
+    payload: z.string().max(24000),
+  }),
   z.object({
     ...base,
     kind: z.literal('view'),

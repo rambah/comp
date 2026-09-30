@@ -108,3 +108,13 @@ export function auditRevision(audit: WorkspaceAudit) {
     .sort()
     .at(-1);
 }
+
+export function formatAuditDateTime(value: string) {
+  return (
+    new Intl.DateTimeFormat('en-GB', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone: 'UTC',
+    }).format(new Date(value)) + ' UTC'
+  );
+}

@@ -24,10 +24,12 @@ Search is not an exhaustive compliance assessment. Filename/description search d
 
 Shared history requires session authentication, auditWorkspace read access and read permissions for every source category: evidence, policy, risk, vendor, task, questionnaire, finding and control. Asking also requires auditWorkspace update and active membership. Generation rechecks access at each tool call and before completion. Browser-only research endpoints are disabled for MCP.
 
-Markdown uses React Markdown and GFM. HTML and images are suppressed; only captured citation links are interactive. Original-record links are restricted to the current organization's Comp paths. Chat drafts and research interactions are not broadcast by the live-follow feature; saved research is accessed through its own permission-checked endpoints.
+Markdown uses React Markdown and GFM. HTML and images are suppressed; only captured citation links are interactive. Original-record links are restricted to the current organization's Comp paths. Research interactions and unsaved drafts are visible in live workspace reconstruction only after explicit consent. Saved research remains accessible through its own permission-checked endpoints.
 
 ## Release and verification
 
-**Not deployed.** Apply additive migration `20260930190000_audit_research` through the normal release process before enabling this code. Existing OpenAI configuration is reused; no new key or provider is required. Real provider availability and production data retrieval still require a staging smoke test.
+The initial version was deployed on 30 September 2026. Apply additive migration `20260930190000_audit_research` through the normal release process before enabling this code. Existing OpenAI configuration is reused; no new key or provider is required. Real provider availability and production data retrieval still require a staging smoke test.
 
 Verified locally: 67 API tests in the audit workspace suite and 9 research UI tests (including permission/idempotency/concurrency/timeout/history/citation/file-size, Markdown safety and composer coverage), API typecheck, scoped frontend lint, browser rendering with synthetic evidence, isolated PostgreSQL migration and source-query execution. Full app typecheck has pre-existing failures outside this feature. No production database or deployment was changed.
+
+Research startup uses `$executeRaw` for the transaction advisory lock: PostgreSQL returns `void`, which must not be decoded as a Prisma query-result column. This prevents a failure before the question is persisted.

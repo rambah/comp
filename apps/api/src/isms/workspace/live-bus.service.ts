@@ -46,6 +46,13 @@ export class AuditLiveBus implements OnModuleDestroy {
     await this.client().publish(`audit-live:${event.organizationId}`, event);
   }
 
+  async publishMany(events: LiveEvent[]) {
+    const pipeline = this.client().pipeline();
+    for (const event of events)
+      pipeline.publish(`audit-live:${event.organizationId}`, event);
+    await pipeline.exec();
+  }
+
   subscribe({
     organizationId,
     onEvent,

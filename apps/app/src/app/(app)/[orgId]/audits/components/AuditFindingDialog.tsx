@@ -71,7 +71,7 @@ export function AuditFindingDialog({
         if (!open && !form.formState.isSubmitting) onClose();
       }}
     >
-      <DialogContent size="2xl" showCloseButton={false}>
+      <DialogContent data-audit-live-surface size="2xl" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>Record a finding</DialogTitle>
           <DialogDescription>
@@ -89,7 +89,7 @@ export function AuditFindingDialog({
                   <SelectTrigger aria-label="Finding classification">
                     <SelectValue>{findingTypes[field.value]}</SelectValue>
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent data-audit-live-surface>
                     {Object.entries(findingTypes).map(([key, label]) => (
                       <SelectItem key={key} value={key}>
                         {label}
@@ -127,7 +127,7 @@ export function AuditFindingDialog({
                         {members.find((m) => m.id === field.value)?.name ?? 'Unassigned'}
                       </SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent data-audit-live-surface>
                       <SelectItem value="none">Unassigned</SelectItem>
                       {members.map((m) => (
                         <SelectItem key={m.id} value={m.id}>

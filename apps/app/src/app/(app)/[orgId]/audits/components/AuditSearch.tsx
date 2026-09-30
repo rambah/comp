@@ -56,7 +56,7 @@ export function AuditSearch({
         title="Find anything in this audit"
         description="Search checks, linked evidence, questions and findings. Use arrow keys to move and Enter to open."
       >
-        <Command>
+        <Command data-audit-live-surface>
           <CommandInput
             placeholder="Find a check, document, question or finding…"
             aria-label="Search everything in this audit"

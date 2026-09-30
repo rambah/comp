@@ -48,7 +48,7 @@ describe('AuditLiveAccess', () => {
     user: { name: 'Auditor', email: 'a@example.com' },
     auditViewConsent: {
       allowed: true,
-      noticeVersion: 1,
+      noticeVersion: 2,
       sessionNonce: 'nonce-a',
     },
   };
@@ -77,9 +77,9 @@ describe('AuditLiveAccess', () => {
     expect(await service.valid(identity)).toBe(false);
   });
   it.each([
-    { allowed: false, noticeVersion: 1, sessionNonce: 'nonce-a' },
+    { allowed: false, noticeVersion: 2, sessionNonce: 'nonce-a' },
     { allowed: true, noticeVersion: 0, sessionNonce: 'nonce-a' },
-    { allowed: true, noticeVersion: 1, sessionNonce: 'replaced' },
+    { allowed: true, noticeVersion: 2, sessionNonce: 'replaced' },
   ])('rejects withdrawn or superseded consent: %j', async (consent) => {
     (mockDb.member.findFirst as jest.Mock).mockResolvedValue({
       ...member,

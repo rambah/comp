@@ -2,6 +2,7 @@
 import { Badge, Button } from '@trycompai/design-system';
 import { Checkmark, Copy, Renew, WatsonHealthAiResults } from '@trycompai/design-system/icons';
 import { toast } from 'sonner';
+import { formatAuditDateTime } from '../workspace-types';
 import { ResearchAnswer } from './ResearchAnswer';
 import { ResearchSources } from './ResearchSources';
 import type { ResearchCitation, ResearchTurn } from './research-types';
@@ -94,7 +95,7 @@ export function ResearchConversation({
           <div className="ml-8 rounded-xl border bg-muted/40 px-5 py-4">
             <div className="mb-2 flex flex-wrap justify-between gap-2 text-[11px] text-muted-foreground">
               <span>{turn.authorName}</span>
-              <time dateTime={turn.createdAt}>{new Date(turn.createdAt).toLocaleString()}</time>
+              <time dateTime={turn.createdAt}>{formatAuditDateTime(turn.createdAt)}</time>
             </div>
             <p className="whitespace-pre-wrap text-sm leading-6">{turn.prompt}</p>
           </div>

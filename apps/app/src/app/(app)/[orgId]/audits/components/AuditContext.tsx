@@ -48,7 +48,7 @@ export function AuditContext({
                 <SelectTrigger aria-label="Select audit">
                   <SelectValue>{audit.reference}</SelectValue>
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent data-audit-live-surface>
                   {audits.map((a) => (
                     <SelectItem key={a.id} value={a.id}>
                       {a.reference}

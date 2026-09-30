@@ -61,7 +61,7 @@ export function AuditFollowupDialog({
         if (!open && !form.formState.isSubmitting) onClose();
       }}
     >
-      <DialogContent size="2xl" showCloseButton={false}>
+      <DialogContent data-audit-live-surface size="2xl" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>{finding.reference} · Follow-up</DialogTitle>
         </DialogHeader>
@@ -78,7 +78,7 @@ export function AuditFollowupDialog({
                       {{ open: 'Open', in_progress: 'In progress', closed: 'Closed' }[field.value]}
                     </SelectValue>
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent data-audit-live-surface>
                     <SelectItem value="open">Open</SelectItem>
                     <SelectItem value="in_progress">In progress</SelectItem>
                     <SelectItem value="closed">Closed</SelectItem>

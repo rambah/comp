@@ -71,7 +71,11 @@ export function AuditResponseDialog({
         if (!open && !form.formState.isSubmitting) onClose();
       }}
     >
-      <DialogContent size="3xl" style={{ maxHeight: '90dvh', overflowY: 'auto' }}>
+      <DialogContent
+        data-audit-live-surface
+        size="3xl"
+        style={{ maxHeight: '90dvh', overflowY: 'auto' }}
+      >
         <DialogHeader>
           <DialogTitle>Evidence request</DialogTitle>
           <DialogDescription>
@@ -120,7 +124,7 @@ export function AuditResponseDialog({
                     <SelectTrigger aria-label="Next request status">
                       <SelectValue>{REQUEST_LABELS[field.value]}</SelectValue>
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent data-audit-live-surface>
                       {choices.map((s) => (
                         <SelectItem key={s} value={s}>
                           {s === 'open' ? 'Keep open / reopen' : REQUEST_LABELS[s]}

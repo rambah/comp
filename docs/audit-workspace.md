@@ -32,7 +32,7 @@ approval permissions. The UI uses the Comp design system.
 - The evidence library spans all checks in the selected audit, with source-type and title/version/check search. Each card links back to its original check and exact retained evidence reference.
 - Different text snapshots of the same typed source can be compared side by side, with a selectable comparison version and independent document searches. PDF-only records and original file attachments retain their existing preview; they are not presented as text comparisons.
 - The evidence index downloads locally as CSV, retaining exact source/evidence IDs, version labels and capture metadata. Fields are quoted and formula prefixes neutralized. It is an index, not an archive of the source files.
-- Live view metadata includes the library tab, board/list layout, two selected evidence IDs and bounded scroll ratios for the readers. No document contents or search queries are added to the live payload. Search/filter state remains local to each viewer; this remains a shared audit view rather than pixel-streamed screen capture.
+- After explicit sharing consent, live reconstruction includes the visible library, board/list layout, search/filter inputs and open comparisons. The observer sees the auditor's current workspace state without submitting any actions.
 
 ## Review experience
 
@@ -61,22 +61,13 @@ permissions. Creating a finding retains the existing `finding:create` restrictio
 Live consent, tickets and auditor completion require the user's own browser
 session; impersonation and MCP/API-key callers cannot perform those actions.
 
-Live following starts automatically on each workspace visit without a confirmation
-dialog. The browser initializes a sharing session through the existing live access
-endpoint before publishing. The workspace stays usable if initialization fails.
-There is no ongoing viewer indicator. Leaving the workspace ends transmission.
+Live sharing is off on every visit. “Share workspace live” opens an English consent dialog explaining that administrators can see the workspace, dialogs, mouse, scroll and unsaved input, including research. “Agree and share live” initializes notice version 2. The API rejects the old automatic initialization payload. A persistent status lists current viewers and offers “Stop sharing”. Leaving the workspace or losing access ends transmission.
 
-Following shares the current audit, check, tab, linked evidence preview, scroll
-position and pointer. It renders saved audit records in a read-only view; it is
-not a pixel/video screen stream. Unsaved form text, unrelated tabs, external
-source pages and the desktop are excluded. Dialogs for unsaved requests/findings
-are not mirrored. Live events are transient, with no replay or recording.
+The workspace is reconstructed with rrweb in an isolated, read-only iframe. It does not use screen capture or replay application components. The replay iframe permits neither scripts nor form submission, is inert, and receives no application event handlers. Replaying a submit click cannot execute a second mutation; only the auditor's original form writes data. Opening a PDF causes the administrator to retrieve the same evidence version through the existing permission-checked preview endpoint. PDF viewer page/zoom controls and browser-native file pickers are not mirrored.
 
-Pointers are sampled at up to 20 Hz, coalesced under backpressure and interpolated
-using animation frames. Tickets are single-use and expire after 20 seconds.
-Authorization is rechecked every four seconds; revoked consent broadcasts an
-immediate stop. Stale views disappear, connections retry with backoff, and audit
-saving works independently of the live service.
+Only the workspace and explicitly marked audit dialog/popover surfaces are captured. Passwords, one-time codes, payment-card inputs and explicitly private elements are excluded, as are other app surfaces, browser tabs and desktop. Research is included in the consented workspace view. CSS and DOM changes are batched every 100 ms, compressed and split into bounded chunks. Pointer samples are collected at up to 40 Hz; an 800 ms playback buffer smooths arrival jitter. Actual latency depends on the network.
+
+The authenticated WebSocket/Redis relay retains no replay history or video. Publisher and observer permissions are rechecked every four seconds. Stops clear the rendered view immediately upon delivery. Connections retry; an interrupted or incomplete sequence requests a fresh snapshot rather than applying corrupt deltas. Presence tolerates 15 seconds of jitter, retains the chosen auditor during reconnection and does not end sharing when the browser tab loses focus. Input and DOM buffers are bounded; overload closes the connection and requires synchronization again.
 
 ## Deployment
 
@@ -92,21 +83,23 @@ saving works independently of the live service.
    Deploy API and frontend together for the session endpoint rename, and update
    any proxy rules that previously matched `/v1/audit-workspace/live/socket`.
 5. Verify a real auditor and an owner in separate browser sessions: opening the
-   workspace enables following without a prompt; leaving stops it; removing access
+   workspace stays private until the auditor explicitly consents; leaving stops it; removing access
    terminates it. Check cross-replica following and reconnect after a proxy restart.
 
 Without Redis or WebSocket proxy support, the audit workflow remains usable but
 live following is unavailable. The owner sees the disconnected state.
 
-## Validation performed locally
+## Validation history
 
 API tests cover tenant isolation, consent, revocation, bounded queues, review
 conflicts, exact-version previews, completion and OpenAPI contracts. Real local
 WebSocket tests cover handshake tickets, replay rejection and payload validation;
-their Redis transport is mocked. Frontend tests cover automatic sharing, reconnect, stale
+their Redis transport is mocked. Frontend regression cases cover sharing, reconnect, stale
 views, autosave/conflicts and route permissions. The additive migration was
 applied to an isolated PostgreSQL fixture including existing records and cascade
 checks. Chrome component checks use synthetic data, not the production database.
 
 Production proxy/Redis latency and the full deployed application remain rollout
 checks; local tests do not establish production performance.
+
+The consented DOM-reconstruction change adds regression cases for explicit consent, scope exclusion and observer-only relay messages. These new test cases have not been run, following the request not to execute more test suites. Static type checks are separate from functional or performance validation.

@@ -32,7 +32,11 @@ describe('Bounded live audit connection', () => {
   let socket: Socket;
   let connection: AuditLiveConnection;
   let receive: (event: LiveEvent) => void;
-  const bus = { publish: jest.fn(), subscribe: jest.fn() };
+  const bus = {
+    publish: jest.fn(),
+    publishMany: jest.fn(),
+    subscribe: jest.fn(),
+  };
   const access = { valid: jest.fn() };
   const connect = (mode: 'observe' | 'publish' = 'publish') => {
     connection = new AuditLiveConnection(
@@ -47,6 +51,7 @@ describe('Bounded live audit connection', () => {
     jest.clearAllMocks();
     socket = new Socket();
     bus.publish.mockResolvedValue(1);
+    bus.publishMany.mockResolvedValue([]);
     access.valid.mockResolvedValue(true);
     bus.subscribe.mockImplementation(({ onEvent, onReady }) => {
       receive = onEvent;
@@ -107,6 +112,73 @@ describe('Bounded live audit connection', () => {
     );
     expect(socket.close).toHaveBeenCalled();
   });
+  it('allows observers to request a snapshot but never publish actions or DOM', async () => {
+    connect('observe');
+    socket.emit(
+      'message',
+      JSON.stringify({
+        kind: 'watch',
+        sequence: 1,
+        targetNonce: '94d4ad08-6377-4209-b4ae-023747847895',
+        watching: true,
+        requestSnapshot: true,
+      }),
+    );
+    await settle();
+    expect(bus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'watch' }),
+    );
+    bus.publish.mockClear();
+    socket.emit(
+      'message',
+      JSON.stringify({
+        kind: 'dom',
+        sequence: 2,
+        epoch: '94d4ad08-6377-4209-b4ae-023747847895',
+        batch: 0,
+        part: 0,
+        parts: 1,
+        payload: 'AAAA',
+      }),
+    );
+    expect(socket.close).toHaveBeenCalled();
+    expect(bus.publish).not.toHaveBeenCalled();
+  });
+  it('preserves every DOM chunk in order while publishing is pending', async () => {
+    let release!: () => void;
+    bus.publish.mockImplementationOnce(
+      () =>
+        new Promise<void>((resolve) => {
+          release = resolve;
+        }),
+    );
+    connect();
+    for (let part = 0; part < 4; part++) {
+      socket.emit(
+        'message',
+        JSON.stringify({
+          kind: 'dom',
+          sequence: part + 1,
+          epoch: '94d4ad08-6377-4209-b4ae-023747847895',
+          batch: 0,
+          part,
+          parts: 4,
+          payload: 'AAAA',
+        }),
+      );
+    }
+    release();
+    await settle();
+    expect(bus.publish).toHaveBeenCalledWith(
+      expect.objectContaining({ part: 0 }),
+    );
+    expect(bus.publishMany).toHaveBeenCalledWith([
+      expect.objectContaining({ part: 1 }),
+      expect.objectContaining({ part: 2 }),
+      expect.objectContaining({ part: 3 }),
+    ]);
+    expect(socket.close).not.toHaveBeenCalled();
+  });
   it('coalesces pointer movements while a network send is blocked', async () => {
     let release!: () => void;
     bus.publish.mockImplementationOnce(
@@ -161,6 +233,7 @@ describe('Bounded live audit connection', () => {
     await settle();
     expect(socket.send).not.toHaveBeenCalled();
     receive({ ...frame, organizationId: 'org1', kind: 'stop', revoked: true });
+    await settle();
     socket.send.mockClear();
     receive({ ...frame, organizationId: 'org1' });
     await settle();

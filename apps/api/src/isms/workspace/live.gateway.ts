@@ -20,7 +20,7 @@ export class AuditLiveGateway
 {
   private readonly server = new WebSocketServer({
     noServer: true,
-    maxPayload: 4096,
+    maxPayload: 32768,
     perMessageDeflate: false,
   });
   private http?: Server;

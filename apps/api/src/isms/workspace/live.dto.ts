@@ -1,5 +1,12 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsIn, IsOptional, IsUUID } from 'class-validator';
+import {
+  Equals,
+  IsBoolean,
+  IsIn,
+  IsOptional,
+  IsUUID,
+  ValidateIf,
+} from 'class-validator';
 
 export class AuditViewConsentDto {
   @ApiProperty({
@@ -8,6 +15,15 @@ export class AuditViewConsentDto {
   })
   @IsBoolean()
   allowed!: boolean;
+
+  @ApiPropertyOptional({
+    enum: [2],
+    description:
+      'Required when enabling sharing: confirms the current notice covering live dialogs and unsaved inputs.',
+  })
+  @ValidateIf((value: AuditViewConsentDto) => value.allowed === true)
+  @Equals(2)
+  noticeVersion?: number;
 }
 export class AuditLiveTicketDto {
   @ApiProperty({
