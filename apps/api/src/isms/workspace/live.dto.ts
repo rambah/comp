@@ -5,7 +5,6 @@ import {
   IsIn,
   IsOptional,
   IsUUID,
-  ValidateIf,
 } from 'class-validator';
 
 export class AuditViewConsentDto {
@@ -19,9 +18,9 @@ export class AuditViewConsentDto {
   @ApiPropertyOptional({
     enum: [2],
     description:
-      'Required when enabling sharing: confirms the current notice covering live dialogs and unsaved inputs.',
+      'Optional live reconstruction version for compatibility with existing clients.',
   })
-  @ValidateIf((value: AuditViewConsentDto) => value.allowed === true)
+  @IsOptional()
   @Equals(2)
   noticeVersion?: number;
 }

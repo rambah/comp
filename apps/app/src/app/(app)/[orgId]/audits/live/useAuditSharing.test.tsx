@@ -1,37 +1,32 @@
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { StrictMode, type PropsWithChildren } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuditSharing, type AuditSharingSession } from './useAuditSharing';
 const { post } = vi.hoisted(() => ({ post: vi.fn() }));
 vi.mock('@/lib/api-client', () => ({ apiClient: { post } }));
 
-describe('Explicit audit sharing consent', () => {
+describe('Automatic audit sharing', () => {
   beforeEach(() => {
     vi.resetAllMocks();
     post.mockResolvedValue({ data: { allowed: true, nonce: 'visit' } });
   });
-  it('does not initialize on entry, including Strict Mode', () => {
-    const { result } = renderHook(() => useAuditSharing('org1'), {
+
+  it('initializes on entry exactly once, including Strict Mode', async () => {
+    const { result, rerender } = renderHook(() => useAuditSharing('org1'), {
       wrapper: ({ children }: PropsWithChildren) => <StrictMode>{children}</StrictMode>,
     });
     expect(result.current.session).toBeNull();
-    expect(post).not.toHaveBeenCalled();
-  });
-  it('requires an explicit start and clears immediately on stop', async () => {
-    const { result } = renderHook(() => useAuditSharing('org1'));
-    await act(async () => {
-      await result.current.start();
-    });
-    expect(result.current.session?.allowed).toBe(true);
-    act(() => result.current.stop());
-    expect(result.current.session).toBeNull();
-    expect(post).toHaveBeenLastCalledWith(
+    await waitFor(() => expect(result.current.session?.nonce).toBe('visit'));
+    rerender();
+    expect(post).toHaveBeenCalledTimes(1);
+    expect(post).toHaveBeenCalledWith(
       '/v1/audit-workspace/session/initialize',
-      { allowed: false },
+      { allowed: true, noticeVersion: 2 },
       'org1',
     );
   });
-  it('does not restore sharing from a late initialization response after stop', async () => {
+
+  it('discards a late response after switching organizations', async () => {
     let resolve!: (value: { data: AuditSharingSession }) => void;
     post.mockImplementationOnce(
       () =>
@@ -39,37 +34,45 @@ describe('Explicit audit sharing consent', () => {
           resolve = done;
         }),
     );
-    const { result } = renderHook(() => useAuditSharing('org1'));
-    let pending!: Promise<boolean>;
-    act(() => {
-      pending = result.current.start();
-    });
-    act(() => result.current.stop());
-    await act(async () => {
-      resolve({ data: { allowed: true, nonce: 'late' } });
-      await pending;
-    });
-    expect(result.current.session).toBeNull();
-  });
-  it('never carries sharing into another organization or visit', async () => {
-    const { result, rerender, unmount } = renderHook(useAuditSharing, { initialProps: 'org1' });
-    await act(async () => {
-      await result.current.start();
-    });
+    post.mockResolvedValue({ data: { allowed: true, nonce: 'org2-visit' } });
+    const { result, rerender } = renderHook(useAuditSharing, { initialProps: 'org1' });
     rerender('org2');
     expect(result.current.session).toBeNull();
-    unmount();
-    const next = renderHook(() => useAuditSharing('org1'));
-    expect(next.result.current.session).toBeNull();
-    expect(post).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(result.current.session?.nonce).toBe('org2-visit'));
+    await act(async () => resolve({ data: { allowed: true, nonce: 'late' } }));
+    expect(result.current.session?.nonce).toBe('org2-visit');
   });
-  it('stays private when initialization fails', async () => {
-    post.mockRejectedValue(new Error('Offline'));
+
+  it('never reuses an old session when switching away and back', async () => {
+    const { result, rerender } = renderHook(useAuditSharing, { initialProps: 'org1' });
+    await waitFor(() => expect(result.current.session?.nonce).toBe('visit'));
+    post.mockReturnValue(new Promise(() => undefined));
+    rerender('org2');
+    expect(result.current.session).toBeNull();
+    rerender('org1');
+    expect(result.current.session).toBeNull();
+    expect(post).toHaveBeenCalledTimes(3);
+  });
+
+  it('initializes a fresh session on every visit', async () => {
+    const first = renderHook(() => useAuditSharing('org1'));
+    await waitFor(() => expect(first.result.current.session?.nonce).toBe('visit'));
+    first.unmount();
+    post.mockResolvedValue({ data: { allowed: true, nonce: 'new-visit' } });
+    const next = renderHook(() => useAuditSharing('org1'));
+    await waitFor(() => expect(next.result.current.session?.nonce).toBe('new-visit'));
+    expect(post).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['rejection', 'error', 'denied'])('does not publish after %s', async (failure) => {
+    if (failure === 'rejection') post.mockRejectedValue(new Error('Offline'));
+    else if (failure === 'denied')
+      post.mockResolvedValue({ data: { allowed: false, nonce: 'no' } });
+    else post.mockResolvedValue({ error: 'Unavailable' });
     const { result } = renderHook(() => useAuditSharing('org1'));
     await act(async () => {
-      await result.current.start();
+      await Promise.resolve();
     });
     expect(result.current.session).toBeNull();
-    expect(result.current.error).toBeTruthy();
   });
 });

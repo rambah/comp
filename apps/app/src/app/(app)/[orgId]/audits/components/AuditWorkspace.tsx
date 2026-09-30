@@ -5,7 +5,6 @@ import { useState, useSyncExternalStore } from 'react';
 import '../audit-workspace.css';
 import { AuditDomReplay } from '../live/AuditDomReplay';
 import { AuditFollowBar } from '../live/AuditFollowBar';
-import { AuditSharingNotice } from '../live/AuditSharingNotice';
 import type { AuditLiveView } from '../live/live-types';
 import { useAuditDomBroadcast } from '../live/useAuditDomBroadcast';
 import { useAuditDomObserver } from '../live/useAuditDomObserver';
@@ -63,7 +62,7 @@ export function AuditWorkspace({
   const audit = data?.audits.find((a) => a.id === auditId) ?? data?.audits[0];
   const check = audit?.controls.find((c) => c.id === selected);
   const registerUrl = `/${organizationId}/documents/isms/internal-audit`;
-  const broadcast = useAuditDomBroadcast({
+  useAuditDomBroadcast({
     organizationId,
     session: observer.following ? null : sharingSession.session,
   });
@@ -97,14 +96,6 @@ export function AuditWorkspace({
       }
     >
       {canObserve && <AuditFollowBar observer={observer} disabled={busy} />}
-      {!observer.following && (
-        <AuditSharingNotice
-          sharing={sharingSession}
-          connected={broadcast.connected}
-          viewers={broadcast.viewers}
-          error={broadcast.error}
-        />
-      )}
       {observer.following ? (
         <AuditDomReplay observer={observer} organizationId={organizationId} />
       ) : (

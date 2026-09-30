@@ -27271,7 +27271,7 @@
     },
     "/v1/audit-workspace/session/initialize": {
       "post": {
-        "description": "Enable live workspace reconstruction after explicit notice v2 consent, or revoke it. Includes dialogs and unsaved inputs. Requires your own browser session.",
+        "description": "Initialize live workspace reconstruction for this visit, or revoke it. Includes dialogs and unsaved inputs. Requires your own browser session.",
         "operationId": "AuditLiveController_consent_v1",
         "parameters": [],
         "requestBody": {
@@ -32757,7 +32757,7 @@
             "enum": [
               2
             ],
-            "description": "Required when enabling sharing: confirms the current notice covering live dialogs and unsaved inputs."
+            "description": "Optional live reconstruction version for compatibility with existing clients."
           }
         },
         "required": [

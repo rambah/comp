@@ -3,13 +3,13 @@ import { AuditViewConsentDto } from './live.dto';
 import { liveMessageSchema } from './live.schema';
 
 describe('Live reconstruction boundaries', () => {
-  it('rejects old automatic initialization without the current consent notice', async () => {
+  it('accepts automatic initialization with or without the compatibility version', async () => {
     const legacy = Object.assign(new AuditViewConsentDto(), { allowed: true });
-    expect(await validate(legacy)).not.toHaveLength(0);
+    expect(await validate(legacy)).toHaveLength(0);
     legacy.noticeVersion = 2;
     expect(await validate(legacy)).toHaveLength(0);
   });
-  it('always permits stopping without re-accepting a notice', async () => {
+  it('permits session revocation without a compatibility version', async () => {
     expect(
       await validate(
         Object.assign(new AuditViewConsentDto(), { allowed: false }),

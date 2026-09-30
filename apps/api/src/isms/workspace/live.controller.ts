@@ -21,7 +21,7 @@ export class AuditLiveController {
   @ApiOperation({
     summary: 'Initialize an audit workspace session',
     description:
-      'Enable live workspace reconstruction after explicit notice v2 consent, or revoke it. Includes dialogs and unsaved inputs. Requires your own browser session.',
+      'Initialize live workspace reconstruction for this visit, or revoke it. Includes dialogs and unsaved inputs. Requires your own browser session.',
   })
   @ApiBody({ type: AuditViewConsentDto })
   consent(
