@@ -1,10 +1,14 @@
 import { z } from 'zod';
+import type { PanelScroll } from './panel-scroll';
 export interface AuditLiveView {
   auditId: string;
   revision?: string;
-  tab: 'checks' | 'requests' | 'findings' | 'report';
+  tab: 'checks' | 'evidence' | 'requests' | 'findings' | 'report';
   checkId: string | null;
   evidenceId: string | null;
+  compareEvidenceId?: string | null;
+  checkLayout?: 'list' | 'board';
+  panelScroll?: PanelScroll;
   scrollRatio: number;
 }
 export interface AuditPointer {
@@ -22,9 +26,20 @@ export const liveEventSchema = z.discriminatedUnion('kind', [
     view: z.object({
       auditId: z.string(),
       revision: z.string().optional(),
-      tab: z.enum(['checks', 'requests', 'findings', 'report']),
+      tab: z.enum(['checks', 'evidence', 'requests', 'findings', 'report']),
       checkId: z.string().nullable(),
       evidenceId: z.string().nullable(),
+      compareEvidenceId: z.string().max(100).nullable().optional(),
+      checkLayout: z.enum(['list', 'board']).optional(),
+      panelScroll: z
+        .object({
+          'evidence-preview': z.number().min(0).max(1).optional(),
+          'evidence-comparison': z.number().min(0).max(1).optional(),
+          'compare-0': z.number().min(0).max(1).optional(),
+          'compare-1': z.number().min(0).max(1).optional(),
+        })
+        .strict()
+        .optional(),
       scrollRatio: z.number().min(0).max(1),
     }),
   }),

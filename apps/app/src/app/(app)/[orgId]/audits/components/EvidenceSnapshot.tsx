@@ -10,6 +10,7 @@ import {
 } from '@trycompai/design-system';
 import { Close, Copy, Download } from '@trycompai/design-system/icons';
 import { toast } from 'sonner';
+import { evidenceCitation } from '../audit-evidence';
 import { snapshotText } from '../snapshot-text';
 import type { EvidenceLink } from '../workspace-types';
 import { AuditDocumentReader } from './AuditDocumentReader';
@@ -100,14 +101,10 @@ export function EvidenceSnapshot({
                 variant="ghost"
                 iconLeft={<Copy size={16} />}
                 onClick={() => {
-                  void navigator.clipboard
-                    .writeText(
-                      `${evidence.title} — ${evidence.versionLabel}. Source: ${evidence.sourceId}. Captured ${evidence.createdAt}.`,
-                    )
-                    .then(
-                      () => toast.success('Evidence reference copied'),
-                      () => toast.error('Unable to copy the reference.'),
-                    );
+                  void navigator.clipboard.writeText(evidenceCitation(evidence)).then(
+                    () => toast.success('Evidence reference copied'),
+                    () => toast.error('Unable to copy the reference.'),
+                  );
                 }}
               >
                 Copy citation

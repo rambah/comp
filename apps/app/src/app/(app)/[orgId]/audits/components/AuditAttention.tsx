@@ -6,11 +6,13 @@ import { formatAuditDate, type WorkspaceAudit } from '../workspace-types';
 
 export function AuditAttention({
   audit,
+  horizontal = false,
   onSelect,
   onRequests,
   onReport,
 }: {
   audit: WorkspaceAudit;
+  horizontal?: boolean;
   onSelect: (id: string) => void;
   onRequests: () => void;
   onReport: () => void;
@@ -18,7 +20,7 @@ export function AuditAttention({
   const info = auditInsights(audit);
   const activity = auditActivity(audit);
   return (
-    <aside className="space-y-5">
+    <aside className={horizontal ? 'grid items-start gap-5 md:grid-cols-2' : 'space-y-5'}>
       <section className="rounded-xl border bg-background p-5">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-sm font-semibold">Needs your attention</h3>

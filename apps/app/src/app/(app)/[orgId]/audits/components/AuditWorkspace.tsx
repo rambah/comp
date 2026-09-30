@@ -1,20 +1,11 @@
 'use client';
 import { usePermissions } from '@/hooks/use-permissions';
-import {
-  Button,
-  PageHeader,
-  PageHeaderDescription,
-  PageLayout,
-  Tabs,
-  TabsList,
-  TabsTrigger,
-} from '@trycompai/design-system';
-import { Launch } from '@trycompai/design-system/icons';
-import Link from 'next/link';
+import { PageLayout } from '@trycompai/design-system';
 import { useEffect, useRef, useState } from 'react';
 import { AuditFollowBar } from '../live/AuditFollowBar';
 import { AuditSharingConsent, type SharingChoice } from '../live/AuditSharingConsent';
 import type { AuditLiveView } from '../live/live-types';
+import { applyPanelScroll } from '../live/panel-scroll';
 import { RemotePointer } from '../live/RemotePointer';
 import { auditScrollContainer } from '../live/scroll-container';
 import { useAuditBroadcast } from '../live/useAuditBroadcast';
@@ -25,12 +16,14 @@ import { auditRevision, nextCheck, type WorkspaceData } from '../workspace-types
 import { AuditCheckDetail } from './AuditCheckDetail';
 import { AuditCheckNavigator } from './AuditCheckNavigator';
 import { AuditContext } from './AuditContext';
+import { AuditEvidenceLibrary } from './AuditEvidenceLibrary';
 import { AuditFindings } from './AuditFindings';
 import { AuditQueue } from './AuditQueue';
 import { AuditReport } from './AuditReport';
 import { AuditRequests } from './AuditRequests';
-import { AuditSearch } from './AuditSearch';
+import { AuditWorkspaceHeader } from './AuditWorkspaceHeader';
 import { AuditWorkspaceState } from './AuditWorkspaceState';
+import { AuditWorkspaceTabs } from './AuditWorkspaceTabs';
 
 export function AuditWorkspace({
   organizationId,
@@ -52,6 +45,8 @@ export function AuditWorkspace({
   const observer = useAuditObserver({ organizationId, enabled: canObserve && choice !== null });
   const canEdit = hasPermission('auditWorkspace', 'update') && !observer.following;
   const [focusedFinding, setFocusedFinding] = useState<{ id: string } | null>(null);
+  const [compareId, setCompareId] = useState<string | null>(null);
+  const [checkLayout, setCheckLayout] = useState<'list' | 'board'>('board');
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [auditId, setAuditId] = useState(initialData?.audits[0]?.id ?? '');
   const [selected, setSelected] = useState<string | null>(null);
@@ -60,7 +55,6 @@ export function AuditWorkspace({
   useAuditDraftGuard(busy);
   const audit = data?.audits.find((a) => a.id === auditId) ?? data?.audits[0];
   const check = audit?.controls.find((c) => c.id === selected);
-  const requests = audit?.controls.flatMap((c) => c.requests) ?? [];
   const registerUrl = `/${organizationId}/documents/isms/internal-audit`;
   const live = observer.current?.view;
   useEffect(() => {
@@ -72,9 +66,17 @@ export function AuditWorkspace({
     setSelected(live.checkId);
     setTab(live.tab);
     setPreviewId(live.evidenceId);
-    const scrolling = auditScrollContainer(root.current);
-    if (scrolling)
-      scrolling.scrollTop = live.scrollRatio * (scrolling.scrollHeight - scrolling.clientHeight);
+    setCompareId(live.compareEvidenceId ?? null);
+    setCheckLayout(live.checkLayout ?? 'list');
+    // Let the selected view and any portalled reader mount before restoring scroll positions.
+    const frame = requestAnimationFrame(() => {
+      const scrolling = auditScrollContainer(root.current);
+      if (scrolling)
+        scrolling.scrollTop =
+          live.scrollRatio * Math.max(0, scrolling.scrollHeight - scrolling.clientHeight);
+      applyPanelScroll(live.panelScroll);
+    });
+    return () => cancelAnimationFrame(frame);
   }, [live]);
   useAuditBroadcast({
     organizationId,
@@ -87,6 +89,8 @@ export function AuditWorkspace({
           tab,
           checkId: selected,
           evidenceId: previewId,
+          compareEvidenceId: compareId,
+          checkLayout,
           scrollRatio: 0,
           revision: auditRevision(audit),
         }
@@ -95,6 +99,7 @@ export function AuditWorkspace({
   const locked = busy || !!observer.following;
   const handleSelect = (id: string) => {
     if (!locked) {
+      setCompareId(null);
       setSelected(id);
       setPreviewId(null);
       setTab('checks');
@@ -104,45 +109,22 @@ export function AuditWorkspace({
     <PageLayout
       maxWidth="2xl"
       header={
-        <PageHeader
-          title="Audit workspace"
-          actions={
-            <div className="flex flex-wrap gap-2">
-              {audit && (
-                <AuditSearch
-                  audit={audit}
-                  disabled={locked || choice === null || settingsOpen}
-                  onNavigate={(item) => {
-                    setFocusedFinding(item.group === 'Findings' ? item : null);
-                    setSelected(item.checkId);
-                    setPreviewId(item.evidenceId);
-                    setTab(item.tab);
-                  }}
-                />
-              )}
-              <Button
-                variant="ghost"
-                onClick={() => {
-                  setSharingPaused(true);
-                  setSettingsOpen(true);
-                }}
-              >
-                Audit settings
-              </Button>
-              <Button
-                variant="outline"
-                iconRight={<Launch size={16} />}
-                render={<Link href={registerUrl} target="_blank" rel="noopener noreferrer" />}
-              >
-                Audit programme
-              </Button>
-            </div>
-          }
-        >
-          <PageHeaderDescription>
-            Evidence, conversations and conclusions. One focused place to run your audit.
-          </PageHeaderDescription>
-        </PageHeader>
+        <AuditWorkspaceHeader
+          audit={audit}
+          disabled={locked || choice === null || settingsOpen}
+          registerUrl={registerUrl}
+          onNavigate={(item) => {
+            setCompareId(null);
+            setFocusedFinding(item.group === 'Findings' ? item : null);
+            setSelected(item.checkId);
+            setPreviewId(item.evidenceId);
+            setTab(item.tab);
+          }}
+          onSettings={() => {
+            setSharingPaused(true);
+            setSettingsOpen(true);
+          }}
+        />
       }
     >
       {canObserve && <AuditFollowBar observer={observer} disabled={busy} />}
@@ -175,36 +157,40 @@ export function AuditWorkspace({
               locked={locked}
               canEdit={canEdit}
               onChange={(id) => {
+                setCompareId(null);
                 setAuditId(id);
                 setSelected(null);
                 setPreviewId(null);
               }}
             />
-            <Tabs
-              value={tab}
-              onValueChange={(v) => {
-                if (!locked) {
-                  setTab(v as AuditLiveView['tab']);
-                  setSelected(null);
-                  setPreviewId(null);
-                }
+            <AuditWorkspaceTabs
+              audit={audit}
+              tab={tab}
+              locked={locked}
+              onChange={(value) => {
+                setTab(value);
+                setSelected(null);
+                setPreviewId(null);
+                setCompareId(null);
               }}
-            >
-              <TabsList aria-label="Audit workspace">
-                <TabsTrigger value="checks" disabled={locked}>
-                  Checks
-                </TabsTrigger>
-                <TabsTrigger value="requests" disabled={locked}>
-                  Requests ({requests.filter((r) => r.status !== 'accepted').length})
-                </TabsTrigger>
-                <TabsTrigger value="findings" disabled={locked}>
-                  Findings ({audit.findings.length})
-                </TabsTrigger>
-                <TabsTrigger value="report" disabled={locked}>
-                  Report
-                </TabsTrigger>
-              </TabsList>
-            </Tabs>
+            />
+            {tab === 'evidence' && (
+              <AuditEvidenceLibrary
+                key={audit.id}
+                audit={audit}
+                organizationId={organizationId}
+                locked={locked}
+                previewId={previewId}
+                compareId={compareId}
+                onSelect={handleSelect}
+                onPreview={(id, comparison = null) => {
+                  if (!locked) {
+                    setPreviewId(id);
+                    setCompareId(comparison);
+                  }
+                }}
+              />
+            )}
             {tab === 'checks' &&
               (check ? (
                 <div className="space-y-5">
@@ -239,10 +225,21 @@ export function AuditWorkspace({
                 </div>
               ) : (
                 <AuditQueue
+                  layout={checkLayout}
+                  onLayoutChange={(value) => {
+                    if (!locked) setCheckLayout(value);
+                  }}
                   audit={audit}
                   onSelect={handleSelect}
-                  onRequests={() => setTab('requests')}
-                  onReport={() => setTab('report')}
+                  onRequests={() => {
+                    if (!locked) setTab('requests');
+                  }}
+                  onReport={() => {
+                    if (!locked) setTab('report');
+                  }}
+                  onEvidence={() => {
+                    if (!locked) setTab('evidence');
+                  }}
                 />
               ))}
             {tab === 'requests' && (
@@ -271,7 +268,9 @@ export function AuditWorkspace({
                   setTab('checks');
                   setSelected(null);
                 }}
-                onRequests={() => setTab('requests')}
+                onRequests={() => {
+                  if (!locked) setTab('requests');
+                }}
                 onBusyChange={setBusy}
                 audit={audit}
                 members={data.members}

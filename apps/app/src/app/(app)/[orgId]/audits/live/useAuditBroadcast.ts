@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import type { SharingChoice } from './AuditSharingConsent';
 import type { AuditLiveView, AuditPointer } from './live-types';
+import { readPanelScroll } from './panel-scroll';
 import { auditScrollContainer } from './scroll-container';
 import { useLiveSocket } from './useLiveSocket';
 
@@ -42,7 +43,11 @@ export function useAuditBroadcast({
       const range = scrolling ? scrolling.scrollHeight - scrolling.clientHeight : 0;
       send({
         kind: 'view',
-        view: { ...latest.current, scrollRatio: range > 0 ? scrolling!.scrollTop / range : 0 },
+        view: {
+          ...latest.current,
+          panelScroll: readPanelScroll(),
+          scrollRatio: range > 0 ? scrolling!.scrollTop / range : 0,
+        },
       });
     };
     publishView();
@@ -72,6 +77,8 @@ export function useAuditBroadcast({
     view?.tab,
     view?.checkId,
     view?.evidenceId,
+    view?.compareEvidenceId,
+    view?.checkLayout,
     view?.revision,
   ]);
   useEffect(() => {

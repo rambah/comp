@@ -5,9 +5,20 @@ export const liveViewSchema = z
   .object({
     auditId: z.string().min(1).max(100),
     revision: z.string().max(100).optional(),
-    tab: z.enum(['checks', 'requests', 'findings', 'report']),
+    tab: z.enum(['checks', 'evidence', 'requests', 'findings', 'report']),
     checkId: z.string().max(100).nullable(),
     evidenceId: z.string().max(100).nullable(),
+    compareEvidenceId: z.string().max(100).nullable().optional(),
+    checkLayout: z.enum(['list', 'board']).optional(),
+    panelScroll: z
+      .object({
+        'evidence-preview': z.number().min(0).max(1).optional(),
+        'evidence-comparison': z.number().min(0).max(1).optional(),
+        'compare-0': z.number().min(0).max(1).optional(),
+        'compare-1': z.number().min(0).max(1).optional(),
+      })
+      .strict()
+      .optional(),
     scrollRatio: z.number().min(0).max(1),
   })
   .strict();

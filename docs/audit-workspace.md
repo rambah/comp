@@ -26,6 +26,14 @@ approval permissions. The UI uses the Comp design system.
 - Changes to checks, evidence, questions or conclusions reopen the working audit
   and clear current draft sign-offs. Published versions remain unchanged.
 
+## Evidence library and review board
+
+- The review plan opens as a four-lane board and can switch to a compact list. Status is derived from saved outcomes and outstanding requests; cards cannot be dragged to manufacture an outcome. The no-linked-evidence filter helps plan sampling without treating missing links as a nonconformity.
+- The evidence library spans all checks in the selected audit, with source-type and title/version/check search. Each card links back to its original check and exact retained evidence reference.
+- Different text snapshots of the same typed source can be compared side by side, with a selectable comparison version and independent document searches. PDF-only records and original file attachments retain their existing preview; they are not presented as text comparisons.
+- The evidence index downloads locally as CSV, retaining exact source/evidence IDs, version labels and capture metadata. Fields are quoted and formula prefixes neutralized. It is an index, not an archive of the source files.
+- Live view metadata includes the library tab, board/list layout, two selected evidence IDs and bounded scroll ratios for the readers. No document contents or search queries are added to the live payload. Search/filter state remains local to each viewer; this remains a shared audit view rather than pixel-streamed screen capture.
+
 ## Review experience
 
 The overview prioritizes received responses before unfinished checks, surfaces

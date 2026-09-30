@@ -3,17 +3,20 @@ import { Button } from '@trycompai/design-system';
 import { ArrowRight, Chat, Checkmark, Document, Time } from '@trycompai/design-system/icons';
 import { auditInsights } from '../audit-insights';
 import type { WorkspaceAudit } from '../workspace-types';
+import { AuditProgressRing } from './AuditProgressRing';
 
 export function AuditOverview({
   audit,
   onSelect,
   onRequests,
   onReport,
+  onEvidence,
 }: {
   audit: WorkspaceAudit;
   onSelect: (id: string) => void;
   onRequests: () => void;
   onReport: () => void;
+  onEvidence: () => void;
 }) {
   const insight = auditInsights(audit);
   const finished = audit.status === 'complete';
@@ -34,14 +37,16 @@ export function AuditOverview({
       className="overflow-hidden rounded-xl border bg-background shadow-sm"
     >
       <div className="grid lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div className="space-y-5 bg-gradient-to-br from-primary/10 via-primary/5 to-background p-6 sm:p-8">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-primary">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+        <div className="relative space-y-6 bg-primary p-6 text-primary-foreground sm:p-9">
+          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-widest text-primary-foreground/75">
+            <span className="h-1.5 w-1.5 rounded-full bg-primary-foreground" />
             {finished ? 'Audit completed' : 'Suggested next step'}
           </div>
           <div className="space-y-2">
-            <h2 className="max-w-xl text-2xl font-semibold tracking-tight sm:text-3xl">{title}</h2>
-            <p className="max-w-xl text-sm leading-6 text-muted-foreground">
+            <h2 className="max-w-2xl text-2xl font-semibold leading-tight tracking-tight sm:text-3xl">
+              {title}
+            </h2>
+            <p className="max-w-xl text-sm leading-6 text-primary-foreground/80">
               {finished
                 ? 'Your completed checks, evidence and conclusions are ready to revisit.'
                 : insight.next?.whatWasTested ||
@@ -54,6 +59,7 @@ export function AuditOverview({
           </div>
           <div className="flex flex-wrap items-center gap-4">
             <Button
+              variant="secondary"
               iconRight={<ArrowRight size={16} />}
               onClick={() =>
                 insight.next && !finished
@@ -73,51 +79,17 @@ export function AuditOverview({
                       ? 'View outstanding requests'
                       : 'Prepare your conclusion'}
             </Button>
-            {insight.next && !finished && (
-              <p className="max-w-sm truncate text-xs text-muted-foreground">
-                Next: {insight.next.controlRef}
-              </p>
-            )}
+            <Button variant="secondary" iconLeft={<Document size={16} />} onClick={onEvidence}>
+              Browse evidence
+            </Button>
           </div>
         </div>
-        <div className="flex flex-col justify-center gap-4 border-t p-6 sm:p-8 lg:border-l lg:border-t-0">
-          <div className="flex items-baseline justify-between">
-            <span className="text-sm font-medium">Review progress</span>
-            <span className="text-3xl font-semibold tracking-tight tabular-nums">
-              {insight.progress}
-              <span className="text-base text-muted-foreground">%</span>
-            </span>
-          </div>
-          <div
-            role="progressbar"
-            aria-label="Checks with a recorded outcome"
-            aria-valuenow={insight.reviewed + insight.excluded}
-            aria-valuemin={0}
-            aria-valuemax={audit.controls.length || 1}
-            className="flex h-2 overflow-hidden rounded-full bg-muted"
-          >
-            <div
-              className="bg-primary transition-[width] duration-300 motion-reduce:transition-none"
-              style={{
-                width: `${audit.controls.length ? (insight.reviewed / audit.controls.length) * 100 : 0}%`,
-              }}
-            />
-            <div
-              className="bg-primary/30"
-              style={{
-                width: `${audit.controls.length ? (insight.excluded / audit.controls.length) * 100 : 0}%`,
-              }}
-            />
-          </div>
-          <p className="text-sm">
-            <strong>{insight.reviewed}</strong> reviewed{' '}
-            <span className="text-muted-foreground">of {audit.controls.length} planned checks</span>
-          </p>
-          <p className="text-xs leading-5 text-muted-foreground">
-            {insight.excluded ? `${insight.excluded} explicitly not sampled. ` : ''}This is audit
-            progress, not a compliance score.
-          </p>
-        </div>
+        <AuditProgressRing
+          progress={insight.progress}
+          reviewed={insight.reviewed}
+          total={audit.controls.length}
+          excluded={insight.excluded}
+        />
       </div>
       <div className="grid grid-cols-2 divide-x border-t lg:grid-cols-4">
         {[
