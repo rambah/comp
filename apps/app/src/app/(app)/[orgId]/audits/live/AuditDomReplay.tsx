@@ -73,6 +73,8 @@ export function AuditDomReplay({
             replay = new Player([], {
               root: stage.current,
               liveMode: true,
+              // PageLayout fades in with CSS. Pausing animations freezes it at opacity 0.
+              pauseAnimation: false,
               mouseTail: false,
               showWarning: false,
               showDebug: false,
