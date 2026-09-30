@@ -1,21 +1,15 @@
 'use client';
 import { usePermissions } from '@/hooks/use-permissions';
 import {
-  Badge,
   Button,
   PageHeader,
+  PageHeaderDescription,
   PageLayout,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   Tabs,
   TabsList,
   TabsTrigger,
-  Text,
 } from '@trycompai/design-system';
-import { ArrowLeft, Launch } from '@trycompai/design-system/icons';
+import { Launch } from '@trycompai/design-system/icons';
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import { AuditFollowBar } from '../live/AuditFollowBar';
@@ -27,12 +21,16 @@ import { useAuditBroadcast } from '../live/useAuditBroadcast';
 import { useAuditObserver } from '../live/useAuditObserver';
 import { useAuditDraftGuard } from '../useAuditDraftGuard';
 import { useAuditWorkspace } from '../useAuditWorkspace';
-import { auditRevision, formatAuditDate, nextCheck, type WorkspaceData } from '../workspace-types';
+import { auditRevision, nextCheck, type WorkspaceData } from '../workspace-types';
 import { AuditCheckDetail } from './AuditCheckDetail';
+import { AuditCheckNavigator } from './AuditCheckNavigator';
+import { AuditContext } from './AuditContext';
 import { AuditFindings } from './AuditFindings';
 import { AuditQueue } from './AuditQueue';
 import { AuditReport } from './AuditReport';
 import { AuditRequests } from './AuditRequests';
+import { AuditSearch } from './AuditSearch';
+import { AuditWorkspaceState } from './AuditWorkspaceState';
 
 export function AuditWorkspace({
   organizationId,
@@ -53,6 +51,7 @@ export function AuditWorkspace({
   const canObserve = hasPermission('auditWorkspace', 'observe');
   const observer = useAuditObserver({ organizationId, enabled: canObserve && choice !== null });
   const canEdit = hasPermission('auditWorkspace', 'update') && !observer.following;
+  const [focusedFinding, setFocusedFinding] = useState<{ id: string } | null>(null);
   const [previewId, setPreviewId] = useState<string | null>(null);
   const [auditId, setAuditId] = useState(initialData?.audits[0]?.id ?? '');
   const [selected, setSelected] = useState<string | null>(null);
@@ -103,11 +102,24 @@ export function AuditWorkspace({
   };
   return (
     <PageLayout
+      maxWidth="2xl"
       header={
         <PageHeader
-          title="Audits"
+          title="Audit workspace"
           actions={
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
+              {audit && (
+                <AuditSearch
+                  audit={audit}
+                  disabled={locked || choice === null || settingsOpen}
+                  onNavigate={(item) => {
+                    setFocusedFinding(item.group === 'Findings' ? item : null);
+                    setSelected(item.checkId);
+                    setPreviewId(item.evidenceId);
+                    setTab(item.tab);
+                  }}
+                />
+              )}
               <Button
                 variant="ghost"
                 onClick={() => {
@@ -126,7 +138,11 @@ export function AuditWorkspace({
               </Button>
             </div>
           }
-        />
+        >
+          <PageHeaderDescription>
+            Evidence, conversations and conclusions. One focused place to run your audit.
+          </PageHeaderDescription>
+        </PageHeader>
       }
     >
       {canObserve && <AuditFollowBar observer={observer} disabled={busy} />}
@@ -144,64 +160,26 @@ export function AuditWorkspace({
         {observer.following && observer.current && (
           <RemotePointer position={observer.pointer} root={root} name={observer.current.name} />
         )}
-        {error && (
-          <div role="alert" className="flex flex-wrap items-center gap-3 rounded-lg border p-4">
-            <Text>Unable to refresh the audit workspace.</Text>
-            <Button variant="outline" onClick={() => void mutate()}>
-              Try again
-            </Button>
-          </div>
-        )}
-        {isLoading && !data && <Text variant="muted">Loading audits…</Text>}
-        {data && !audit && (
-          <div className="space-y-4 rounded-lg border p-8">
-            <Text weight="medium">No internal audit has been planned yet.</Text>
-            <Text variant="muted">
-              Create an audit in the existing audit programme. Its checks and findings will appear
-              here.
-            </Text>
-            <Button render={<Link href={registerUrl} target="_blank" rel="noopener noreferrer" />}>
-              Open audit programme
-            </Button>
-          </div>
-        )}
+        <AuditWorkspaceState
+          loading={isLoading && !data}
+          error={!!error}
+          empty={!!data && !audit}
+          registerUrl={registerUrl}
+          onRetry={() => void mutate()}
+        />
         {audit && data && (
           <>
-            <div className="flex flex-wrap items-start justify-between gap-5">
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-52">
-                    <Select
-                      value={audit.id}
-                      disabled={locked}
-                      onValueChange={(v) => {
-                        setAuditId(v ?? '');
-                        setSelected(null);
-                        setPreviewId(null);
-                      }}
-                    >
-                      <SelectTrigger aria-label="Select audit">
-                        <SelectValue>{audit.reference}</SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {data.audits.map((a) => (
-                          <SelectItem key={a.id} value={a.id}>
-                            {a.reference}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Badge variant="secondary">{audit.status.replaceAll('_', ' ')}</Badge>
-                </div>
-                <Text size="sm" variant="muted">
-                  {audit.auditorName || 'Auditor not assigned'} ·{' '}
-                  {formatAuditDate(audit.plannedStartDate)} –{' '}
-                  {formatAuditDate(audit.plannedEndDate)}
-                </Text>
-              </div>
-              {!canEdit && <Badge variant="outline">Read-only access</Badge>}
-            </div>
+            <AuditContext
+              audit={audit}
+              audits={data.audits}
+              locked={locked}
+              canEdit={canEdit}
+              onChange={(id) => {
+                setAuditId(id);
+                setSelected(null);
+                setPreviewId(null);
+              }}
+            />
             <Tabs
               value={tab}
               onValueChange={(v) => {
@@ -230,14 +208,13 @@ export function AuditWorkspace({
             {tab === 'checks' &&
               (check ? (
                 <div className="space-y-5">
-                  <Button
-                    variant="ghost"
-                    disabled={locked}
-                    iconLeft={<ArrowLeft size={16} />}
-                    onClick={() => setSelected(null)}
-                  >
-                    All checks
-                  </Button>
+                  <AuditCheckNavigator
+                    audit={audit}
+                    selected={check.id}
+                    locked={locked}
+                    onSelect={handleSelect}
+                    onBack={() => setSelected(null)}
+                  />
                   <AuditCheckDetail
                     key={check.id}
                     check={check}
@@ -261,7 +238,12 @@ export function AuditWorkspace({
                   />
                 </div>
               ) : (
-                <AuditQueue audit={audit} onSelect={handleSelect} />
+                <AuditQueue
+                  audit={audit}
+                  onSelect={handleSelect}
+                  onRequests={() => setTab('requests')}
+                  onReport={() => setTab('report')}
+                />
               ))}
             {tab === 'requests' && (
               <AuditRequests
@@ -274,6 +256,7 @@ export function AuditWorkspace({
             )}
             {tab === 'findings' && (
               <AuditFindings
+                focus={focusedFinding}
                 audit={audit}
                 members={data.members}
                 canEdit={canEdit}
@@ -284,6 +267,11 @@ export function AuditWorkspace({
             )}
             {tab === 'report' && (
               <AuditReport
+                onChecks={() => {
+                  setTab('checks');
+                  setSelected(null);
+                }}
+                onRequests={() => setTab('requests')}
                 onBusyChange={setBusy}
                 audit={audit}
                 members={data.members}

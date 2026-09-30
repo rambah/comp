@@ -26,6 +26,25 @@ approval permissions. The UI uses the Comp design system.
 - Changes to checks, evidence, questions or conclusions reopen the working audit
   and clear current draft sign-offs. Published versions remain unchanged.
 
+## Review experience
+
+The overview prioritizes received responses before unfinished checks, surfaces
+past-due requests, and shows the latest saved review activity. Progress separates
+reviewed checks from explicit exclusions; it is never presented as a compliance
+score. The completion checklist checks outcomes, reasoning, sampling, accepted
+requests and the saved conclusion before enabling sign-off.
+
+Use **Find in audit** or **Cmd/Ctrl+Shift+K** to jump to a check, its exact linked
+evidence version, a question or a finding. The shortcut is disabled while a draft
+is saving or another dialog is open. Checks also have previous/next and direct
+jump navigation. Request and finding views offer focused status filters.
+
+Captured text previews support literal, case-insensitive document search with
+match navigation and copying a versioned source citation. Highlighting is capped
+at 300 matches to keep long documents responsive; it does not change source text.
+PDFs retain their native viewer. None of these conveniences generate audit
+judgments or mark work complete automatically.
+
 ## Access and live following
 
 Built-in auditors receive `auditWorkspace:read,update`; owners/admins also receive

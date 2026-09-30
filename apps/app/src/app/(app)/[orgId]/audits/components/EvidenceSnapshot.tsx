@@ -8,9 +8,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@trycompai/design-system';
-import { Download } from '@trycompai/design-system/icons';
+import { Close, Copy, Download } from '@trycompai/design-system/icons';
+import { toast } from 'sonner';
 import { snapshotText } from '../snapshot-text';
 import type { EvidenceLink } from '../workspace-types';
+import { AuditDocumentReader } from './AuditDocumentReader';
 import { AuditPdfPreview } from './AuditPdfPreview';
 
 export function EvidenceSnapshot({
@@ -50,6 +52,7 @@ export function EvidenceSnapshot({
       }}
     >
       <DialogContent
+        showCloseButton={false}
         data-audit-live-target="evidence-preview"
         style={{
           width: 'calc(100vw - 3rem)',
@@ -58,13 +61,22 @@ export function EvidenceSnapshot({
           overflowY: 'auto',
         }}
       >
-        <DialogHeader>
-          <DialogTitle>{evidence.title}</DialogTitle>
-          <DialogDescription>
-            {evidence.versionLabel} · Captured {new Date(evidence.createdAt).toLocaleString()} by{' '}
-            {evidence.capturedBy}
-          </DialogDescription>
-        </DialogHeader>
+        <div className="flex items-start justify-between gap-4">
+          <DialogHeader>
+            <DialogTitle>{evidence.title}</DialogTitle>
+            <DialogDescription>
+              {evidence.versionLabel} · Captured {new Date(evidence.createdAt).toLocaleString()} by{' '}
+              {evidence.capturedBy}
+            </DialogDescription>
+          </DialogHeader>
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            aria-label="Close evidence preview"
+            onClick={onClose}
+            iconLeft={<Close size={18} />}
+          />
+        </div>
         {!!evidence.snapshot.pdfOnly && (
           <AuditPdfPreview
             evidenceId={evidence.id}
@@ -74,7 +86,7 @@ export function EvidenceSnapshot({
         )}
         {!evidence.snapshot.pdfOnly && (
           <>
-            <div>
+            <div className="flex flex-wrap gap-2">
               <Button
                 size="sm"
                 variant="outline"
@@ -83,13 +95,30 @@ export function EvidenceSnapshot({
               >
                 Download captured text
               </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                iconLeft={<Copy size={16} />}
+                onClick={() => {
+                  void navigator.clipboard
+                    .writeText(
+                      `${evidence.title} — ${evidence.versionLabel}. Source: ${evidence.sourceId}. Captured ${evidence.createdAt}.`,
+                    )
+                    .then(
+                      () => toast.success('Evidence reference copied'),
+                      () => toast.error('Unable to copy the reference.'),
+                    );
+                }}
+              >
+                Copy citation
+              </Button>
             </div>
-            <article className="mx-auto w-full max-w-3xl whitespace-pre-wrap break-words py-6 text-sm leading-7">
-              {text ||
-                (evidence.snapshot.pdfOnly
-                  ? 'This policy was published as a PDF. Link its original evidence file to preview the PDF here.'
-                  : 'This published version has no text snapshot. Open the source document to inspect its retained export.')}
-            </article>
+            <AuditDocumentReader
+              text={
+                text ||
+                'This published version has no text snapshot. Open the source document to inspect its retained export.'
+              }
+            />
           </>
         )}
       </DialogContent>

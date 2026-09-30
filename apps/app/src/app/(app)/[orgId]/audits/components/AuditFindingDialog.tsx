@@ -71,7 +71,7 @@ export function AuditFindingDialog({
         if (!open && !form.formState.isSubmitting) onClose();
       }}
     >
-      <DialogContent size="2xl">
+      <DialogContent size="2xl" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>Record a finding</DialogTitle>
           <DialogDescription>
@@ -102,7 +102,13 @@ export function AuditFindingDialog({
           </Field>
           <Field>
             <FieldLabel htmlFor="audit-finding">Condition, evidence and criterion</FieldLabel>
-            <Textarea size="full" id="audit-finding" rows={6} {...form.register('description')} />
+            <Textarea
+              size="full"
+              style={{ minHeight: 200 }}
+              id="audit-finding"
+              rows={6}
+              {...form.register('description')}
+            />
             <FieldError>{form.formState.errors.description?.message}</FieldError>
           </Field>
           <div className="grid gap-4 sm:grid-cols-2">

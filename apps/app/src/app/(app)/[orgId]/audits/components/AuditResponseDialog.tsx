@@ -101,6 +101,7 @@ export function AuditResponseDialog({
             <Field>
               <FieldLabel htmlFor="audit-response">Response or review decision</FieldLabel>
               <Textarea
+                style={{ minHeight: 160 }}
                 size="full"
                 id="audit-response"
                 rows={5}

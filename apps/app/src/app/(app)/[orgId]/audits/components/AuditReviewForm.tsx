@@ -149,9 +149,14 @@ export function AuditReviewForm({
     <form
       data-audit-live-target="review"
       onSubmit={handleComplete}
-      className="space-y-4 rounded-lg border bg-muted/20 p-5"
+      className="space-y-5 rounded-xl border bg-background p-6 shadow-sm xl:sticky xl:top-6"
     >
-      <Text weight="medium">Your review</Text>
+      <div className="flex items-center justify-between">
+        <Text weight="medium">Your review</Text>
+        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">
+          Auto-save
+        </span>
+      </div>
       <Text size="sm" variant="muted">
         Record the sample, source records and observations supporting your conclusion.
       </Text>
@@ -161,8 +166,9 @@ export function AuditReviewForm({
           size="full"
           data-audit-live-target="review-notes"
           id="review-notes"
-          rows={8}
-          style={{ minHeight: 180 }}
+          rows={10}
+          style={{ minHeight: 220 }}
+          placeholder="Which records did you sample? What did you observe? How does the evidence support your conclusion?"
           readOnly={!canEdit}
           {...form.register('notes')}
         />

@@ -60,7 +60,7 @@ export function AuditRequestDialog({
         if (!open && !form.formState.isSubmitting) onClose();
       }}
     >
-      <DialogContent size="2xl">
+      <DialogContent size="2xl" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>Request evidence</DialogTitle>
           <DialogDescription>
@@ -71,6 +71,7 @@ export function AuditRequestDialog({
           <Field>
             <FieldLabel htmlFor="audit-question">What do you need?</FieldLabel>
             <Textarea
+              style={{ minHeight: 160 }}
               size="full"
               id="audit-question"
               rows={5}

@@ -61,7 +61,7 @@ export function AuditFollowupDialog({
         if (!open && !form.formState.isSubmitting) onClose();
       }}
     >
-      <DialogContent size="2xl">
+      <DialogContent size="2xl" showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>{finding.reference} · Follow-up</DialogTitle>
         </DialogHeader>
@@ -90,6 +90,7 @@ export function AuditFollowupDialog({
           <Field>
             <FieldLabel htmlFor="closure-evidence">Actions and closure evidence</FieldLabel>
             <Textarea
+              style={{ minHeight: 180 }}
               size="full"
               id="closure-evidence"
               rows={7}

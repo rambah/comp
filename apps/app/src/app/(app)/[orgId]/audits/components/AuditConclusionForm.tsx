@@ -108,6 +108,7 @@ export function AuditConclusionForm({
       <Field>
         <FieldLabel htmlFor="audit-conclusion">Reasoning and limitations</FieldLabel>
         <Textarea
+          style={{ minHeight: 200 }}
           size="full"
           id="audit-conclusion"
           rows={6}
