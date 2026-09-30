@@ -45,7 +45,7 @@ const check = {
   auditId: 'audit1',
   updatedAt: now,
 };
-const actor = { name: 'Emily', memberId: 'mem1' };
+const actor = { name: 'Test Auditor', memberId: 'mem1' };
 const args = {
   controlId: 'check1',
   organizationId: 'org1',
@@ -124,7 +124,7 @@ describe('Audit workspace integrity', () => {
       expect.objectContaining({
         data: expect.objectContaining({
           result: 'nonconformity_raised',
-          reviewedBy: 'Emily',
+          reviewedBy: 'Test Auditor',
         }),
       }),
     );

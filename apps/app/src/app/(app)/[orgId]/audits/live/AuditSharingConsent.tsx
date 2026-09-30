@@ -52,8 +52,8 @@ export function AuditSharingConsent({
         <DialogHeader>
           <DialogTitle>Allow your audit view to be followed?</DialogTitle>
           <DialogDescription>
-            Choose whether authorized organization administrators, including Ramin, can follow your
-            work in this audit workspace during this visit.
+            Choose whether authorized organization administrators can follow your work in this audit
+            workspace during this visit.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3">

@@ -19,7 +19,7 @@ const args = {
   id: 'a1',
   organizationId: 'o1',
   expectedUpdatedAt: '2026-09-30T12:00:00Z',
-  actor: { memberId: 'emily', name: 'Emily' },
+  actor: { memberId: 'mem_auditor', name: 'Test Auditor' },
 };
 const complete = {
   updatedAt: new Date(args.expectedUpdatedAt),
@@ -51,7 +51,7 @@ describe('Auditor completion', () => {
       where: { id: 'a1' },
       data: {
         status: 'complete',
-        signoffAuditorName: 'Emily',
+        signoffAuditorName: 'Test Auditor',
         signoffAuditorDate: expect.any(Date),
       },
     });

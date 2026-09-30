@@ -15,7 +15,7 @@ const identity: LiveIdentity = {
   organizationId: 'org1',
   memberId: 'mem1',
   sessionId: 'ses1',
-  name: 'Emily',
+  name: 'Test Auditor',
   mode: 'publish',
   nonce: 'n1',
 };
