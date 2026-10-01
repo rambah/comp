@@ -1,5 +1,6 @@
-import { CompletionExplanation } from '@/components/completion-explanation';
 'use client';
+
+import { CompletionExplanation } from '@/components/completion-explanation';
 
 import type { Control, Task } from '@db';
 import { Badge, Text } from '@trycompai/design-system';
