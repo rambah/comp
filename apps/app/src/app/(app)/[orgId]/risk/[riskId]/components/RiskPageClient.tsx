@@ -344,6 +344,7 @@ export function RiskPageClient({
                     inherentImpact: risk.impact,
                     residualLikelihood: risk.residualLikelihood,
                     residualImpact: risk.residualImpact,
+                    residualAssessmentStatus: risk.residualAssessmentStatus,
                     treatmentStrategy: risk.treatmentStrategy,
                     treatmentStrategyDescription: risk.treatmentStrategyDescription,
                     strategyDescriptions:
@@ -384,6 +385,7 @@ export function RiskPageClient({
                     subjectId={risk.id}
                     residualLikelihood={risk.residualLikelihood}
                     residualImpact={risk.residualImpact}
+                    residualAssessmentStatus={risk.residualAssessmentStatus}
                     ownerId={risk.assigneeId}
                     acceptorOptions={assignees.map((member) => ({
                       id: member.id,

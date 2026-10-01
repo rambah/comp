@@ -44,6 +44,7 @@ export interface Risk {
   impact: Impact;
   residualLikelihood: Likelihood;
   residualImpact: Impact;
+  residualAssessmentStatus?: string;
   treatmentStrategyDescription: string | null;
   treatmentStrategy: RiskTreatmentType;
   organizationId: string;

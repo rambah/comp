@@ -15,6 +15,7 @@ export interface TreatmentPlanEntity {
   inherentImpact: Impact;
   residualLikelihood: Likelihood;
   residualImpact: Impact;
+  residualAssessmentStatus?: string;
   treatmentStrategy: RiskTreatmentType;
   treatmentStrategyDescription: string | null;
   /**
@@ -160,6 +161,7 @@ export function TreatmentPlanTab({
         inherentImpact={entity.inherentImpact}
         residualLikelihood={entity.residualLikelihood}
         residualImpact={entity.residualImpact}
+        residualAssessmentStatus={entity.residualAssessmentStatus}
         strategy={strategy}
         tasks={entity.tasks}
         isEmpty={isMitigate && !hasPlan && !hasLinkedWork}

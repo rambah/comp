@@ -509,6 +509,7 @@ export function VendorDetailTabs({
                   inherentImpact: resolvedVendor.inherentImpact,
                   residualLikelihood: resolvedVendor.residualProbability,
                   residualImpact: resolvedVendor.residualImpact,
+                    residualAssessmentStatus: resolvedVendor.residualAssessmentStatus,
                   treatmentStrategy: resolvedVendor.treatmentStrategy,
                   treatmentStrategyDescription: resolvedVendor.treatmentStrategyDescription,
                   strategyDescriptions:
@@ -541,6 +542,7 @@ export function VendorDetailTabs({
                   subjectId={resolvedVendor.id}
                   residualLikelihood={resolvedVendor.residualProbability}
                   residualImpact={resolvedVendor.residualImpact}
+                    residualAssessmentStatus={resolvedVendor.residualAssessmentStatus}
                   ownerId={resolvedVendor.assigneeId}
                   acceptorOptions={assignees.map((member) => ({
                     id: member.id,

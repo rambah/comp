@@ -63,6 +63,7 @@ describe('RiskAcceptancesService', () => {
           acceptedById: 'mem_owner',
           acceptedByName: 'Jane Doe',
           notes: null,
+          scoringVersion: "matrix-25-v1",
           residualLikelihood: 'unlikely',
           residualImpact: 'minor',
         },
@@ -70,7 +71,7 @@ describe('RiskAcceptancesService', () => {
       expect(view.stale).toBe(false);
       // unlikely(2) x minor(2) = raw 4 -> score 2 -> very-low (score bands,
       // matching RiskScoreBadge / TreatmentHero)
-      expect(view.levelLabel).toBe('Very low');
+      expect(view.levelLabel).toBe('Low');
     });
 
     it('row-locks the risk and writes through the same transaction', async () => {

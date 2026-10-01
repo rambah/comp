@@ -1,5 +1,6 @@
 model Risk {
   // Metadata
+  residualAssessmentStatus String @default("unassessed")
   id                           String            @id @default(dbgenerated("generate_prefixed_cuid('rsk'::text)"))
   title                        String
   description                  String

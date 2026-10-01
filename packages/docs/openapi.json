@@ -5330,14 +5330,14 @@
             "description": ""
           }
         },
-        "summary": "Switch the AWS scan engine for a connection (Comp AI scanners ↔ Security Hub)",
+        "summary": "Switch the AWS scan engine for a connection (Comp AI scanners \u2194 Security Hub)",
         "tags": [
           "CloudSecurity"
         ],
         "x-mint": {
           "metadata": {
             "title": "Switch the AWS scan engine for a connection | Comp AI API",
-            "sidebarTitle": "Switch the AWS scan engine for a connection (Comp AI scanners ↔ Security Hub)",
+            "sidebarTitle": "Switch the AWS scan engine for a connection (Comp AI scanners \u2194 Security Hub)",
             "description": "Accepts session, API key, or service token auth. For API key / service token callers without an explicit user attribution, the action is attributed to the.",
             "og:title": "Switch the AWS scan engine for a connection | Comp AI API",
             "og:description": "Accepts session, API key, or service token auth. For API key / service token callers without an explicit user attribution, the action is attributed to the."
@@ -6389,6 +6389,15 @@
                           "example": "user@example.com"
                         }
                       }
+                    },
+                    "residualAssessmentStatus": {
+                      "type": "string",
+                      "enum": [
+                        "unassessed",
+                        "legacy",
+                        "assessed"
+                      ],
+                      "description": "Residual assessment provenance; legacy stored ratings require provenance review."
                     }
                   }
                 }
@@ -6743,6 +6752,15 @@
                           "example": "user@example.com"
                         }
                       }
+                    },
+                    "residualAssessmentStatus": {
+                      "type": "string",
+                      "enum": [
+                        "unassessed",
+                        "legacy",
+                        "assessed"
+                      ],
+                      "description": "Residual assessment provenance; legacy stored ratings require provenance review."
                     }
                   }
                 }
@@ -7025,6 +7043,15 @@
                           "example": "user@example.com"
                         }
                       }
+                    },
+                    "residualAssessmentStatus": {
+                      "type": "string",
+                      "enum": [
+                        "unassessed",
+                        "legacy",
+                        "assessed"
+                      ],
+                      "description": "Residual assessment provenance; legacy stored ratings require provenance review."
                     }
                   }
                 }
@@ -7437,6 +7464,15 @@
                             "type": "string",
                             "format": "date-time",
                             "description": "When the vendor was last updated"
+                          },
+                          "residualAssessmentStatus": {
+                            "type": "string",
+                            "enum": [
+                              "unassessed",
+                              "legacy",
+                              "assessed"
+                            ],
+                            "description": "Residual assessment provenance; legacy stored ratings require provenance review."
                           }
                         }
                       }
@@ -7695,6 +7731,15 @@
                           "example": "user@example.com"
                         }
                       }
+                    },
+                    "residualAssessmentStatus": {
+                      "type": "string",
+                      "enum": [
+                        "unassessed",
+                        "legacy",
+                        "assessed"
+                      ],
+                      "description": "Residual assessment provenance; legacy stored ratings require provenance review."
                     }
                   }
                 }
@@ -7957,6 +8002,15 @@
                           "example": "user@example.com"
                         }
                       }
+                    },
+                    "residualAssessmentStatus": {
+                      "type": "string",
+                      "enum": [
+                        "unassessed",
+                        "legacy",
+                        "assessed"
+                      ],
+                      "description": "Residual assessment provenance; legacy stored ratings require provenance review."
                     }
                   }
                 }
@@ -8196,6 +8250,15 @@
                           "example": "user@example.com"
                         }
                       }
+                    },
+                    "residualAssessmentStatus": {
+                      "type": "string",
+                      "enum": [
+                        "unassessed",
+                        "legacy",
+                        "assessed"
+                      ],
+                      "description": "Residual assessment provenance; legacy stored ratings require provenance review."
                     }
                   }
                 }
@@ -9675,7 +9738,7 @@
             "name": "excludeContent",
             "required": false,
             "in": "query",
-            "description": "When true, omits `content` and `draftContent` from each policy in the response. Use this when listing policies to find one by name/ID — fetch the full content via GET /v1/policies/{id} after.",
+            "description": "When true, omits `content` and `draftContent` from each policy in the response. Use this when listing policies to find one by name/ID \u2014 fetch the full content via GET /v1/policies/{id} after.",
             "schema": {
               "type": "boolean"
             }
@@ -10320,7 +10383,7 @@
     },
     "/v1/policies/{id}/pdf": {
       "post": {
-        "description": "Uploads a PDF via multipart `file` or base64 `fileData` JSON. Defaults to the latest draft if no `versionId`; 400 if no draft is available. UI-only — AI clients should use the presigned `/pdf/upload-url` + `/pdf/confirm` flow.",
+        "description": "Uploads a PDF via multipart `file` or base64 `fileData` JSON. Defaults to the latest draft if no `versionId`; 400 if no draft is available. UI-only \u2014 AI clients should use the presigned `/pdf/upload-url` + `/pdf/confirm` flow.",
         "operationId": "PoliciesController_uploadPolicyPdf_v1",
         "parameters": [
           {
@@ -10465,9 +10528,9 @@
           "metadata": {
             "title": "Upload a PDF to a policy version (UI-only) | Comp AI API",
             "sidebarTitle": "Upload a PDF to a policy version (UI-only)",
-            "description": "Uploads a PDF via multipart `file` or base64 `fileData` JSON. Defaults to the latest draft if no `versionId`; 400 if no draft is available. UI-only — AI.",
+            "description": "Uploads a PDF via multipart `file` or base64 `fileData` JSON. Defaults to the latest draft if no `versionId`; 400 if no draft is available. UI-only \u2014 AI.",
             "og:title": "Upload a PDF to a policy version (UI-only) | Comp AI API",
-            "og:description": "Uploads a PDF via multipart `file` or base64 `fileData` JSON. Defaults to the latest draft if no `versionId`; 400 if no draft is available. UI-only — AI."
+            "og:description": "Uploads a PDF via multipart `file` or base64 `fileData` JSON. Defaults to the latest draft if no `versionId`; 400 if no draft is available. UI-only \u2014 AI."
           }
         }
       },
@@ -10534,7 +10597,7 @@
     },
     "/v1/policies/{id}/pdf/upload-url": {
       "post": {
-        "description": "Generates a presigned S3 URL for uploading a policy PDF directly to storage. Use this when attaching a PDF to a compliance policy — the file bytes are uploaded straight to S3 without passing through the API. Requires the policy ID; if you only know the policy name, look it up first via the list-compliance-policies tool. After uploading the file to the returned URL, finalize the attachment by calling confirm-policy-pdf-uploaded with the same s3Key.",
+        "description": "Generates a presigned S3 URL for uploading a policy PDF directly to storage. Use this when attaching a PDF to a compliance policy \u2014 the file bytes are uploaded straight to S3 without passing through the API. Requires the policy ID; if you only know the policy name, look it up first via the list-compliance-policies tool. After uploading the file to the returned URL, finalize the attachment by calling confirm-policy-pdf-uploaded with the same s3Key.",
         "operationId": "PoliciesController_requestPolicyPdfUploadUrl_v1",
         "parameters": [
           {
@@ -10595,9 +10658,9 @@
           "metadata": {
             "title": "Request a presigned URL to upload a policy PDF | Comp AI API",
             "sidebarTitle": "Request a presigned URL to upload a policy PDF",
-            "description": "Generates a presigned S3 URL for uploading a policy PDF directly to storage. Use this when attaching a PDF to a compliance policy — the file bytes are.",
+            "description": "Generates a presigned S3 URL for uploading a policy PDF directly to storage. Use this when attaching a PDF to a compliance policy \u2014 the file bytes are.",
             "og:title": "Request a presigned URL to upload a policy PDF | Comp AI API",
-            "og:description": "Generates a presigned S3 URL for uploading a policy PDF directly to storage. Use this when attaching a PDF to a compliance policy — the file bytes are."
+            "og:description": "Generates a presigned S3 URL for uploading a policy PDF directly to storage. Use this when attaching a PDF to a compliance policy \u2014 the file bytes are."
           }
         }
       }
@@ -11278,7 +11341,7 @@
         }
       },
       "post": {
-        "description": "Creates a new draft version of a policy, cloned from the current published version (or a specified source version). Use this when you need to make any change to a published policy — content edits, PDF attachments, anything. Published.",
+        "description": "Creates a new draft version of a policy, cloned from the current published version (or a specified source version). Use this when you need to make any change to a published policy \u2014 content edits, PDF attachments, anything. Published.",
         "operationId": "PoliciesController_createPolicyVersion_v1",
         "parameters": [
           {
@@ -11773,7 +11836,7 @@
     },
     "/v1/policies/{id}/versions/publish": {
       "post": {
-        "description": "Publishes a draft policy version, making it the active/current version of the policy. Pass the versionId of the draft you want to publish — for example one created via create-policy-version and then edited.",
+        "description": "Publishes a draft policy version, making it the active/current version of the policy. Pass the versionId of the draft you want to publish \u2014 for example one created via create-policy-version and then edited.",
         "operationId": "PoliciesController_publishPolicyVersion_v1",
         "parameters": [
           {
@@ -11891,9 +11954,9 @@
           "metadata": {
             "title": "Publish policy version | Comp AI API",
             "sidebarTitle": "Publish policy version",
-            "description": "Publishes a draft policy version, making it the active/current version of the policy. Pass the versionId of the draft you want to publish — for example one.",
+            "description": "Publishes a draft policy version, making it the active/current version of the policy. Pass the versionId of the draft you want to publish \u2014 for example one.",
             "og:title": "Publish policy version | Comp AI API",
-            "og:description": "Publishes a draft policy version, making it the active/current version of the policy. Pass the versionId of the draft you want to publish — for example one."
+            "og:description": "Publishes a draft policy version, making it the active/current version of the policy. Pass the versionId of the draft you want to publish \u2014 for example one."
           }
         }
       }
@@ -18717,7 +18780,7 @@
     },
     "/v1/roles/built-in/{name}/obligations": {
       "get": {
-        "description": "Returns the effective obligations for a built-in role (owner, admin, auditor, employee, contractor) — DB override if present, else the hardcoded default.",
+        "description": "Returns the effective obligations for a built-in role (owner, admin, auditor, employee, contractor) \u2014 DB override if present, else the hardcoded default.",
         "operationId": "RolesController_getBuiltInObligations_v1",
         "parameters": [
           {
@@ -18769,9 +18832,9 @@
           "metadata": {
             "title": "Get obligations for a built-in role | Comp AI API",
             "sidebarTitle": "Get obligations for a built-in role",
-            "description": "Returns the effective obligations for a built-in role (owner, admin, auditor, employee, contractor) — DB override if present, else the hardcoded default.",
+            "description": "Returns the effective obligations for a built-in role (owner, admin, auditor, employee, contractor) \u2014 DB override if present, else the hardcoded default.",
             "og:title": "Get obligations for a built-in role | Comp AI API",
-            "og:description": "Returns the effective obligations for a built-in role (owner, admin, auditor, employee, contractor) — DB override if present, else the hardcoded default."
+            "og:description": "Returns the effective obligations for a built-in role (owner, admin, auditor, employee, contractor) \u2014 DB override if present, else the hardcoded default."
           }
         },
         "x-speakeasy-mcp": {
@@ -25677,7 +25740,7 @@
     },
     "/v1/security-penetration-tests/{id}/events": {
       "get": {
-        "description": "Returns the real-time agent activity log emitted during a run (tool calls, observations, etc.). Noisy — meant for activity feeds and debugging.",
+        "description": "Returns the real-time agent activity log emitted during a run (tool calls, observations, etc.). Noisy \u2014 meant for activity feeds and debugging.",
         "operationId": "SecurityPenetrationTestsController_getEvents_v1",
         "parameters": [
           {
@@ -25716,9 +25779,9 @@
           "metadata": {
             "title": "Get penetration test agent events | Comp AI API",
             "sidebarTitle": "Get penetration test agent events",
-            "description": "Returns the real-time agent activity log emitted during a run (tool calls, observations, etc.). Noisy — meant for activity feeds and debugging.",
+            "description": "Returns the real-time agent activity log emitted during a run (tool calls, observations, etc.). Noisy \u2014 meant for activity feeds and debugging.",
             "og:title": "Get penetration test agent events | Comp AI API",
-            "og:description": "Returns the real-time agent activity log emitted during a run (tool calls, observations, etc.). Noisy — meant for activity feeds and debugging."
+            "og:description": "Returns the real-time agent activity log emitted during a run (tool calls, observations, etc.). Noisy \u2014 meant for activity feeds and debugging."
           }
         },
         "x-speakeasy-mcp": {
@@ -28276,12 +28339,12 @@
           },
           "fileData": {
             "type": "string",
-            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=attachment) and pass `s3Key` — base64 through an LLM is impractically slow and times out. Provide exactly one of fileData or s3Key.",
+            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=attachment) and pass `s3Key` \u2014 base64 through an LLM is impractically slow and times out. Provide exactly one of fileData or s3Key.",
             "example": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
           },
           "s3Key": {
             "type": "string",
-            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=attachment). The server fetches the bytes from storage — no base64 needed. Provide exactly one of fileData or s3Key.",
+            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=attachment). The server fetches the bytes from storage \u2014 no base64 needed. Provide exactly one of fileData or s3Key.",
             "example": "org_abc123/uploads/attachment/1700000000000-rbac-matrix.xlsx"
           },
           "description": {
@@ -28381,12 +28444,12 @@
           },
           "fileData": {
             "type": "string",
-            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=attachment) and pass `s3Key` — base64 through an LLM is impractically slow and times out. Provide exactly one of fileData or s3Key.",
+            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=attachment) and pass `s3Key` \u2014 base64 through an LLM is impractically slow and times out. Provide exactly one of fileData or s3Key.",
             "example": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
           },
           "s3Key": {
             "type": "string",
-            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=attachment). The server fetches the bytes from storage — no base64 needed. Provide exactly one of fileData or s3Key.",
+            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=attachment). The server fetches the bytes from storage \u2014 no base64 needed. Provide exactly one of fileData or s3Key.",
             "example": "org_abc123/uploads/attachment/1700000000000-rbac-matrix.xlsx"
           },
           "description": {
@@ -28504,7 +28567,7 @@
         "properties": {
           "uploadUrl": {
             "type": "string",
-            "description": "Presigned S3 URL. Send the raw file bytes with a plain HTTP PUT to this URL — no Content-Type or auth headers are required (the signature is in the URL). Then call the feature endpoint with the s3Key below.",
+            "description": "Presigned S3 URL. Send the raw file bytes with a plain HTTP PUT to this URL \u2014 no Content-Type or auth headers are required (the signature is in the URL). Then call the feature endpoint with the s3Key below.",
             "example": "https://bucket.s3.us-east-1.amazonaws.com/org_x/uploads/...?X-Amz-Signature=..."
           },
           "s3Key": {
@@ -28538,7 +28601,7 @@
           },
           "credentials": {
             "type": "object",
-            "description": "Provider-specific credential fields. Keys differ by provider — call get-provider-details for the exact shape. For AWS (Cloud Tests) the fields are: connectionName (display name), awsType ('aws-commercial' or 'aws-govcloud'), roleArn (auditor role), externalId (typically your org id), regions (string array), and optionally remediationRoleArn and awsScanMode ('comp_scanners' or 'security_hub'). Omit credentials for OAuth providers — use POST /v1/integrations/oauth/start instead.",
+            "description": "Provider-specific credential fields. Keys differ by provider \u2014 call get-provider-details for the exact shape. For AWS (Cloud Tests) the fields are: connectionName (display name), awsType ('aws-commercial' or 'aws-govcloud'), roleArn (auditor role), externalId (typically your org id), regions (string array), and optionally remediationRoleArn and awsScanMode ('comp_scanners' or 'security_hub'). Omit credentials for OAuth providers \u2014 use POST /v1/integrations/oauth/start instead.",
             "additionalProperties": true,
             "example": {
               "connectionName": "Production AWS",
@@ -28626,7 +28689,7 @@
           },
           "variables": {
             "type": "object",
-            "description": "Map of variable id → value to persist for this connection. Values can be string, number, boolean, or string[] (the shape is provider-defined — call get-connection-variables to see what each connection accepts). Pass only the variables you want to set; existing ones not included are left untouched.",
+            "description": "Map of variable id \u2192 value to persist for this connection. Values can be string, number, boolean, or string[] (the shape is provider-defined \u2014 call get-connection-variables to see what each connection accepts). Pass only the variables you want to set; existing ones not included are left untouched.",
             "additionalProperties": true,
             "example": {
               "scan-interval-hours": 24,
@@ -28656,7 +28719,7 @@
           },
           "checkId": {
             "type": "string",
-            "description": "ID of the integration check to run (from the provider manifest — call list-checks-for-task to find available ones).",
+            "description": "ID of the integration check to run (from the provider manifest \u2014 call list-checks-for-task to find available ones).",
             "example": "aws-s3-bucket-public-access"
           }
         },
@@ -28697,7 +28760,7 @@
           },
           "provider": {
             "type": "object",
-            "description": "Provider slug to use for employee sync (must have the \"sync\" capability in its manifest — call list-providers to see options). Pass null or omit the field to disable employee sync for this org.",
+            "description": "Provider slug to use for employee sync (must have the \"sync\" capability in its manifest \u2014 call list-providers to see options). Pass null or omit the field to disable employee sync for this org.",
             "example": "google-workspace",
             "nullable": true
           }
@@ -28712,7 +28775,7 @@
           },
           "provider": {
             "type": "object",
-            "description": "Provider slug whose 2FA check feeds the People-tab 2FA column (must be bound to the 2FA task — call available-2fa-sources for options). Pass null or omit to clear the source.",
+            "description": "Provider slug whose 2FA check feeds the People-tab 2FA column (must be bound to the 2FA task \u2014 call available-2fa-sources for options). Pass null or omit to clear the source.",
             "example": "google-workspace",
             "nullable": true
           }
@@ -28880,6 +28943,15 @@
             "type": "string",
             "description": "ID of the user assigned to this risk",
             "example": "mem_abc123def456"
+          },
+          "residualAssessmentStatus": {
+            "type": "string",
+            "enum": [
+              "unassessed",
+              "legacy",
+              "assessed"
+            ],
+            "description": "Residual assessment provenance; legacy stored ratings require provenance review."
           }
         },
         "required": [
@@ -29016,6 +29088,15 @@
             "type": "string",
             "description": "ID of the user assigned to this risk",
             "example": "mem_abc123def456"
+          },
+          "residualAssessmentStatus": {
+            "type": "string",
+            "enum": [
+              "unassessed",
+              "legacy",
+              "assessed"
+            ],
+            "description": "Residual assessment provenance; legacy stored ratings require provenance review."
           }
         }
       },
@@ -29125,6 +29206,15 @@
             "type": "string",
             "description": "ID of the user assigned to manage this vendor",
             "example": "mem_abc123def456"
+          },
+          "residualAssessmentStatus": {
+            "type": "string",
+            "enum": [
+              "unassessed",
+              "legacy",
+              "assessed"
+            ],
+            "description": "Residual assessment provenance; legacy stored ratings require provenance review."
           }
         },
         "required": [
@@ -29244,6 +29334,15 @@
           "assigneeId": {
             "type": "string",
             "description": "Assignee member ID"
+          },
+          "residualAssessmentStatus": {
+            "type": "string",
+            "enum": [
+              "unassessed",
+              "legacy",
+              "assessed"
+            ],
+            "description": "Residual assessment provenance; legacy stored ratings require provenance review."
           }
         }
       },
@@ -30121,7 +30220,7 @@
           },
           "fileType": {
             "type": "string",
-            "description": "MIME type of the file. Must be \"application/pdf\" — the presigned URL enforces this at upload time.",
+            "description": "MIME type of the file. Must be \"application/pdf\" \u2014 the presigned URL enforces this at upload time.",
             "example": "application/pdf"
           }
         },
@@ -30135,7 +30234,7 @@
         "properties": {
           "uploadUrl": {
             "type": "string",
-            "description": "Presigned S3 URL. PUT the raw file bytes to this URL with header `Content-Type: application/pdf`. No auth headers required — the signature is in the URL.",
+            "description": "Presigned S3 URL. PUT the raw file bytes to this URL with header `Content-Type: application/pdf`. No auth headers required \u2014 the signature is in the URL.",
             "example": "https://bucket.s3.us-east-1.amazonaws.com/org_xxx/policies/pol_xxx/...?X-Amz-Signature=..."
           },
           "s3Key": {
@@ -30165,7 +30264,7 @@
           },
           "versionId": {
             "type": "string",
-            "description": "Optional version ID — must match the versionId passed to the upload-url endpoint. Omit if attaching at the policy level.",
+            "description": "Optional version ID \u2014 must match the versionId passed to the upload-url endpoint. Omit if attaching at the policy level.",
             "example": "pv_abc123def456"
           }
         },
@@ -30466,7 +30565,7 @@
         "properties": {
           "versionId": {
             "type": "string",
-            "description": "Version ID to publish. PASS THIS after update-version to publish your edits — omitting it publishes stale draftContent (loses your changes).",
+            "description": "Version ID to publish. PASS THIS after update-version to publish your edits \u2014 omitting it publishes stale draftContent (loses your changes).",
             "example": "pv_abc123def456"
           },
           "setAsActive": {
@@ -31615,7 +31714,7 @@
           },
           "publicAccessToken": {
             "type": "string",
-            "description": "Token for tracking the run via Trigger.dev realtime. Optional — MCP/agent clients should poll GET /v1/questionnaire/:id instead.",
+            "description": "Token for tracking the run via Trigger.dev realtime. Optional \u2014 MCP/agent clients should poll GET /v1/questionnaire/:id instead.",
             "example": "pat_..."
           },
           "status": {
@@ -31723,11 +31822,11 @@
           },
           "fileData": {
             "type": "string",
-            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign and pass `s3Key` — base64 through an LLM is impractically slow. Provide exactly one of fileData or s3Key."
+            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign and pass `s3Key` \u2014 base64 through an LLM is impractically slow. Provide exactly one of fileData or s3Key."
           },
           "s3Key": {
             "type": "string",
-            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=questionnaire). The server fetches the bytes from storage — no base64 needed. Provide exactly one of fileData or s3Key.",
+            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=questionnaire). The server fetches the bytes from storage \u2014 no base64 needed. Provide exactly one of fileData or s3Key.",
             "example": "org_abc/uploads/questionnaire/1735000000-questionnaire.xlsx"
           }
         },
@@ -31768,11 +31867,11 @@
           },
           "fileData": {
             "type": "string",
-            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=document) and pass `s3Key` — base64 through an LLM is impractically slow and times out. Provide exactly one of fileData or s3Key."
+            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=document) and pass `s3Key` \u2014 base64 through an LLM is impractically slow and times out. Provide exactly one of fileData or s3Key."
           },
           "s3Key": {
             "type": "string",
-            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=document). The server fetches the bytes from storage — no base64 needed. Provide exactly one of fileData or s3Key."
+            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=document). The server fetches the bytes from storage \u2014 no base64 needed. Provide exactly one of fileData or s3Key."
           },
           "description": {
             "type": "string",
@@ -32275,7 +32374,7 @@
           },
           "organizationId": {
             "type": "string",
-            "description": "Organization ID (deprecated — use auth context)",
+            "description": "Organization ID (deprecated \u2014 use auth context)",
             "example": "org_abc123"
           }
         },
@@ -32716,11 +32815,11 @@
           },
           "fileData": {
             "type": "string",
-            "description": "Base64-encoded evidence file. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=evidence) and pass `s3Key` — base64 through an LLM is impractically slow and times out. Provide fileData or s3Key (not both)."
+            "description": "Base64-encoded evidence file. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=evidence) and pass `s3Key` \u2014 base64 through an LLM is impractically slow and times out. Provide fileData or s3Key (not both)."
           },
           "s3Key": {
             "type": "string",
-            "description": "Key of an evidence file already uploaded via /v1/uploads/presign (purpose=evidence). The server fetches the bytes from storage — no base64 needed. Provide fileData or s3Key (not both)."
+            "description": "Key of an evidence file already uploaded via /v1/uploads/presign (purpose=evidence). The server fetches the bytes from storage \u2014 no base64 needed. Provide fileData or s3Key (not both)."
           }
         }
       },
