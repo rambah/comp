@@ -3,7 +3,7 @@ import type { PanelScroll } from './panel-scroll';
 export interface AuditLiveView {
   auditId: string;
   revision?: string;
-  tab: 'checks' | 'evidence' | 'requests' | 'findings' | 'report' | 'research';
+  tab: 'checks' | 'sources' | 'evidence' | 'requests' | 'findings' | 'report' | 'research';
   checkId: string | null;
   evidenceId: string | null;
   compareEvidenceId?: string | null;
@@ -45,7 +45,7 @@ export const liveEventSchema = z.discriminatedUnion('kind', [
     view: z.object({
       auditId: z.string(),
       revision: z.string().optional(),
-      tab: z.enum(['checks', 'evidence', 'requests', 'findings', 'report', 'research']),
+      tab: z.enum(['checks', 'sources', 'evidence', 'requests', 'findings', 'report', 'research']),
       checkId: z.string().nullable(),
       evidenceId: z.string().nullable(),
       compareEvidenceId: z.string().max(100).nullable().optional(),

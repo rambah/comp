@@ -111,10 +111,7 @@ export function AuditReport({
             Editing the checks or conclusion reopens the working audit and requires fresh sign-off.
             Previously published versions remain unchanged.
           </Text>
-          <Button
-            variant="outline"
-            render={<Link href={registerUrl} target="_blank" rel="noopener noreferrer" />}
-          >
+          <Button variant="outline" render={<Link href={registerUrl} />}>
             View audit programme and sign-off
           </Button>
         </section>

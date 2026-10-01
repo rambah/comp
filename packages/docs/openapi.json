@@ -26834,7 +26834,7 @@
     },
     "/v1/audit-workspace/sources": {
       "get": {
-        "description": "Search published policies, ISMS documents and existing evidence files to link to an audit check. Returns at most 50 sources per category.",
+        "description": "Search published policies, ISMS documents and existing evidence files to link to an audit check. Returns 50 per category; use nextOffset to fetch remaining sources.",
         "operationId": "AuditWorkspaceController_sources_v1",
         "parameters": [
           {
@@ -26843,6 +26843,15 @@
             "in": "query",
             "schema": {
               "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Pagination offset returned as nextOffset; starts at zero.",
+            "schema": {
+              "type": "number"
             }
           }
         ],
@@ -26864,9 +26873,9 @@
           "metadata": {
             "title": "Find audit evidence | Comp AI API",
             "sidebarTitle": "Find audit evidence",
-            "description": "Search published policies, ISMS documents and existing evidence files to link to an audit check. Returns at most 50 sources per category.",
+            "description": "Search published policies, ISMS documents and existing evidence files to link to an audit check. Returns 50 per category; use nextOffset to fetch remaining.",
             "og:title": "Find audit evidence | Comp AI API",
-            "og:description": "Search published policies, ISMS documents and existing evidence files to link to an audit check. Returns at most 50 sources per category."
+            "og:description": "Search published policies, ISMS documents and existing evidence files to link to an audit check. Returns 50 per category; use nextOffset to fetch remaining."
           }
         },
         "x-speakeasy-mcp": {

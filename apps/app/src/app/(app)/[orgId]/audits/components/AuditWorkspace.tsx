@@ -1,14 +1,14 @@
 'use client';
 import { usePermissions } from '@/hooks/use-permissions';
 import { PageLayout } from '@trycompai/design-system';
-import { useState, useSyncExternalStore } from 'react';
+import { useMemo, useState, useSyncExternalStore } from 'react';
 import '../audit-workspace.css';
 import { AuditDomReplay } from '../live/AuditDomReplay';
 import { AuditFollowBar } from '../live/AuditFollowBar';
 import { useAuditLiveObserver } from '../live/AuditLiveProvider';
-import type { AuditLiveView } from '../live/live-types';
 import { AuditResearch } from '../research/AuditResearch';
 import { useAuditDraftGuard } from '../useAuditDraftGuard';
+import { useAuditNavigation } from '../useAuditNavigation';
 import { useAuditWorkspace } from '../useAuditWorkspace';
 import { nextCheck, type WorkspaceData } from '../workspace-types';
 import { AuditCheckDetail } from './AuditCheckDetail';
@@ -19,6 +19,7 @@ import { AuditFindings } from './AuditFindings';
 import { AuditQueue } from './AuditQueue';
 import { AuditReport } from './AuditReport';
 import { AuditRequests } from './AuditRequests';
+import { AuditSourceCatalog } from './AuditSourceCatalog';
 import { AuditWorkspaceHeader } from './AuditWorkspaceHeader';
 import { AuditWorkspaceState } from './AuditWorkspaceState';
 import { AuditWorkspaceTabs } from './AuditWorkspaceTabs';
@@ -45,15 +46,19 @@ export function AuditWorkspace({
   const canObserve = hydrated && hasPermission('auditWorkspace', 'observe');
   const observer = useAuditLiveObserver();
   const canEdit = hydrated && hasPermission('auditWorkspace', 'update') && !observer.following;
-  const [focusedFinding, setFocusedFinding] = useState<{ id: string } | null>(null);
-  const [compareId, setCompareId] = useState<string | null>(null);
-  const [checkLayout, setCheckLayout] = useState<'list' | 'board'>('board');
-  const [previewId, setPreviewId] = useState<string | null>(null);
-  const [auditId, setAuditId] = useState(initialData?.audits[0]?.id ?? '');
-  const [selected, setSelected] = useState<string | null>(null);
-  const [tab, setTab] = useState<AuditLiveView['tab']>('checks');
-  const [researchThread, setResearchThread] = useState<string | null>(null);
-  const [researchSource, setResearchSource] = useState<string | null>(null);
+  const {
+    auditId,
+    tab,
+    checkId: selected,
+    evidenceId: previewId,
+    compareId,
+    findingId,
+    checkLayout,
+    threadId: researchThread,
+    sourceKey: researchSource,
+    navigate,
+  } = useAuditNavigation({ defaultAuditId: data?.audits[0]?.id ?? '' });
+  const focusedFinding = useMemo(() => (findingId ? { id: findingId } : null), [findingId]);
   const [busy, setBusy] = useState(false);
   useAuditDraftGuard(busy);
   const audit = data?.audits.find((a) => a.id === auditId) ?? data?.audits[0];
@@ -62,10 +67,7 @@ export function AuditWorkspace({
   const locked = busy || !!observer.following;
   const handleSelect = (id: string) => {
     if (!locked) {
-      setCompareId(null);
-      setSelected(id);
-      setPreviewId(null);
-      setTab('checks');
+      navigate({ compareId: null, checkId: id, evidenceId: null, tab: 'checks' });
     }
   };
   return (
@@ -84,11 +86,13 @@ export function AuditWorkspace({
               : undefined
           }
           onNavigate={(item) => {
-            setCompareId(null);
-            setFocusedFinding(item.group === 'Findings' ? item : null);
-            setSelected(item.checkId);
-            setPreviewId(item.evidenceId);
-            setTab(item.tab);
+            navigate({
+              compareId: null,
+              findingId: item.group === 'Findings' ? item.id : null,
+              checkId: item.checkId,
+              evidenceId: item.evidenceId,
+              tab: item.tab,
+            });
           }}
         />
       }
@@ -113,12 +117,15 @@ export function AuditWorkspace({
                 locked={locked}
                 canEdit={canEdit}
                 onChange={(id) => {
-                  setCompareId(null);
-                  setAuditId(id);
-                  setResearchThread(null);
-                  setResearchSource(null);
-                  setSelected(null);
-                  setPreviewId(null);
+                  navigate({
+                    auditId: id,
+                    compareId: null,
+                    threadId: null,
+                    sourceKey: null,
+                    checkId: null,
+                    evidenceId: null,
+                    findingId: null,
+                  });
                 }}
               />
               <AuditWorkspaceTabs
@@ -126,12 +133,16 @@ export function AuditWorkspace({
                 tab={tab}
                 locked={locked}
                 onChange={(value) => {
-                  setTab(value);
-                  setSelected(null);
-                  setPreviewId(null);
-                  setCompareId(null);
+                  navigate({
+                    tab: value,
+                    checkId: null,
+                    evidenceId: null,
+                    compareId: null,
+                    findingId: null,
+                  });
                 }}
               />
+              {tab === 'sources' && <AuditSourceCatalog organizationId={organizationId} />}
               {tab === 'research' && (
                 <AuditResearch
                   key={audit.id}
@@ -141,8 +152,8 @@ export function AuditWorkspace({
                   following={!!observer.following}
                   threadId={researchThread}
                   sourceKey={researchSource}
-                  onThread={setResearchThread}
-                  onSource={setResearchSource}
+                  onThread={(threadId) => navigate({ threadId })}
+                  onSource={(sourceKey) => navigate({ sourceKey })}
                 />
               )}
               {tab === 'evidence' && (
@@ -151,13 +162,15 @@ export function AuditWorkspace({
                   audit={audit}
                   organizationId={organizationId}
                   locked={locked}
+                  onSources={() => {
+                    if (!locked) navigate({ tab: 'sources' });
+                  }}
                   previewId={previewId}
                   compareId={compareId}
                   onSelect={handleSelect}
                   onPreview={(id, comparison = null) => {
                     if (!locked) {
-                      setPreviewId(id);
-                      setCompareId(comparison);
+                      navigate({ evidenceId: id, compareId: comparison });
                     }
                   }}
                 />
@@ -170,7 +183,7 @@ export function AuditWorkspace({
                       selected={check.id}
                       locked={locked}
                       onSelect={handleSelect}
-                      onBack={() => setSelected(null)}
+                      onBack={() => navigate({ checkId: null, evidenceId: null })}
                     />
                     <AuditCheckDetail
                       key={check.id}
@@ -181,16 +194,15 @@ export function AuditWorkspace({
                       canEdit={canEdit}
                       update={update}
                       previewId={previewId}
-                      onPreviewChange={setPreviewId}
+                      onPreviewChange={(evidenceId) => navigate({ evidenceId })}
                       onRefresh={mutate}
                       onBusyChange={setBusy}
                       onComplete={() => {
-                        setPreviewId(null);
                         const next = nextCheck({
                           ...audit,
                           controls: audit.controls.filter((c) => c.id !== check.id),
                         });
-                        setSelected(next?.id ?? null);
+                        navigate({ checkId: next?.id ?? null, evidenceId: null });
                       }}
                     />
                   </div>
@@ -198,18 +210,18 @@ export function AuditWorkspace({
                   <AuditQueue
                     layout={checkLayout}
                     onLayoutChange={(value) => {
-                      if (!locked) setCheckLayout(value);
+                      if (!locked) navigate({ checkLayout: value });
                     }}
                     audit={audit}
                     onSelect={handleSelect}
                     onRequests={() => {
-                      if (!locked) setTab('requests');
+                      if (!locked) navigate({ tab: 'requests' });
                     }}
                     onReport={() => {
-                      if (!locked) setTab('report');
+                      if (!locked) navigate({ tab: 'report' });
                     }}
                     onEvidence={() => {
-                      if (!locked) setTab('evidence');
+                      if (!locked) navigate({ tab: 'evidence' });
                     }}
                   />
                 ))}
@@ -236,11 +248,10 @@ export function AuditWorkspace({
               {tab === 'report' && (
                 <AuditReport
                   onChecks={() => {
-                    setTab('checks');
-                    setSelected(null);
+                    navigate({ tab: 'checks', checkId: null, evidenceId: null });
                   }}
                   onRequests={() => {
-                    if (!locked) setTab('requests');
+                    if (!locked) navigate({ tab: 'requests' });
                   }}
                   onBusyChange={setBusy}
                   audit={audit}

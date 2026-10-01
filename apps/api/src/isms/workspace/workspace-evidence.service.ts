@@ -19,10 +19,14 @@ export class AuditWorkspaceEvidenceService {
   async search({
     organizationId,
     search = '',
+    offset = 0,
   }: {
     organizationId: string;
     search?: string;
+    offset?: number;
   }) {
+    if (!Number.isSafeInteger(offset) || offset < 0)
+      throw new BadRequestException('Invalid source offset');
     const contains = {
       contains: search.slice(0, 200),
       mode: 'insensitive' as const,
@@ -35,8 +39,9 @@ export class AuditWorkspaceEvidenceService {
           entityType: { in: [...evidenceTypes] },
         },
         select: { id: true, name: true, createdAt: true },
-        orderBy: { createdAt: 'desc' },
-        take: 50,
+        orderBy: [{ createdAt: 'desc' }, { id: 'asc' }],
+        skip: offset,
+        take: 51,
       }),
       db.policy.findMany({
         where: {
@@ -51,8 +56,9 @@ export class AuditWorkspaceEvidenceService {
           name: true,
           currentVersion: { select: { version: true } },
         },
-        orderBy: { name: 'asc' },
-        take: 50,
+        orderBy: [{ name: 'asc' }, { id: 'asc' }],
+        skip: offset,
+        take: 51,
       }),
       db.ismsDocument.findMany({
         where: {
@@ -65,25 +71,31 @@ export class AuditWorkspaceEvidenceService {
           title: true,
           currentVersion: { select: { version: true } },
         },
-        orderBy: { title: 'asc' },
-        take: 50,
+        orderBy: [{ title: 'asc' }, { id: 'asc' }],
+        skip: offset,
+        take: 51,
       }),
     ]);
     return {
+      nextOffset: [attachments, policies, documents].some(
+        (items) => items.length > 50,
+      )
+        ? offset + 50
+        : null,
       sources: [
-        ...attachments.map((a) => ({
+        ...attachments.slice(0, 50).map((a) => ({
           id: a.id,
           title: a.name,
           type: 'attachment',
           version: `Uploaded ${a.createdAt.toISOString().slice(0, 10)}`,
         })),
-        ...policies.map((p) => ({
+        ...policies.slice(0, 50).map((p) => ({
           id: p.id,
           title: p.name,
           type: 'policy',
           version: `Published v${p.currentVersion?.version}`,
         })),
-        ...documents.map((d) => ({
+        ...documents.slice(0, 50).map((d) => ({
           id: d.id,
           title: d.title,
           type: 'document',

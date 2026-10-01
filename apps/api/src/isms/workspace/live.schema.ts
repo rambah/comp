@@ -10,7 +10,15 @@ export const liveViewSchema = z
   .object({
     auditId: z.string().min(1).max(100),
     revision: z.string().max(100).optional(),
-    tab: z.enum(['checks', 'evidence', 'requests', 'findings', 'report']),
+    tab: z.enum([
+      'checks',
+      'sources',
+      'evidence',
+      'requests',
+      'findings',
+      'report',
+      'research',
+    ]),
     checkId: z.string().max(100).nullable(),
     evidenceId: z.string().max(100).nullable(),
     compareEvidenceId: z.string().max(100).nullable().optional(),

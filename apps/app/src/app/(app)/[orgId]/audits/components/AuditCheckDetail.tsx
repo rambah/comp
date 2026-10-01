@@ -1,7 +1,8 @@
 'use client';
 import { usePermissions } from '@/hooks/use-permissions';
+import { canAccessRoute } from '@/lib/permissions';
 import { Button, Heading, Section, Text } from '@trycompai/design-system';
-import { Add, Document, Launch } from '@trycompai/design-system/icons';
+import { Add, ArrowRight, Document } from '@trycompai/design-system/icons';
 import Link from 'next/link';
 import { useCallback, useState } from 'react';
 import { checkSourceRoutes } from '../check-source-routes';
@@ -45,12 +46,14 @@ export function AuditCheckDetail({
   onBusyChange: (busy: boolean) => void;
   onComplete: () => void;
 }) {
-  const { hasPermission } = usePermissions();
+  const { hasPermission, permissions } = usePermissions();
   const canRecordFinding = canEdit && hasPermission('finding', 'create');
   const [dialog, setDialog] = useState<'request' | 'finding' | 'evidence' | null>(null);
   const preview = check.evidenceLinks.find((e) => e.id === previewId);
   const [busy, setBusy] = useState(false);
-  const sourceRoutes = checkSourceRoutes({ controlKey: check.controlKey, organizationId });
+  const sourceRoutes = checkSourceRoutes({ controlKey: check.controlKey, organizationId }).filter(
+    (route) => canAccessRoute(permissions, route.href.split('/')[2]),
+  );
   const handleBusy = useCallback(
     (value: boolean) => {
       setBusy(value);
@@ -79,8 +82,8 @@ export function AuditCheckDetail({
                   key={route.href}
                   variant="outline"
                   size="sm"
-                  iconRight={<Launch size={16} />}
-                  render={<Link href={route.href} target="_blank" rel="noopener noreferrer" />}
+                  iconRight={<ArrowRight size={16} />}
+                  render={<Link href={route.href} />}
                 >
                   {route.label}
                 </Button>

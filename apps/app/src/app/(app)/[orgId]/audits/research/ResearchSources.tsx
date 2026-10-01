@@ -10,6 +10,7 @@ import {
   DialogTitle,
 } from '@trycompai/design-system';
 import { ArrowUpRight, Copy, Document, Time } from '@trycompai/design-system/icons';
+import Link from 'next/link';
 import { toast } from 'sonner';
 import useSWR from 'swr';
 import { AuditDocumentReader } from '../components/AuditDocumentReader';
@@ -128,7 +129,7 @@ export function ResearchSourceDialog({
                     variant="outline"
                     size="sm"
                     iconLeft={<Document size={14} />}
-                    onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
+                    render={<Link href={url} />}
                   >
                     Open in Comp
                   </Button>

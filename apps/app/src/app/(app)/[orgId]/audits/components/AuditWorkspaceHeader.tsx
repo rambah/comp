@@ -1,5 +1,5 @@
 import { Button, PageHeader, PageHeaderDescription } from '@trycompai/design-system';
-import { Launch } from '@trycompai/design-system/icons';
+import { ArrowRight } from '@trycompai/design-system/icons';
 import Link from 'next/link';
 import type { AuditSearchItem } from '../audit-search';
 import type { WorkspaceAudit } from '../workspace-types';
@@ -39,8 +39,8 @@ export function AuditWorkspaceHeader({
         {audit && <AuditSearch audit={audit} disabled={disabled} onNavigate={onNavigate} />}
         <Button
           variant="ghost"
-          iconRight={<Launch size={16} />}
-          render={<Link href={registerUrl} target="_blank" rel="noopener noreferrer" />}
+          iconRight={<ArrowRight size={16} />}
+          render={<Link href={registerUrl} />}
         >
           Audit programme
         </Button>

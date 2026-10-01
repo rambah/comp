@@ -31,6 +31,7 @@ export function AuditEvidenceLibrary({
   onPreview,
   onSelect,
   locked,
+  onSources,
 }: {
   audit: WorkspaceAudit;
   organizationId: string;
@@ -39,6 +40,7 @@ export function AuditEvidenceLibrary({
   onPreview: (id: string | null, compareId?: string | null) => void;
   onSelect: (id: string) => void;
   locked: boolean;
+  onSources?: () => void;
 }) {
   const [query, setQuery] = useState('');
   const [type, setType] = useState('all');
@@ -68,9 +70,9 @@ export function AuditEvidenceLibrary({
   return (
     <div className="space-y-6">
       <AuditSectionHeading
-        eyebrow="Evidence library"
-        title="Every source, connected."
-        description="Find the exact version behind a review. Read, compare and trace evidence back to its check."
+        eyebrow="Linked audit evidence"
+        title="Evidence captured for this audit."
+        description="Only records explicitly linked to this audit appear here. Other available records remain accessible under Sources & registers."
         actions={
           <Button
             variant="outline"
@@ -82,6 +84,16 @@ export function AuditEvidenceLibrary({
           </Button>
         }
       />
+      {onSources && (
+        <Button
+          variant="outline"
+          onClick={onSources}
+          disabled={locked}
+          iconRight={<ArrowRight size={16} />}
+        >
+          Browse all sources & registers
+        </Button>
+      )}
       <div className="grid gap-3 sm:grid-cols-3">
         {[
           [String(entries.length), 'Evidence references', 'Every link retains its check context'],

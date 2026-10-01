@@ -12,7 +12,7 @@ import {
 } from '@trycompai/design-system';
 import { Add } from '@trycompai/design-system/icons';
 import { useState } from 'react';
-import useSWR from 'swr';
+import useSWRInfinite from 'swr/infinite';
 import type { EvidenceSource, WorkspaceMutation } from '../workspace-types';
 
 export function EvidencePicker({
@@ -28,18 +28,32 @@ export function EvidencePicker({
 }) {
   const [search, setSearch] = useState('');
   const [saving, setSaving] = useState<string | null>(null);
-  const { data, error, isLoading, mutate } = useSWR(
-    ['audit-sources', organizationId, search],
-    async () => {
-      const res = await apiClient.get<{ sources: EvidenceSource[] }>(
-        `/v1/audit-workspace/sources?search=${encodeURIComponent(search)}`,
-        organizationId,
+  const {
+    data: pages,
+    error,
+    isLoading,
+    isValidating,
+    mutate,
+    setSize,
+  } = useSWRInfinite<{
+    sources: EvidenceSource[];
+    nextOffset: number | null;
+  }>(
+    (index, previous) =>
+      index > 0 && previous?.nextOffset == null
+        ? null
+        : ['audit-sources', organizationId, search, index === 0 ? 0 : previous.nextOffset],
+    async ([, org, query, offset]: [string, string, string, number]) => {
+      const res = await apiClient.get<{ sources: EvidenceSource[]; nextOffset: number | null }>(
+        `/v1/audit-workspace/sources?search=${encodeURIComponent(query)}&offset=${offset}`,
+        org,
       );
       if (res.error || !res.data) throw new Error(res.error || 'Unable to find evidence.');
-      return res.data.sources;
+      return res.data;
     },
-    { keepPreviousData: true },
   );
+  const data = pages?.flatMap((page) => page.sources);
+  const hasMore = pages?.at(-1)?.nextOffset != null;
   const handleLink = async (source: EvidenceSource) => {
     setSaving(source.id);
     try {
@@ -109,6 +123,16 @@ export function EvidencePicker({
               </Button>
             </div>
           ))}
+          {hasMore && (
+            <Button
+              variant="outline"
+              disabled={!!saving || isValidating}
+              loading={isValidating}
+              onClick={() => void setSize((size) => size + 1)}
+            >
+              Load more evidence sources
+            </Button>
+          )}
           {!isLoading && !error && !data?.length && (
             <Text variant="muted">
               No sources found. Upload new files through Evidence, or publish the document first.

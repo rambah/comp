@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react';
+import { withNuqsTestingAdapter } from 'nuqs/adapters/testing';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { AuditLiveProvider } from '../live/AuditLiveProvider';
@@ -36,6 +37,7 @@ vi.mock('./AuditWorkspaceHeader', () => ({
   AuditWorkspaceHeader: () => <h1>Audit workspace</h1>,
 }));
 vi.mock('./AuditWorkspaceState', () => ({ AuditWorkspaceState: () => null }));
+vi.mock('./AuditSourceCatalog', () => ({ AuditSourceCatalog: () => null }));
 vi.mock('./AuditWorkspaceTabs', () => ({ AuditWorkspaceTabs: () => null }));
 vi.mock('./AuditCheckDetail', () => ({ AuditCheckDetail: () => null }));
 vi.mock('./AuditCheckNavigator', () => ({ AuditCheckNavigator: () => null }));
@@ -65,6 +67,7 @@ describe('Auditor workspace without sharing notices', () => {
       <AuditLiveProvider organizationId="org1" canPublish canObserve={false}>
         <AuditWorkspace organizationId="org1" initialData={null} />
       </AuditLiveProvider>,
+      { wrapper: withNuqsTestingAdapter() },
     );
     await waitFor(() =>
       expect(broadcast).toHaveBeenLastCalledWith({
@@ -84,6 +87,7 @@ describe('Auditor workspace without sharing notices', () => {
       <AuditLiveProvider organizationId="org1" canPublish canObserve={false}>
         <AuditWorkspace organizationId="org1" initialData={null} />
       </AuditLiveProvider>,
+      { wrapper: withNuqsTestingAdapter() },
     );
     await waitFor(() => expect(post).toHaveBeenCalledOnce());
     expect(screen.getByRole('main')).toHaveTextContent(/^Audit workspace$/);
@@ -97,6 +101,7 @@ describe('Auditor workspace without sharing notices', () => {
       <AuditLiveProvider organizationId="org1" canPublish canObserve>
         <AuditWorkspace organizationId="org1" initialData={null} />
       </AuditLiveProvider>,
+      { wrapper: withNuqsTestingAdapter() },
     );
     await waitFor(() =>
       expect(broadcast).toHaveBeenLastCalledWith({

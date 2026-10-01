@@ -51,9 +51,7 @@ export function AuditWorkspaceState({
             Create an internal audit and its checks in the audit programme. This workspace will
             bring the evidence, conversations and conclusions together.
           </p>
-          <Button render={<Link href={registerUrl} target="_blank" rel="noopener noreferrer" />}>
-            Open audit programme
-          </Button>
+          <Button render={<Link href={registerUrl} />}>Open audit programme</Button>
         </section>
       )}
     </>

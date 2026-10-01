@@ -1,3 +1,5 @@
+import { DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
+import { ApiQuery } from '@nestjs/swagger';
 import { ForbiddenException } from '@nestjs/common';
 import { ApiExtension } from '@nestjs/swagger';
 import { SessionOnlyGuard } from '../../auth/session-only.guard';
@@ -79,13 +81,20 @@ export class AuditWorkspaceController {
   @ApiOperation({
     summary: 'Find audit evidence',
     description:
-      'Search published policies, ISMS documents and existing evidence files to link to an audit check. Returns at most 50 sources per category.',
+      'Search published policies, ISMS documents and existing evidence files to link to an audit check. Returns 50 per category; use nextOffset to fetch remaining sources.',
+  })
+  @ApiQuery({
+    name: 'offset',
+    required: false,
+    type: Number,
+    description: 'Pagination offset returned as nextOffset; starts at zero.',
   })
   sources(
     @OrganizationId() organizationId: string,
     @Query('search') search?: string,
+    @Query('offset', new DefaultValuePipe(0), ParseIntPipe) offset = 0,
   ) {
-    return this.evidence.search({ organizationId, search });
+    return this.evidence.search({ organizationId, search, offset });
   }
 
   @Patch('checks/:id/review')

@@ -25,14 +25,15 @@ export function AuditWorkspaceTabs({
     .filter((r) => r.status !== 'accepted').length;
   const tabs = [
     { key: 'checks', label: 'Review plan', icon: List, count: null },
-    { key: 'evidence', label: 'Evidence library', icon: Document, count: null },
+    { key: 'sources', label: 'Sources & registers', icon: Document, count: null },
+    { key: 'evidence', label: 'Linked evidence', icon: Document, count: null },
     { key: 'requests', label: 'Requests', icon: Chat, count: requests || null },
     { key: 'findings', label: 'Findings', icon: Flag, count: audit.findings.length || null },
     { key: 'research', label: 'Research AI', icon: WatsonHealthAiResults, count: null },
     { key: 'report', label: 'Audit report', icon: Report, count: null },
   ] as const;
   return (
-    <div className="audit-surface min-w-0 overflow-hidden px-2 pt-1">
+    <div className="audit-surface min-w-0 overflow-x-auto px-2 pt-1">
       <Tabs
         value={tab}
         onValueChange={(value) => {
