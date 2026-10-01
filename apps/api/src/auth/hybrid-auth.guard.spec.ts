@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   ForbiddenException,
   UnauthorizedException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { HybridAuthGuard } from './hybrid-auth.guard';
@@ -104,10 +105,78 @@ describe('HybridAuthGuard — MCP OAuth path', () => {
     jest.spyOn(reflector, 'getAllAndOverride').mockReturnValue(false);
     // No cookie/regular session → forces the MCP OAuth fallback.
     mockGetSession.mockResolvedValue(null);
+    mockGetMcpSession.mockResolvedValue(null);
     // No org binding by default; individual tests override.
     mockMcpBindingFindUnique.mockResolvedValue(null);
     // No custom roles by default (built-in roles resolve without a DB call).
     mockOrgRoleFindMany.mockResolvedValue([]);
+  });
+
+  it('returns 503 instead of invalidating authentication when session storage fails', async () => {
+    mockGetSession.mockRejectedValueOnce(
+      new Error('database connection unavailable'),
+    );
+    const { context } = createContext({ cookie: 'session=one' });
+    await expect(guard.canActivate(context)).rejects.toThrow(
+      ServiceUnavailableException,
+    );
+  });
+
+  it.each(['UNAUTHORIZED', 'FORBIDDEN'] as const)(
+    'preserves an explicit auth rejection: %s',
+    async (status) => {
+      mockGetSession.mockRejectedValueOnce(
+        Object.assign(new Error(status), {
+          statusCode: status === 'UNAUTHORIZED' ? 401 : 403,
+        }),
+      );
+      const { context } = createContext({ cookie: 'session=one' });
+      await expect(guard.canActivate(context)).rejects.toThrow(
+        status === 'UNAUTHORIZED' ? UnauthorizedException : ForbiddenException,
+      );
+    },
+  );
+
+  it('continues to reject a revoked browser session', async () => {
+    const { context } = createContext({ cookie: 'session=revoked' });
+    await expect(guard.canActivate(context)).rejects.toThrow(
+      UnauthorizedException,
+    );
+  });
+
+  it('keeps concurrent sessions of the same account independent', async () => {
+    mockGetSession.mockImplementation(
+      async ({ headers }: { headers: Headers }) => ({
+        user: { id: 'usr_shared', email: 'shared@example.test' },
+        session: { id: headers.get('cookie'), activeOrganizationId: 'org_1' },
+      }),
+    );
+    mockMemberFindFirst.mockResolvedValue({ id: 'mem_shared', role: 'admin' });
+    const first = createContext({ cookie: 'session=first' });
+    const second = createContext({ cookie: 'session=second' });
+    await expect(
+      Promise.all([
+        guard.canActivate(first.context),
+        guard.canActivate(second.context),
+      ]),
+    ).resolves.toEqual([true, true]);
+    expect(first.request.sessionId).toBe('session=first');
+    expect(second.request.sessionId).toBe('session=second');
+    expect(first.request.userId).toBe(second.request.userId);
+  });
+
+  it('returns 503 for membership lookup outages after a valid session', async () => {
+    mockGetSession.mockResolvedValue({
+      user: { id: 'usr_1' },
+      session: { id: 'ses_1', activeOrganizationId: 'org_1' },
+    });
+    mockMemberFindFirst.mockRejectedValueOnce(
+      new Error('database unavailable'),
+    );
+    const { context } = createContext({ cookie: 'session=one' });
+    await expect(guard.canActivate(context)).rejects.toThrow(
+      ServiceUnavailableException,
+    );
   });
 
   it('authenticates a single-org user (admin) and binds org + roles', async () => {
