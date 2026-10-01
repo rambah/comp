@@ -1,3 +1,4 @@
+import { getRequirementIdentifier } from '@/lib/requirement-identifier';
 import { serverApi } from '@/lib/api-server';
 import {
   PageHeader,
@@ -44,7 +45,7 @@ export default async function RequirementPage({ params }: PageProps) {
   // framework.customFrameworkId is null.
   const isCustomRequirement = requirement.kind === 'custom';
 
-  const identifier: string | undefined = requirement.identifier?.trim() || undefined;
+  const identifier: string | undefined = getRequirementIdentifier(requirement) || undefined;
   const title = identifier ?? requirement.name;
   const showNameAsDescription = Boolean(identifier) && requirement.name;
 

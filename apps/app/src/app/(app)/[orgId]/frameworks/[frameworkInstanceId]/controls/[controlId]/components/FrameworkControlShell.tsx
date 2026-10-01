@@ -1,5 +1,8 @@
 'use client';
 
+import { LinkedIsmsDocuments } from '@/components/linked-isms-documents';
+import type { LinkedIsmsDocument } from '@/lib/types/linked-isms-document';
+
 import { PoliciesTable } from '@/app/(app)/[orgId]/controls/[controlId]/components/PoliciesTable';
 import { TasksTable } from '@/app/(app)/[orgId]/controls/[controlId]/components/TasksTable';
 import type {
@@ -34,6 +37,7 @@ interface DocumentRow {
 }
 
 type ControlDetail = Control & {
+  ismsDocumentLinks?: LinkedIsmsDocument[];
   policies: Policy[];
   tasks: Task[];
   controlDocumentTypes?: { formType: string; isNotRelevant?: boolean }[];
@@ -79,13 +83,13 @@ export function FrameworkControlShell({ orgId, frameworkInstanceId, control, bre
         frameworkInstanceId={frameworkInstanceId}
         alreadyLinkedTaskIds={linkedTaskIds}
       />
-    ) : (
+    ) : activeTab === 'documents' ? (
       <LinkDocumentTypeSheet
         controlId={control.id}
         frameworkInstanceId={frameworkInstanceId}
         alreadyLinkedFormTypes={linkedFormTypes}
       />
-    );
+    ) : null;
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -98,10 +102,15 @@ export function FrameworkControlShell({ orgId, frameworkInstanceId, control, bre
       >
         <Stack gap="lg">
           <TabsList variant="underline">
+            <TabsTrigger value="isms">ISMS documents ({control.ismsDocumentLinks?.length ?? 0})</TabsTrigger>
             <TabsTrigger value="policies">Policies ({control.policies.length})</TabsTrigger>
             <TabsTrigger value="tasks">Tasks ({control.tasks.length})</TabsTrigger>
-            <TabsTrigger value="documents">Documents ({documentRows.length})</TabsTrigger>
+            <TabsTrigger value="documents">Forms ({documentRows.length})</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="isms">
+            <LinkedIsmsDocuments links={control.ismsDocumentLinks ?? []} orgId={orgId} />
+          </TabsContent>
 
           <TabsContent value="policies">
             <PoliciesTable policies={control.policies} orgId={orgId} />

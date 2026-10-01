@@ -38,7 +38,7 @@ import {
 } from './framework-controls-shared';
 import { GroupedControlRow } from './GroupedControlRow';
 
-const COLUMN_COUNT = 7;
+const COLUMN_COUNT = 8;
 
 export function FrameworkControlsGrouped({
   frameworkInstanceWithControls,
@@ -178,11 +178,12 @@ export function FrameworkControlsGrouped({
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Requirement</TableHead>
-            <TableHead>Compliance</TableHead>
+            <TableHead>Progress</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Policies</TableHead>
             <TableHead>Tasks</TableHead>
-            <TableHead>Documents</TableHead>
+            <TableHead>Forms</TableHead>
+            <TableHead>ISMS docs</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

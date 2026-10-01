@@ -1,4 +1,5 @@
 'use client';
+import { IsmsMarkdown } from './shared/IsmsMarkdown';
 
 import { Button, Input, Text } from '@trycompai/design-system';
 import { Add, TrashCan } from '@trycompai/design-system/icons';
@@ -64,7 +65,7 @@ export function ScopeStringList({
               key={`${item}-${index}`}
               className="flex items-center justify-between gap-2 rounded-md border px-3 py-2"
             >
-              <span className="text-sm">{item}</span>
+              <IsmsMarkdown>{item}</IsmsMarkdown>
               {canEdit && (
                 <Button
                   type="button"

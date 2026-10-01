@@ -48,7 +48,7 @@ export function RiskTreatmentPlanClient(props: RiskTreatmentPlanClientProps) {
       title="Risk Treatment Plan"
       description="The treatment, controls, owner, residual risk state and owner acceptance for every risk — generated from the Risk Register and Vendors (ISO 27001 clause 6.1.3). No separate data entry: maintain the registers and regenerate."
       sectionTitle="Treatment plan preview"
-      sectionDescription="Exactly what the exported document renders, from the current registers."
+      sectionDescription="Current register data in a reading view. Search by title or owner and expand an entry to read its treatment and evidence. Published versions remain available in version history."
       generateSuccessMessage="Refreshed the plan from the current registers"
       getSubmitBlockedReason={() => blockedReason}
       onGenerated={() => mutateRiskTreatment()}

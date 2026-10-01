@@ -128,17 +128,18 @@ export function FrameworkControls({
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Requirement</TableHead>
-            <TableHead>Compliance</TableHead>
+            <TableHead>Progress</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Policies</TableHead>
             <TableHead>Tasks</TableHead>
-            <TableHead>Documents</TableHead>
+            <TableHead>Forms</TableHead>
+            <TableHead>ISMS docs</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {paginatedItems.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7}>
+              <TableCell colSpan={8}>
                 <Text size="sm" variant="muted">
                   No controls found.
                 </Text>
@@ -228,6 +229,7 @@ export function FrameworkControls({
                       </Text>
                     </div>
                   </TableCell>
+                  <TableCell>{control.ismsDocumentLinks?.length ?? 0}</TableCell>
                 </TableRow>
               );
             })

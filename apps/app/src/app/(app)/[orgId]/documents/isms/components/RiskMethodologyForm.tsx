@@ -1,7 +1,10 @@
 'use client';
 
+import { IsmsMarkdownEditor } from './shared/IsmsMarkdownEditor';
+import { IsmsMarkdown } from './shared/IsmsMarkdown';
+
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Label, Text, Textarea } from '@trycompai/design-system';
+import { Button, Label, Text } from '@trycompai/design-system';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import type { IsmsRiskMethodologyNarrative } from '../isms-types';
@@ -134,7 +137,7 @@ export function RiskMethodologyForm({ narrative, canEdit, onSave }: RiskMethodol
             control={control}
             name={name}
             render={({ field: { ref: _ref, ...field } }) => (
-              <Textarea {...field} id={`methodology-${name}`} rows={rows} aria-label={label} />
+              <IsmsMarkdownEditor {...field} id={`methodology-${name}`} rows={rows} aria-label={label} />
             )}
           />
           {errors[name] && (
@@ -144,7 +147,7 @@ export function RiskMethodologyForm({ narrative, canEdit, onSave }: RiskMethodol
           )}
         </div>
       ) : (
-        <p className="whitespace-pre-wrap text-sm">{narrative[name] || '—'}</p>
+        <IsmsMarkdown>{narrative[name] || '—'}</IsmsMarkdown>
       )}
     </div>
   );

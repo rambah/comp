@@ -1,9 +1,11 @@
+import { CompletionExplanation } from '@/components/completion-explanation';
 'use client';
 
 import {
   type EvidenceSubmissionInfo,
   getControlStatus,
-  getFrameworkAggregatePercent,
+  getControlProgressPercent,
+  getRequirementCompliancePercent,
 } from '@/lib/control-compliance';
 import type { Control, RequirementMap, Task } from '@db';
 import { Badge, Heading, Text } from '@trycompai/design-system';
@@ -27,7 +29,7 @@ export function RequirementControls({
   evidenceSubmissions = [],
   frameworkInstanceId,
 }: RequirementControlsProps) {
-  const controls = relatedControls.map((rc) => rc.control);
+  const controls = Array.from(new Map(relatedControls.map((rc) => [rc.control.id, rc.control])).values());
   const totalControls = controls.length;
   const compliantControls = controls.filter(
     (control) =>
@@ -40,7 +42,7 @@ export function RequirementControls({
       ) === 'completed',
   ).length;
   const remaining = totalControls - compliantControls;
-  const percent = getFrameworkAggregatePercent(controls, tasks, evidenceSubmissions);
+  const percent = getRequirementCompliancePercent(controls.map((control) => getControlProgressPercent(control.policies ?? [], tasks, control.id, control.controlDocumentTypes, evidenceSubmissions)));
   const variant: 'default' | 'secondary' | 'destructive' =
     percent >= 80 ? 'default' : percent >= 60 ? 'secondary' : 'destructive';
 
@@ -49,7 +51,7 @@ export function RequirementControls({
       {totalControls > 0 && (
         <div className="flex flex-col gap-4">
           <div className="flex flex-wrap items-center gap-6 text-sm">
-            <Badge variant={variant}>{percent}% compliant</Badge>
+            <Badge variant={variant}>{percent}% complete</Badge>
             <Text size="sm" variant="muted">
               {compliantControls} completed
             </Text>
@@ -69,6 +71,7 @@ export function RequirementControls({
         </div>
       )}
 
+      <CompletionExplanation aggregation="requirement" />
       <div className="flex items-center gap-2">
         <Heading level="3">Controls</Heading>
         <span className="text-muted-foreground bg-muted/50 rounded-xs px-2 py-1 text-xs tabular-nums">

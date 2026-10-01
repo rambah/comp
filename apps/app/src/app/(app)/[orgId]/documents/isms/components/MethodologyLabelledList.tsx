@@ -1,6 +1,9 @@
 'use client';
 
-import { Text, Textarea } from '@trycompai/design-system';
+import { IsmsMarkdownEditor } from './shared/IsmsMarkdownEditor';
+import { IsmsMarkdown } from './shared/IsmsMarkdown';
+
+import { Text } from '@trycompai/design-system';
 import type { Control, FieldValues, Path } from 'react-hook-form';
 import { Controller } from 'react-hook-form';
 
@@ -54,7 +57,7 @@ export function MethodologyLabelledList<T extends FieldValues>({
                   control={control}
                   name={`${name}.${index}` as Path<T>}
                   render={({ field: { ref: _ref, ...field } }) => (
-                    <Textarea {...field} rows={2} aria-label={`${title}: ${label}`} />
+                    <IsmsMarkdownEditor {...field} rows={2} aria-label={`${title}: ${label}`} />
                   )}
                 />
                 {rowErrors?.[index] && (
@@ -64,7 +67,7 @@ export function MethodologyLabelledList<T extends FieldValues>({
                 )}
               </div>
             ) : (
-              <p className="whitespace-pre-wrap pt-2 text-sm">{values[index] || '—'}</p>
+              <IsmsMarkdown>{values[index] || '—'}</IsmsMarkdown>
             )}
           </div>
         ))}
