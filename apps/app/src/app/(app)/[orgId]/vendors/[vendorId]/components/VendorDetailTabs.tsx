@@ -502,6 +502,7 @@ export function VendorDetailTabs({
             {activeTab === 'treatment-plan' && (
             <TabsContent value="treatment-plan">
               <TreatmentPlanTab
+                  entityType="vendor"
                 orgId={orgId}
                 entity={{
                   id: resolvedVendor.id,

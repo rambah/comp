@@ -19,6 +19,7 @@ type Props = Parameters<typeof TreatmentPlanTab>[0];
 function buildProps(overrides?: Partial<Props>): Props {
   return {
     orgId: 'org_1',
+    entityType: 'risk',
     entity: baseEntity,
     canUpdate: true,
     onUpdateStrategy: vi.fn().mockResolvedValue(undefined),

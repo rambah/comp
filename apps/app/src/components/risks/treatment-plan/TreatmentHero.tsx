@@ -12,6 +12,7 @@ import {
   previewResidual,
   suggestedResidual,
 } from '@/lib/suggested-residual';
+import type { ReactNode } from 'react';
 import type { Impact, Likelihood, RiskTreatmentType, TaskStatus } from '@db';
 import { Card, CardContent } from '@trycompai/design-system';
 import { RiskScoreBadge } from '../RiskScoreBadge';
@@ -27,6 +28,7 @@ interface TreatmentHeroProps {
   strategy: RiskTreatmentType;
   tasks: { status: TaskStatus }[];
   isEmpty?: boolean;
+  taskProgress?: ReactNode;
 }
 export function TreatmentHero(props: TreatmentHeroProps) {
   const {
@@ -91,17 +93,18 @@ export function TreatmentHero(props: TreatmentHeroProps) {
             )}
             <div className="border-t pt-3 text-sm flex flex-col gap-2">
               <div>
-                Suggested target based on task progress:{' '}
+                Suggested target based on linked evidence-task progress:{' '}
                 <RiskScoreBadge score={tasks.length ? suggestedScore : null} />
               </div>
               <div>
                 Suggested target at full completion:{' '}
                 <RiskScoreBadge score={tasks.length ? targetScore : null} />
               </div>
-              <div>
-                Task completion: {Math.round(completion * 100)}% ({tasks.length} linked tasks)
-              </div>
+              {props.taskProgress ?? <div>
+                Evidence-task completion: {Math.round(completion * 100)}% ({tasks.length} linked tasks)
+              </div>}
               <p className="text-xs text-muted-foreground">
+                Target suggestions use linked evidence tasks only. Manual tasks are included in the overall task counter.
                 Suggestions require review and an explicit matrix save. They are not current
                 assessments or risk-owner acceptances.
               </p>

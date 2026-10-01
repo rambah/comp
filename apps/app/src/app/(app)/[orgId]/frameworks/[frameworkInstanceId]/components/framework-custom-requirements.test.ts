@@ -4,7 +4,10 @@ import { describe, expect, it } from 'vitest';
 import { buildControlItems, buildRequirementItems, buildRequirementMap } from './framework-controls-shared';
 
 describe('custom requirement mappings', () => {
-  const requirements = ['6.2', '6.3'].map((id) => ({ id, name: `${id} Planning`, identifier: null })) as FrameworkEditorRequirement[];
+  const requirements: FrameworkEditorRequirement[] = ['6.2', '6.3'].map((id) => ({
+    id, name: `${id} Planning`, identifier: '', frameworkId: 'fw_1', description: '',
+    requirementFamily: null, sortOrder: null, createdAt: new Date(), updatedAt: new Date(),
+  }));
   const control = {
     id: 'iso', policies: Array.from({ length: 4 }, (_, i) => ({ id: `p${i}`, status: 'published' })),
     requirementsMapped: requirements.map(({ id }) => ({ requirementId: null, customRequirementId: id })),

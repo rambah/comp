@@ -337,6 +337,7 @@ export function RiskPageClient({
             {activeTab === 'treatment-plan' && (
               <TabsContent value="treatment-plan">
                 <TreatmentPlanTab
+                  entityType="risk"
                   orgId={orgId}
                   entity={{
                     id: risk.id,
