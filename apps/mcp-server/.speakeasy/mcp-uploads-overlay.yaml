@@ -151,3 +151,19 @@ actions:
     update:
       x-speakeasy-mcp:
         disabled: true
+  - target: "$.paths['/v1/audit-recordings'].get"
+    update:
+      x-speakeasy-mcp:
+        disabled: true
+  - target: "$.paths['/v1/audit-recordings/{id}'].get"
+    update:
+      x-speakeasy-mcp:
+        disabled: true
+  - target: "$.paths['/v1/audit-recordings/{id}'].delete"
+    update:
+      x-speakeasy-mcp:
+        disabled: true
+  - target: "$.paths['/v1/audit-recordings/{id}/chunks/{index}'].get"
+    update:
+      x-speakeasy-mcp:
+        disabled: true

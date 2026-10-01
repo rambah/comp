@@ -10,11 +10,13 @@ export function AuditWorkspaceHeader({
   disabled,
   onNavigate,
   registerUrl,
+  recordingsUrl,
 }: {
   audit: WorkspaceAudit | undefined;
   disabled: boolean;
   onNavigate: (item: AuditSearchItem) => void;
   registerUrl: string;
+  recordingsUrl?: string;
 }) {
   return (
     <div className="flex flex-col gap-5 pb-1 pt-2 lg:flex-row lg:items-center lg:justify-between">
@@ -27,6 +29,13 @@ export function AuditWorkspaceHeader({
         </PageHeader>
       </div>
       <div className="flex flex-wrap items-center gap-2">
+        {recordingsUrl && (
+          <div data-audit-live-private>
+            <Button variant="outline" render={<Link href={recordingsUrl} />}>
+              Recordings
+            </Button>
+          </div>
+        )}
         {audit && <AuditSearch audit={audit} disabled={disabled} onNavigate={onNavigate} />}
         <Button
           variant="ghost"

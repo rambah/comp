@@ -1,3 +1,6 @@
+import { AuditRecordingController } from './workspace/recordings/recording.controller';
+import { AuditRecordingService } from './workspace/recordings/recording.service';
+import { AuditRecordingStorage } from './workspace/recordings/recording-storage.service';
 import { AuditResearchController } from './workspace/research/research.controller';
 import { AuditResearchService } from './workspace/research/research.service';
 import { AuditResearchRunner } from './workspace/research/research-runner.service';
@@ -43,6 +46,7 @@ import { AttachmentsModule } from '../attachments/attachments.module';
   // AttachmentsModule: S3 access for retaining per-version rendered exports.
   imports: [AuthModule, AttachmentsModule],
   controllers: [
+    AuditRecordingController,
     AuditResearchController,
     AuditLiveController,
     AuditWorkspaceController,
@@ -51,6 +55,8 @@ import { AttachmentsModule } from '../attachments/attachments.module';
     IsmsProfileController,
   ],
   providers: [
+    AuditRecordingService,
+    AuditRecordingStorage,
     AuditResearchService,
     AuditResearchRunner,
     AuditResearchFiles,

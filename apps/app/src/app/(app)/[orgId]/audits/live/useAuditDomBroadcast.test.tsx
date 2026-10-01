@@ -36,6 +36,31 @@ describe('App-wide DOM broadcasting', () => {
     window.history.replaceState(null, '', '/');
   });
 
+  it('records Comp page activity even when no administrator is watching live', async () => {
+    const { unmount } = renderHook(() =>
+      useAuditDomBroadcast({
+        organizationId: 'org1',
+        session: { allowed: true, nonce: 'publisher' },
+      }),
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    const options = mocks.record.mock.calls[0][0] as { emit: (event: eventWithTime) => void };
+    const event: eventWithTime = {
+      type: 4,
+      timestamp: Date.now(),
+      data: { href: 'https://comp.example/org1/policies', width: 1280, height: 800 },
+    };
+    act(() => options.emit(event));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(100);
+    });
+    expect(mocks.encode).toHaveBeenCalledWith({ events: [event], pdf: null });
+    expect(mocks.send).toHaveBeenCalledWith(expect.objectContaining({ kind: 'dom' }));
+    unmount();
+  });
+
   it('continues sending updates after navigation instead of silently dropping all events', async () => {
     window.history.replaceState(null, '', '/org1/audits');
     const { unmount } = renderHook(() =>

@@ -1,3 +1,4 @@
+import type { AuditRecordingWriter } from './recordings/recording-writer';
 import { liveWireText } from './live-wire';
 import { db } from '@db';
 import { WebSocket } from 'ws';
@@ -35,6 +36,7 @@ export class AuditLiveConnection {
     private readonly identity: LiveIdentity,
     private readonly bus: AuditLiveBus,
     private readonly access: AuditLiveAccess,
+    private readonly recording?: AuditRecordingWriter,
   ) {
     this.timer = setInterval(() => {
       void this.checkAccess();
@@ -104,6 +106,7 @@ export class AuditLiveConnection {
       return this.close();
     if (message.sequence <= this.sequence) return;
     this.sequence = message.sequence;
+    if (message.kind === 'dom') void this.recording?.append(message);
     if (message.kind === 'dom' || message.kind === 'watch') {
       if (this.pendingDom.length >= 256) return this.close();
       this.pendingDom.push(message);
@@ -244,6 +247,7 @@ export class AuditLiveConnection {
     clearInterval(this.timer);
     this.stopSubscription?.();
     this.socket.close(1000);
+    void this.recording?.close().catch(() => undefined);
     if (this.identity.mode === 'publish') {
       void this.bus
         .publish({

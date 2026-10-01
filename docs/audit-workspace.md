@@ -61,11 +61,11 @@ permissions. Creating a finding retains the existing `finding:create` restrictio
 Live consent, tickets and auditor completion require the user's own browser
 session; impersonation and MCP/API-key callers cannot perform those actions.
 
-Live reconstruction starts automatically on each workspace visit. The auditor sees no confirmation dialog, sharing controls, status banner, viewer list or live-service error message. Initialization uses the existing authenticated session endpoint; the workspace stays usable if initialization fails. Leaving the workspace or losing access ends transmission. Following controls and connection status remain restricted to authorized observers.
+Live reconstruction starts automatically on each organization app visit. The auditor sees no confirmation dialog, sharing controls, status banner, viewer list or live-service error message. Initialization uses the existing authenticated session endpoint; the workspace stays usable if initialization fails. Leaving the organization app, hiding the tab or losing access ends transmission. Navigation between organization pages keeps the session active. Following controls and connection status remain restricted to authorized observers.
 
 The workspace is reconstructed with rrweb in an isolated, read-only iframe. It does not use screen capture or replay application components. The replay iframe permits neither scripts nor form submission, is inert, and receives no application event handlers. Replaying a submit click cannot execute a second mutation; only the auditor's original form writes data. Opening a PDF causes the administrator to retrieve the same evidence version through the existing permission-checked preview endpoint. PDF viewer page/zoom controls and browser-native file pickers are not mirrored.
 
-Only the workspace and explicitly marked audit dialog/popover surfaces are captured. Passwords, one-time codes, payment-card inputs and explicitly private elements are excluded, as are other app surfaces, browser tabs and desktop. Research is included in the workspace view. CSS and DOM changes are batched every 100 ms, compressed and split into bounded chunks. Pointer samples are collected at up to 40 Hz; an 800 ms playback buffer smooths arrival jitter. Actual latency depends on the network.
+The visible organization app, navigation and portalled dialogs are captured. Passwords, one-time codes, payment-card inputs and explicitly private elements are excluded, as are other browser tabs and the desktop. Research is included in the workspace view. CSS and DOM changes are batched every 100 ms, compressed and split into bounded chunks. Pointer samples are collected at up to 40 Hz; an 800 ms playback buffer smooths arrival jitter. Actual latency depends on the network.
 
 The authenticated WebSocket/Redis relay retains no replay history or video. Publisher and observer permissions are rechecked every four seconds. Stops clear the rendered view immediately upon delivery. Connections retry; an interrupted or incomplete sequence requests a fresh snapshot rather than applying corrupt deltas. Presence tolerates 15 seconds of jitter, retains the chosen auditor during reconnection and does not end sharing when the browser tab loses focus. Input and DOM buffers are bounded; overload closes the connection and requires synchronization again.
 
@@ -83,7 +83,7 @@ The authenticated WebSocket/Redis relay retains no replay history or video. Publ
    Deploy API and frontend together for the session endpoint rename, and update
    any proxy rules that previously matched `/v1/audit-workspace/live/socket`.
 5. Verify a real auditor and an owner in separate browser sessions: opening the
-   workspace starts transmitting without any confirmation or publisher status notice; leaving stops it; removing access
+   workspace starts transmitting without any confirmation or publisher status notice; leaving the organization app or hiding the tab stops it; removing access
    terminates it. Check cross-replica following and reconnect after a proxy restart.
 
 Without Redis or WebSocket proxy support, the audit workflow remains usable but
@@ -103,3 +103,42 @@ Production proxy/Redis latency and the full deployed application remain rollout
 checks; local tests do not establish production performance.
 
 Automatic initialization regression cases cover Strict Mode, organization changes, failed initialization and new visits. Scope exclusion and observer-only relay boundaries remain enforced. Static type checks are separate from functional or performance validation.
+
+## Private session recordings
+
+Administrators and owners can open **Audits → Recordings**. The auditor role has
+no recording permissions, navigation, player or deletion controls. The server
+checks active organization membership, `auditRecording:read` and
+`auditWorkspace:observe` for every list, manifest and chunk request; deletion
+additionally requires `auditRecording:delete`. Browser sessions only; no public
+object URLs or MCP access. Organization boundaries and expiry are checked before
+any stored content is read.
+
+A publisher's complete DOM batches are archived even without a live observer.
+This is a video-like rrweb replay of visible Comp pages, with play/pause, seeking
+and playback speed, not an MP4 or desktop capture. Existing private surface,
+password, one-time-code and card-input exclusions apply. Embedded PDF contents
+and native file pickers are not stored in the replay. The sandboxed player cannot
+execute scripts or submit forms. Old recordings cannot be reconstructed.
+
+Each connection starts a fresh recording. Long sessions split at a full snapshot
+after about 15 minutes or 16 MB of encoded activity. Writes flush every five
+seconds; disconnect and graceful shutdown flush complete pending batches. A
+crashed process can lose its last unflushed seconds. Incomplete sessions are
+labelled interrupted, and playback rejects missing chunks rather than silently
+joining gaps. The list displays 100 sections per page, with navigation to older retained sections.
+
+Manifests and object references use separate `AuditRecording` and
+`AuditRecordingChunk` tables (migration `20261001010000_audit_recordings`). Gzipped
+chunks are stored privately with AES256 server-side encryption under the existing
+S3 bucket's `audit-recordings/` prefix. The API role needs GetObject, PutObject,
+DeleteObject for this prefix and ListBucket with this prefix. Existing business
+audit records and evidence are not changed by recording deletion.
+
+Access expires exactly 30 days after section creation. A one-minute cleanup task
+removes expired objects before removing manifests and retries storage failures.
+Manual deletion denies access immediately and waits two minutes before purging,
+so bounded in-flight uploads can settle. A paginated prefix sweep also removes
+orphaned objects after organization deletion or interrupted upload commits.
+Physical cleanup depends on storage availability; failed jobs are logged for
+operations. No recording data is retained in application logs.

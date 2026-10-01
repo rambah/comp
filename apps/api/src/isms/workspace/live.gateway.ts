@@ -1,3 +1,5 @@
+import { AuditRecordingService } from './recordings/recording.service';
+import { AuditRecordingWriter } from './recordings/recording-writer';
 import { liveWireText } from './live-wire';
 import {
   Injectable,
@@ -24,10 +26,12 @@ export class AuditLiveGateway
     perMessageDeflate: false,
   });
   private http?: Server;
+  private readonly writers = new Set<AuditRecordingWriter>();
   constructor(
     private readonly adapter: HttpAdapterHost,
     private readonly access: AuditLiveAccess,
     private readonly bus: AuditLiveBus,
+    private readonly recordings: AuditRecordingService,
   ) {}
 
   onApplicationBootstrap() {
@@ -47,7 +51,28 @@ export class AuditLiveGateway
             return socket.close(1008);
           if (socket.readyState !== socket.OPEN) return;
           clearTimeout(deadline);
-          new AuditLiveConnection(socket, identity, this.bus, this.access);
+          const writer =
+            identity.mode === 'publish'
+              ? new AuditRecordingWriter(this.recordings, identity, () =>
+                  socket.close(1011),
+                )
+              : undefined;
+          if (writer) {
+            this.writers.add(writer);
+            socket.once('close', () => {
+              void writer
+                .close()
+                .catch(() => undefined)
+                .finally(() => this.writers.delete(writer));
+            });
+          }
+          new AuditLiveConnection(
+            socket,
+            identity,
+            this.bus,
+            this.access,
+            writer,
+          );
         })().catch(() => socket.close(1008));
       });
       socket.on('error', () => socket.close());
@@ -77,9 +102,10 @@ export class AuditLiveGateway
       .catch(() => socket.destroy());
   };
 
-  onModuleDestroy() {
+  async onModuleDestroy() {
     this.http?.off('upgrade', this.handleUpgrade);
     for (const socket of this.server.clients) socket.close(1001);
     this.server.close();
+    await Promise.allSettled([...this.writers].map((writer) => writer.close()));
   }
 }

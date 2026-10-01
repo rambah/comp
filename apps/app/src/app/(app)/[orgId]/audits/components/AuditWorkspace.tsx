@@ -78,6 +78,11 @@ export function AuditWorkspace({
           audit={audit}
           disabled={locked}
           registerUrl={registerUrl}
+          recordingsUrl={
+            canObserve && hasPermission('auditRecording', 'read')
+              ? `/${organizationId}/audits/recordings`
+              : undefined
+          }
           onNavigate={(item) => {
             setCompareId(null);
             setFocusedFinding(item.group === 'Findings' ? item : null);

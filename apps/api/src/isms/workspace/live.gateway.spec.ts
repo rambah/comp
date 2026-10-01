@@ -3,10 +3,14 @@ import { once } from 'events';
 import { randomUUID } from 'crypto';
 import { WebSocket } from 'ws';
 import type { HttpAdapterHost } from '@nestjs/core';
+import type { AuditRecordingService } from './recordings/recording.service';
 import { AuditLiveGateway } from './live.gateway';
 import type { AuditLiveAccess } from './live-access.service';
 import type { AuditLiveBus } from './live-bus.service';
 import type { LiveIdentity } from './live.schema';
+jest.mock('./recordings/recording.service', () => ({
+  AuditRecordingService: class {},
+}));
 jest.mock('@db', () => ({ db: {} }));
 jest.mock('../../auth/app-access', () => ({}));
 jest.mock('../../auth/auth.server', () => ({
@@ -28,6 +32,10 @@ describe('Live gateway over a real WebSocket', () => {
     nonce: 'consent',
   };
   const bus = {
+    subscribe: jest.fn(({ onReady }: { onReady: () => void }) => {
+      onReady();
+      return () => {};
+    }),
     consume: jest.fn((ticket: string) => {
       const value = tickets.get(ticket);
       tickets.delete(ticket);
@@ -56,12 +64,13 @@ describe('Live gateway over a real WebSocket', () => {
       } as unknown as HttpAdapterHost,
       access as unknown as AuditLiveAccess,
       bus as unknown as AuditLiveBus,
+      {} as AuditRecordingService,
     );
     gateway.onApplicationBootstrap();
   });
   afterEach(async () => {
     for (const socket of sockets.splice(0)) socket.terminate();
-    gateway.onModuleDestroy();
+    await gateway.onModuleDestroy();
     await new Promise<void>((resolve) => http.close(() => resolve()));
   });
   it('requires a single-use ticket and rejects its replay', async () => {

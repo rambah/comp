@@ -80,6 +80,10 @@ export const ROUTE_PERMISSIONS: Record<string, Array<{ resource: string; action:
     { resource: 'evidence', action: 'read' },
     { resource: 'policy', action: 'read' },
   ],
+  'audits/recordings': [
+    { resource: 'auditRecording', action: 'read' },
+    { resource: 'auditWorkspace', action: 'observe' },
+  ],
   controls: [{ resource: 'control', action: 'read' }],
   policies: [{ resource: 'policy', action: 'read' }],
   tasks: [
@@ -118,7 +122,7 @@ export const ROUTE_PERMISSIONS: Record<string, Array<{ resource: string; action:
 export function canAccessRoute(permissions: UserPermissions, routeSegment: string): boolean {
   const required = ROUTE_PERMISSIONS[routeSegment];
   if (!required) return true; // Unknown routes accessible by default
-  if (routeSegment === 'audits') {
+  if (routeSegment === 'audits' || routeSegment === 'audits/recordings') {
     return required.every(({ resource, action }) => hasPermission(permissions, resource, action));
   }
   return hasAnyPermission(permissions, required);

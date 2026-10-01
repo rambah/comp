@@ -69,7 +69,7 @@ export function useAuditDomBroadcast({
         };
         stop = record({
           emit(event) {
-            if (disposed || !watchers.current.size) return;
+            if (disposed) return;
             if (event.type === 4) {
               epoch = crypto.randomUUID();
               batch = 0;
@@ -102,7 +102,7 @@ export function useAuditDomBroadcast({
       })
       .catch(fail);
     const flush = setInterval(() => {
-      if (disposed || packing || !watchers.current.size) return;
+      if (disposed || packing) return;
       const pdf = currentPdf();
       if (!events.length && JSON.stringify(pdf) === lastPdf) return;
       const captured = { events, pdf };
