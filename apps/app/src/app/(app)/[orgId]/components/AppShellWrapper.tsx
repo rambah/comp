@@ -26,7 +26,6 @@ import {
   AppShellMain,
   AppShellNavbar,
   AppShellRail,
-  AppShellAIChatTrigger,
   AppShellSidebar,
   AppShellSidebarHeader,
   AppShellUserMenu,
@@ -54,6 +53,7 @@ import { getAppShellSearchGroups } from './app-shell-search-groups';
 import { AppSidebar } from './AppSidebar';
 import { ConditionalOnboardingTracker } from './ConditionalOnboardingTracker';
 import { ShellRailNavItem } from './ShellRailNavItem';
+import { HydratedAIChatTrigger } from './HydratedAIChatTrigger';
 
 interface AppShellWrapperProps {
   children: React.ReactNode;
@@ -183,7 +183,7 @@ function AppShellWrapperContent({
           centerContent={<CommandSearch groups={searchGroups} placeholder="Search..." />}
           endContent={
             <AppShellUserMenu>
-              <AppShellAIChatTrigger />
+              <HydratedAIChatTrigger />
               <NotificationBell />
               <DropdownMenu>
                 <DropdownMenuTrigger
