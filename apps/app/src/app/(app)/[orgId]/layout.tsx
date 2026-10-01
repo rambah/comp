@@ -20,6 +20,7 @@ import dynamic from 'next/dynamic';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { AuditLiveProvider } from './audits/live/AuditLiveProvider';
+import { canPublishAuditWorkspace } from './audits/live/publication-access';
 import { AppShellWrapper } from './components/AppShellWrapper';
 
 const HotKeys = dynamic(() => import('@/components/hot-keys').then((mod) => mod.HotKeys), {
@@ -191,7 +192,7 @@ export default async function Layout({
           <AuditLiveProvider
             key={organization.id}
             organizationId={organization.id}
-            canPublish={hasAuditorRole && hasPermission(permissions, 'auditWorkspace', 'read')}
+            canPublish={canPublishAuditWorkspace({ role: member.role, customRolePermissions, permissions })}
             canObserve={hasPermission(permissions, 'auditWorkspace', 'observe')}
           >
             <AppShellWrapper

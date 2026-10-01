@@ -30,6 +30,11 @@
             "import": "./dist/ssl-config.js",
             "default": "./dist/ssl-config.js"
         },
+        "./pool-config": {
+            "types": "./src/pool-config.ts",
+            "import": "./dist/pool-config.js",
+            "default": "./dist/pool-config.js"
+        },
         "./risk-scoring": {
             "types": "./src/risk-scoring.ts",
             "import": "./dist/risk-scoring.js",

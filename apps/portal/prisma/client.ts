@@ -1,5 +1,6 @@
 import { PrismaClient } from '../src/generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { databasePoolConfig } from '@trycompai/db/pool-config';
 
 const globalForPrisma = global as unknown as { prisma?: PrismaClient };
 
@@ -37,7 +38,7 @@ function createPrismaClient(): PrismaClient {
         : { checkServerIdentity: () => undefined };
 
   const url = ssl !== undefined ? stripSslMode(rawUrl) : rawUrl;
-  const adapter = new PrismaPg({ connectionString: url, ssl });
+  const adapter = new PrismaPg({ connectionString: url, ssl, ...databasePoolConfig() });
   return new PrismaClient({
     adapter,
     transactionOptions: {

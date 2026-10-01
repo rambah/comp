@@ -35,6 +35,8 @@ const flush = async () => {
 };
 describe('Live socket lifecycle', () => {
   beforeEach(() => {
+    vi.spyOn(document, 'hasFocus').mockReturnValue(true);
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
     vi.useFakeTimers();
     vi.clearAllMocks();
     FakeSocket.instances = [];
@@ -58,6 +60,23 @@ describe('Live socket lifecycle', () => {
     hook.unmount();
     expect(socket.close).toHaveBeenCalled();
   });
+  it('discards queued events immediately when the publisher loses focus', async () => {
+    const hook = renderHook(() => useLiveSocket(options));
+    await flush();
+    const socket = FakeSocket.instances[0];
+    act(() => socket.onmessage?.({ data: JSON.stringify({ kind: 'ready' }) }));
+    act(() => {
+      hook.result.current.send({ kind: 'presence' });
+    });
+    vi.mocked(document.hasFocus).mockReturnValue(false);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(30);
+    });
+    expect(socket.send).not.toHaveBeenCalled();
+    expect(hook.result.current.send({ kind: 'presence' })).toBe(false);
+    hook.unmount();
+  });
+
   it('does not retry after consent or permission is revoked', async () => {
     post.mockResolvedValue({ status: 403, error: 'Revoked' });
     const hook = renderHook(() => useLiveSocket(options));

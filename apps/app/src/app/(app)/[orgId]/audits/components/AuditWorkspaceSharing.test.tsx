@@ -49,6 +49,8 @@ vi.mock('./AuditRequests', () => ({ AuditRequests: () => null }));
 describe('Auditor workspace without sharing notices', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.spyOn(document, 'hasFocus').mockReturnValue(true);
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
     hasPermission.mockImplementation((_, action: string) => action !== 'observe');
     post.mockResolvedValue({ data: { allowed: true, nonce: 'visit' } });
     broadcast.mockReturnValue({

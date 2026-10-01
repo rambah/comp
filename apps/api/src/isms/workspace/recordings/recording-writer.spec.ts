@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import { AuditRecordingWriter } from './recording-writer';
 import type { AuditRecordingService } from './recording.service';
 import type { RecordingPacket } from './recording-storage.service';
@@ -105,8 +106,11 @@ describe('AuditRecordingWriter', () => {
     expect(fail).toHaveBeenCalledTimes(1);
     expect(service.append).not.toHaveBeenCalled();
   });
-  it('marks a storage failure interrupted', async () => {
-    service.append.mockRejectedValueOnce(new Error('storage down'));
+  it('marks a storage failure interrupted and logs correlation without captured content', async () => {
+    const logError = jest
+      .spyOn(Logger.prototype, 'error')
+      .mockImplementation(() => undefined);
+    service.append.mockRejectedValueOnce(new Error('storage down: secret'));
     await writer.append(packet());
     await jest.advanceTimersByTimeAsync(5000);
     await writer.close();
@@ -115,5 +119,17 @@ describe('AuditRecordingWriter', () => {
       id: 'recording',
       interrupted: true,
     });
+    const entries = logError.mock.calls.map(([entry]) => String(entry));
+    expect(
+      entries.some(
+        (entry) =>
+          entry.includes('store_chunk') &&
+          entry.includes('mem') &&
+          entry.includes('recording_failed'),
+      ),
+    ).toBe(true);
+    expect(entries.join(' ')).not.toContain('secret');
+    expect(entries.join(' ')).not.toContain('aGVsbG8=');
+    logError.mockRestore();
   });
 });

@@ -6,6 +6,7 @@ import { auditBlockSelector, currentPdf } from './dom-privacy';
 import type { AuditLiveEvent } from './live-types';
 import type { AuditSharingSession } from './useAuditSharing';
 import { useLiveSocket } from './useLiveSocket';
+import { isActiveAuditTab } from './active-audit-tab';
 
 export function useAuditDomBroadcast({
   organizationId,
@@ -61,7 +62,7 @@ export function useAuditDomBroadcast({
     };
     void import('rrweb')
       .then(({ record }) => {
-        if (disposed) return;
+        if (disposed || !isActiveAuditTab()) return;
         snapshot.current = () => {
           if (Date.now() - lastSnapshot < 1000) return;
           lastSnapshot = Date.now();
@@ -69,7 +70,7 @@ export function useAuditDomBroadcast({
         };
         stop = record({
           emit(event) {
-            if (disposed) return;
+            if (disposed || !isActiveAuditTab()) return;
             if (event.type === 4) {
               epoch = crypto.randomUUID();
               batch = 0;
@@ -102,7 +103,7 @@ export function useAuditDomBroadcast({
       })
       .catch(fail);
     const flush = setInterval(() => {
-      if (disposed || packing) return;
+      if (disposed || packing || !isActiveAuditTab()) return;
       const pdf = currentPdf();
       if (!events.length && JSON.stringify(pdf) === lastPdf) return;
       const captured = { events, pdf };
@@ -113,7 +114,7 @@ export function useAuditDomBroadcast({
       packing = true;
       void encodeBatch(captured)
         .then((parts) => {
-          if (disposed) return;
+          if (disposed || !isActiveAuditTab()) return;
           for (let part = 0; part < parts.length; part++) {
             if (
               !send({
@@ -134,6 +135,7 @@ export function useAuditDomBroadcast({
         });
     }, 100);
     const presence = () => {
+      if (!isActiveAuditTab()) return;
       send({ kind: 'presence' });
       for (const [key, viewer] of watchers.current)
         if (Date.now() - viewer.at > 12000) watchers.current.delete(key);

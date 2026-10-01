@@ -1,9 +1,15 @@
 import type { AuditRecordingService } from './recording.service';
 import type { LiveIdentity } from '../live.schema';
 import type { RecordingPacket } from './recording-storage.service';
+import { Logger } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 
 /** Bounded, ordered archive writes independent of the number of live viewers. */
 export class AuditRecordingWriter {
+  private readonly logger = new Logger(AuditRecordingWriter.name);
+  private readonly connectionId = randomUUID();
+  private receivedPackets = 0;
+  private phase = 'receive';
   private id: string | null = null;
   private packets: RecordingPacket[] = [];
   private bytes = 0;
@@ -26,6 +32,7 @@ export class AuditRecordingWriter {
     private readonly identity: LiveIdentity,
     private readonly onError: () => void,
   ) {
+    this.log('info', 'connected_waiting_for_first_packet');
     this.timer = setInterval(() => {
       void this.enqueue(() => this.flush());
     }, 5000);
@@ -33,6 +40,9 @@ export class AuditRecordingWriter {
 
   append(message: RecordingPacket) {
     return this.enqueue(async () => {
+      this.phase = 'validate_packet';
+      if (++this.receivedPackets === 1)
+        this.log('info', 'first_packet_received');
       if (message.epoch !== this.epoch) {
         if (
           message.batch !== 0 ||
@@ -82,6 +92,7 @@ export class AuditRecordingWriter {
 
   private async flush() {
     if (!this.packets.length) return;
+    this.phase = 'create_manifest';
     if (!this.id) this.id = (await this.service.create(this.identity)).id;
     const packets = this.packets;
     this.packets = [];
@@ -89,15 +100,18 @@ export class AuditRecordingWriter {
       (sum, packet) => sum + packet.payload.length,
       0,
     );
+    this.phase = 'store_chunk';
     await this.service.append({ id: this.id, index: this.index++, packets });
     this.bytes -= size;
     this.totalBytes += size;
+    if (this.index === 1) this.log('info', 'first_chunk_stored');
   }
 
   private enqueue(operation: () => Promise<void>) {
     if (this.closed || this.failed) return this.chain;
     if (++this.queued > 256) {
       this.failed = true;
+      this.log('error', 'queue_full');
       this.onError();
       return this.chain;
     }
@@ -107,6 +121,7 @@ export class AuditRecordingWriter {
       })
       .catch(() => {
         this.failed = true;
+        this.log('error', 'recording_failed');
         this.onError();
       })
       .finally(() => {
@@ -128,13 +143,41 @@ export class AuditRecordingWriter {
       if (!this.failed) await this.flush();
     } catch {
       this.failed = true;
+      this.log('error', 'final_flush_failed');
     }
-    if (this.id)
-      await this.service.finish({
-        id: this.id,
-        interrupted: this.failed || this.batchPackets.length > 0,
-      });
+    const interrupted = this.failed || this.batchPackets.length > 0;
+    if (this.id) {
+      this.phase = 'finish_manifest';
+      try {
+        await this.service.finish({ id: this.id, interrupted });
+      } catch (error) {
+        this.log('error', 'finish_failed');
+        throw error;
+      }
+    }
+    if (!this.receivedPackets) this.log('info', 'closed_without_data');
+    if (this.receivedPackets)
+      this.log(
+        interrupted ? 'warn' : 'info',
+        interrupted ? 'interrupted' : 'complete',
+      );
     this.packets = [];
     this.batchPackets = [];
+  }
+
+  private log(level: 'info' | 'warn' | 'error', event: string) {
+    // Correlation only: never log DOM payloads, inputs, ticket/nonce or session secrets.
+    const entry = JSON.stringify({
+      event,
+      connectionId: this.connectionId,
+      recordingId: this.id,
+      organizationId: this.identity.organizationId,
+      memberId: this.identity.memberId,
+      phase: this.phase,
+      receivedPackets: this.receivedPackets,
+      storedBytes: this.totalBytes,
+    });
+    if (level === 'info') this.logger.log(entry);
+    else this.logger[level](entry);
   }
 }

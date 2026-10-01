@@ -1,5 +1,6 @@
 import {
   Injectable,
+  Logger,
   OnModuleDestroy,
   ServiceUnavailableException,
 } from '@nestjs/common';
@@ -10,6 +11,7 @@ import type { LiveEvent, LiveIdentity } from './live.schema';
 /** Redis pub/sub forwards live events across API replicas; it retains no frames. */
 @Injectable()
 export class AuditLiveBus implements OnModuleDestroy {
+  private readonly logger = new Logger(AuditLiveBus.name);
   private redis?: Redis;
   private readonly subscriptions = new Set<() => void>();
 
@@ -65,15 +67,56 @@ export class AuditLiveBus implements OnModuleDestroy {
     onReady: () => void;
   }) {
     // The subscription must not inherit the short request timeout used for publishing.
+    const heartbeatId = randomUUID();
     const subscription = new Redis({
       url: process.env.UPSTASH_REDIS_REST_URL!,
       token: process.env.UPSTASH_REDIS_REST_TOKEN!,
       retry: false,
-    }).subscribe<LiveEvent>(`audit-live:${organizationId}`);
-    subscription.on('message', ({ message }) => onEvent(message));
-    subscription.on('error', onError);
+    }).subscribe<LiveEvent | { kind: 'transport-heartbeat'; id: string }>(
+      `audit-live:${organizationId}`,
+    );
+    let lastEcho = Date.now();
+    let stopped = false;
+    let sending = false;
+    subscription.on('message', ({ message }) => {
+      if (stopped) return;
+      if (message.kind === 'transport-heartbeat') {
+        if (message.id === heartbeatId) lastEcho = Date.now();
+        return;
+      }
+      onEvent(message);
+    });
+    // This SDK can swallow stream read errors. Check the entire Redis round trip,
+    // rather than keeping a dead subscription alive with browser-only heartbeats.
+    const fail = () => {
+      if (stopped) return;
+      close();
+      this.logger.warn('Audit live subscription interrupted; reconnecting');
+      onError();
+    };
+    subscription.on('error', fail);
     subscription.on('subscribe', onReady);
+    const timer = setInterval(() => {
+      if (Date.now() - lastEcho > 45_000) return fail();
+      if (sending || stopped) return;
+      sending = true;
+      void Promise.resolve()
+        .then(() =>
+          this.client().publish(`audit-live:${organizationId}`, {
+            kind: 'transport-heartbeat',
+            id: heartbeatId,
+          }),
+        )
+        .catch(fail)
+        .finally(() => {
+          sending = false;
+        });
+    }, 15_000);
+    timer.unref();
     const close = () => {
+      if (stopped) return;
+      stopped = true;
+      clearInterval(timer);
       this.subscriptions.delete(close);
       void subscription.unsubscribe().catch(() => undefined);
     };

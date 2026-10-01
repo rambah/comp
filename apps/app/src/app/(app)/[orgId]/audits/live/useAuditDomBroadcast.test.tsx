@@ -25,6 +25,8 @@ vi.mock('./dom-codec', () => ({ encodeBatch: mocks.encode }));
 
 describe('App-wide DOM broadcasting', () => {
   beforeEach(() => {
+    vi.spyOn(document, 'hasFocus').mockReturnValue(true);
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
     vi.useFakeTimers();
     vi.clearAllMocks();
     mocks.record.mockReturnValue(mocks.stop);

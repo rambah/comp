@@ -2,6 +2,7 @@
 import { env } from '@/env.mjs';
 import { apiClient } from '@/lib/api-client';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { isActiveAuditTab } from './active-audit-tab';
 import { liveEventSchema, type AuditLiveEvent } from './live-types';
 
 export function useLiveSocket({
@@ -37,6 +38,11 @@ export function useLiveSocket({
     let attempt = 0;
     let lastReceived = Date.now();
     const flush = setInterval(() => {
+      if (mode === 'publish' && !isActiveAuditTab()) {
+        queue.current = [];
+        queuedBytes.current = 0;
+        return;
+      }
       const ws = socket.current;
       if (!ready.current || ws?.readyState !== WebSocket.OPEN) return;
       while (queue.current.length && ws.bufferedAmount < 128000) {
@@ -125,17 +131,21 @@ export function useLiveSocket({
     };
   }, [organizationId, mode, nonce, enabled]);
 
-  const send = useCallback((message: object) => {
-    const ws = socket.current;
-    if (!ready.current || ws?.readyState !== WebSocket.OPEN) return false;
-    const value = JSON.stringify({ ...message, sequence: ++sequence.current });
-    if (queuedBytes.current + value.length > 8000000) {
-      ws.close();
-      return false;
-    }
-    queue.current.push(value);
-    queuedBytes.current += value.length;
-    return true;
-  }, []);
+  const send = useCallback(
+    (message: object) => {
+      if (mode === 'publish' && !isActiveAuditTab()) return false;
+      const ws = socket.current;
+      if (!ready.current || ws?.readyState !== WebSocket.OPEN) return false;
+      const value = JSON.stringify({ ...message, sequence: ++sequence.current });
+      if (queuedBytes.current + value.length > 8000000) {
+        ws.close();
+        return false;
+      }
+      queue.current.push(value);
+      queuedBytes.current += value.length;
+      return true;
+    },
+    [mode],
+  );
   return { connected, send };
 }

@@ -8,6 +8,8 @@ vi.mock('@/lib/api-client', () => ({ apiClient: { post } }));
 describe('Automatic audit sharing', () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    vi.spyOn(document, 'hasFocus').mockReturnValue(true);
+    vi.spyOn(document, 'visibilityState', 'get').mockReturnValue('visible');
     post.mockResolvedValue({ data: { allowed: true, nonce: 'visit' } });
   });
 

@@ -1,15 +1,12 @@
 'use client';
 
-import { createContext, useContext, useSyncExternalStore, type ReactNode } from 'react';
+import { createContext, useContext, type ReactNode } from 'react';
+import { useActiveAuditTab } from './active-audit-tab';
 import { useAuditDomBroadcast } from './useAuditDomBroadcast';
 import { useAuditDomObserver } from './useAuditDomObserver';
 import { useAuditSharing } from './useAuditSharing';
 
 const AuditLiveContext = createContext<ReturnType<typeof useAuditDomObserver> | null>(null);
-const subscribeVisibility = (callback: () => void) => {
-  document.addEventListener('visibilitychange', callback);
-  return () => document.removeEventListener('visibilitychange', callback);
-};
 
 /** Persist the publisher across every route in this organization's app shell. */
 export function AuditLiveProvider({
@@ -23,15 +20,11 @@ export function AuditLiveProvider({
   canObserve: boolean;
   children: ReactNode;
 }) {
-  const visible = useSyncExternalStore(
-    subscribeVisibility,
-    () => document.visibilityState !== 'hidden',
-    () => false,
-  );
+  const active = useActiveAuditTab();
   const observer = useAuditDomObserver({ organizationId, enabled: canObserve });
   const { session } = useAuditSharing({
     organizationId,
-    enabled: canPublish && visible && !observer.following,
+    enabled: canPublish && active && !observer.following,
   });
   useAuditDomBroadcast({ organizationId, session });
 
