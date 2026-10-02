@@ -1,4 +1,5 @@
 'use client';
+import { AttachmentFeedbackQueue } from '@/components/attachments/feedback/AttachmentFeedbackQueue';
 import { usePermissions } from '@/hooks/use-permissions';
 import { PageLayout } from '@trycompai/design-system';
 import { useMemo, useState, useSyncExternalStore } from 'react';
@@ -226,13 +227,16 @@ export function AuditWorkspace({
                   />
                 ))}
               {tab === 'requests' && (
-                <AuditRequests
-                  audit={audit}
-                  members={data.members}
-                  canEdit={canEdit}
-                  update={update}
-                  onSelect={handleSelect}
-                />
+                <div className="space-y-8">
+                  <AttachmentFeedbackQueue organizationId={organizationId} canEdit={canEdit} />
+                  <AuditRequests
+                    audit={audit}
+                    members={data.members}
+                    canEdit={canEdit}
+                    update={update}
+                    onSelect={handleSelect}
+                  />
+                </div>
               )}
               {tab === 'findings' && (
                 <AuditFindings

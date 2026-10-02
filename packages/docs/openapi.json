@@ -27798,6 +27798,165 @@
           }
         }
       }
+    },
+    "/v1/audit-workspace/attachment-feedback": {
+      "get": {
+        "description": "List flagged evidence files and attributed responses across the organization. Filter by attachment or status; use nextOffset to retrieve the next page.",
+        "operationId": "AttachmentFeedbackController_list_v1",
+        "parameters": [
+          {
+            "name": "attachmentId",
+            "required": false,
+            "in": "query",
+            "description": "Filter feedback for this attachment.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Omit to include all statuses.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "resolved"
+              ]
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Pagination offset; 50 feedback items per page.",
+            "schema": {
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "List attachment feedback",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-speakeasy-mcp": {
+          "name": "list-attachment-feedback"
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "List attachment feedback | Comp AI API",
+            "sidebarTitle": "List attachment feedback",
+            "description": "List flagged evidence files and attributed responses across the organization. Filter by attachment or status; use nextOffset to retrieve the next page.",
+            "og:title": "List attachment feedback | Comp AI API",
+            "og:description": "List flagged evidence files and attributed responses across the organization. Filter by attachment or status; use nextOffset to retrieve the next page."
+          }
+        }
+      },
+      "post": {
+        "description": "Record a concern about an existing evidence file with a required comment. Preserves file identity and author; does not change evidence, audit decisions or approvals.",
+        "operationId": "AttachmentFeedbackController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAttachmentFeedbackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Flag an evidence attachment",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-speakeasy-mcp": {
+          "name": "flag-evidence-attachment"
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Flag an evidence attachment | Comp AI API",
+            "sidebarTitle": "Flag an evidence attachment",
+            "description": "Record a concern about an existing evidence file with a required comment. Preserves file identity and author; does not change evidence, audit decisions.",
+            "og:title": "Flag an evidence attachment | Comp AI API",
+            "og:description": "Record a concern about an existing evidence file with a required comment. Preserves file identity and author; does not change evidence, audit decisions."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/attachment-feedback/{id}/responses": {
+      "post": {
+        "description": "Append a comment and keep open, resolve or reopen a flagged file. Requires its latest updatedAt to avoid overwriting concurrent changes. Resolution does not approve evidence.",
+        "operationId": "AttachmentFeedbackController_respond_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RespondAttachmentFeedbackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Respond to attachment feedback",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-speakeasy-mcp": {
+          "name": "respond-to-attachment-feedback"
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Respond to attachment feedback | Comp AI API",
+            "sidebarTitle": "Respond to attachment feedback",
+            "description": "Append a comment and keep open, resolve or reopen a flagged file. Requires its latest updatedAt to avoid overwriting concurrent changes. Resolution does not.",
+            "og:title": "Respond to attachment feedback | Comp AI API",
+            "og:description": "Append a comment and keep open, resolve or reopen a flagged file. Requires its latest updatedAt to avoid overwriting concurrent changes. Resolution does not."
+          }
+        }
+      }
     }
   },
   "info": {
@@ -33099,6 +33258,51 @@
         "required": [
           "prompt",
           "requestId"
+        ]
+      },
+      "CreateAttachmentFeedbackDto": {
+        "type": "object",
+        "properties": {
+          "attachmentId": {
+            "type": "string",
+            "description": "Existing attachment to flag."
+          },
+          "comment": {
+            "type": "string",
+            "description": "Explain what is insufficient or needs correction.",
+            "maxLength": 5000
+          }
+        },
+        "required": [
+          "attachmentId",
+          "comment"
+        ]
+      },
+      "RespondAttachmentFeedbackDto": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string",
+            "description": "Describe the correction, response or reason for reopening.",
+            "maxLength": 5000
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "resolved"
+            ],
+            "description": "Feedback status after this response; does not approve evidence."
+          },
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "updatedAt from the latest feedback, for conflict detection."
+          }
+        },
+        "required": [
+          "comment",
+          "status",
+          "expectedUpdatedAt"
         ]
       }
     }

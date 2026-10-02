@@ -1,3 +1,5 @@
+import { AttachmentFeedbackController } from './workspace/attachment-feedback/attachment-feedback.controller';
+import { AttachmentFeedbackService } from './workspace/attachment-feedback/attachment-feedback.service';
 import { AuditRecordingController } from './workspace/recordings/recording.controller';
 import { AuditRecordingService } from './workspace/recordings/recording.service';
 import { AuditRecordingStorage } from './workspace/recordings/recording-storage.service';
@@ -46,6 +48,7 @@ import { AttachmentsModule } from '../attachments/attachments.module';
   // AttachmentsModule: S3 access for retaining per-version rendered exports.
   imports: [AuthModule, AttachmentsModule],
   controllers: [
+    AttachmentFeedbackController,
     AuditRecordingController,
     AuditResearchController,
     AuditLiveController,
@@ -55,6 +58,7 @@ import { AttachmentsModule } from '../attachments/attachments.module';
     IsmsProfileController,
   ],
   providers: [
+    AttachmentFeedbackService,
     AuditRecordingService,
     AuditRecordingStorage,
     AuditResearchService,

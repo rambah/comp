@@ -1,6 +1,10 @@
+import { AttachmentFeedbackController } from './attachment-feedback/attachment-feedback.controller';
+import { AttachmentFeedbackService } from './attachment-feedback/attachment-feedback.service';
 import { AuditResearchController } from './research/research.controller';
 import { AuditResearchService } from './research/research.service';
-jest.mock('./research/research-runner.service', () => ({ AuditResearchRunner: class {} }));
+jest.mock('./research/research-runner.service', () => ({
+  AuditResearchRunner: class {},
+}));
 import { AuditWorkspaceFinish } from './workspace-finish.service';
 import 'reflect-metadata';
 import { VersioningType } from '@nestjs/common';
@@ -48,8 +52,14 @@ jest.mock('../../auth/permission.guard', () => ({
 describe('Audit workspace API contract', () => {
   it('documents all bodies, enforces permissions, and excludes browser sessions from agent tools', async () => {
     const module = await Test.createTestingModule({
-      controllers: [AuditWorkspaceController, AuditLiveController, AuditResearchController],
+      controllers: [
+        AttachmentFeedbackController,
+        AuditWorkspaceController,
+        AuditLiveController,
+        AuditResearchController,
+      ],
       providers: [
+        AttachmentFeedbackService,
         AuditResearchService,
         AuditWorkspaceService,
         AuditWorkspaceRequestsService,
@@ -85,7 +95,12 @@ describe('Audit workspace API contract', () => {
           ).toBeTruthy();
       }
     }
-    for (const controller of [AuditWorkspaceController, AuditLiveController, AuditResearchController]) {
+    for (const controller of [
+      AttachmentFeedbackController,
+      AuditWorkspaceController,
+      AuditLiveController,
+      AuditResearchController,
+    ]) {
       for (const method of Object.getOwnPropertyNames(
         controller.prototype,
       ).filter((k) => k !== 'constructor')) {

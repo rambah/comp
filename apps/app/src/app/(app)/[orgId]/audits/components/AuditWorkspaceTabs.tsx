@@ -1,3 +1,5 @@
+import { useAttachmentFeedback } from '@/components/attachments/feedback/useAttachmentFeedback';
+import { usePermissions } from '@/hooks/use-permissions';
 import { Tabs, TabsList, TabsTrigger } from '@trycompai/design-system';
 import {
   Chat,
@@ -7,6 +9,7 @@ import {
   Report,
   WatsonHealthAiResults,
 } from '@trycompai/design-system/icons';
+import { useParams } from 'next/navigation';
 import type { AuditLiveView } from '../live/live-types';
 import type { WorkspaceAudit } from '../workspace-types';
 export function AuditWorkspaceTabs({
@@ -20,6 +23,13 @@ export function AuditWorkspaceTabs({
   locked: boolean;
   onChange: (tab: AuditLiveView['tab']) => void;
 }) {
+  const { orgId } = useParams<{ orgId: string }>();
+  const { hasPermission } = usePermissions();
+  const { data: feedback } = useAttachmentFeedback({
+    organizationId: orgId,
+    status: 'open',
+    enabled: hasPermission('auditWorkspace', 'read') && hasPermission('evidence', 'read'),
+  });
   const requests = audit.controls
     .flatMap((c) => c.requests)
     .filter((r) => r.status !== 'accepted').length;
@@ -27,7 +37,12 @@ export function AuditWorkspaceTabs({
     { key: 'checks', label: 'Review plan', icon: List, count: null },
     { key: 'sources', label: 'Sources & registers', icon: Document, count: null },
     { key: 'evidence', label: 'Linked evidence', icon: Document, count: null },
-    { key: 'requests', label: 'Requests', icon: Chat, count: requests || null },
+    {
+      key: 'requests',
+      label: 'Requests',
+      icon: Chat,
+      count: requests + (feedback?.count ?? 0) || null,
+    },
     { key: 'findings', label: 'Findings', icon: Flag, count: audit.findings.length || null },
     { key: 'research', label: 'Research AI', icon: WatsonHealthAiResults, count: null },
     { key: 'report', label: 'Audit report', icon: Report, count: null },
