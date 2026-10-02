@@ -327,7 +327,7 @@ describe('CompanySubmissionDetailPageClient', () => {
   });
 
   describe('Error state', () => {
-    it('shows not found text on error', () => {
+    it('shows an actionable load error instead of claiming a missing submission', () => {
       setMockPermissions(ADMIN_PERMISSIONS);
       mockSwrError = new Error('Not found');
 
@@ -340,7 +340,7 @@ describe('CompanySubmissionDetailPageClient', () => {
       );
 
       expect(
-        screen.getByText('Submission not found'),
+        screen.getByRole('alert'),
       ).toBeInTheDocument();
     });
   });
