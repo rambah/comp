@@ -11,11 +11,7 @@ import {
 } from '@/hooks/use-risks';
 import { getSortingStateParser } from '@/lib/parsers';
 import { getRiskLevelFromScore, getRiskScore, LEVEL_LABEL } from '@/lib/risk-score';
-import {
-  interpolatedResidualScore,
-  previewResidual,
-  suggestedResidual,
-} from '@/lib/suggested-residual';
+import { currentAssessmentScore } from '@/lib/risk-score';
 import { TaskStatus } from '@db';
 import type { Member, User } from '@db';
 import { Risk as RiskType } from '@db';
@@ -58,7 +54,7 @@ import {
   Text,
 } from '@trycompai/design-system';
 import { OverflowMenuVertical, Search, TrashCan } from '@trycompai/design-system/icons';
-import { ArrowDown, ArrowUp, ArrowUpDown, Loader2 } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowsVertical as ArrowUpDown, Renew as Loader2 } from '@trycompai/design-system/icons';
 import { useRouter } from 'next/navigation';
 import {
   parseAsString,
@@ -79,38 +75,8 @@ const ACTIVE_STATUSES: Array<'pending' | 'processing' | 'created' | 'assessing'>
   'assessing',
 ];
 
-/**
- * The risk's current severity score (1-10), interpolated by linked-task
- * completion the same way the Treatment Plan hero does it. Returns the
- * inherent score when there's no linked work or the strategy doesn't
- * project a reduction. Falls back to inherent on malformed input.
- */
-function currentSeverityScore(risk: {
-  likelihood: ApiRisk['likelihood'];
-  impact: ApiRisk['impact'];
-  treatmentStrategy: ApiRisk['treatmentStrategy'];
-  tasks?: Array<{ status: TaskStatus }>;
-}): number {
-  const inherent = getRiskScore(risk.likelihood, risk.impact);
-  const tasks = risk.tasks ?? [];
-  const target = previewResidual({
-    inherentLikelihood: risk.likelihood,
-    inherentImpact: risk.impact,
-    strategy: risk.treatmentStrategy,
-    hasLinkedWork: tasks.length > 0,
-  });
-  const targetScore = getRiskScore(target.likelihood, target.impact).score;
-  const completion = suggestedResidual({
-    likelihood: risk.likelihood,
-    impact: risk.impact,
-    strategy: risk.treatmentStrategy,
-    tasks,
-  }).completion;
-  return interpolatedResidualScore({
-    inherentScore: inherent.score,
-    targetScore,
-    completion,
-  });
+function currentSeverityScore(risk: ApiRisk): number | null {
+  return currentAssessmentScore(risk);
 }
 
 
@@ -236,7 +202,7 @@ export const RisksTable = ({
     if (!severityFilter) return fullList;
     return fullList.filter((risk) => {
       const score = currentSeverityScore(risk);
-      return getRiskLevelFromScore(score) === severityFilter;
+      return score !== null && getRiskLevelFromScore(score) === severityFilter;
     });
   }, [fullList, severityFilter]);
 
@@ -485,11 +451,10 @@ export const RisksTable = ({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All severities</SelectItem>
-                <SelectItem value="very-high">Very high</SelectItem>
+                <SelectItem value="very-high">Critical</SelectItem>
                 <SelectItem value="high">High</SelectItem>
                 <SelectItem value="medium">Medium</SelectItem>
                 <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="very-low">Very low</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -659,31 +624,20 @@ export const RisksTable = ({
                         </HStack>
                       </TableCell>
                       {(() => {
-                        // Three score columns paint the before-vs-now picture:
-                        //   SEVERITY = current treatment-aware level (text).
-                        //   INHERENT = raw score before treatment, fixed.
-                        //   CURRENT  = treatment-aware score interpolated by
-                        //              linked-task completion. Named "Current"
-                        //              (not "Residual") because the canonical
-                        //              residual is the *target* score at 100%
-                        //              completion — what's shown here moves
-                        //              with progress and matches the hero's
-                        //              "Currently X/10" subline.
-                        // SEVERITY is plain text and CURRENT carries the
-                        // colored chip so we don't double-paint the band.
                         const inherentScore = getRiskScore(risk.likelihood, risk.impact).score;
                         const score = currentSeverityScore(risk);
-                        const level = getRiskLevelFromScore(score);
+                        const level = score === null ? null : getRiskLevelFromScore(score);
                         return (
                           <>
                             <TableCell>
-                              <Text>{LEVEL_LABEL[level]}</Text>
+                              <Text>{level ? LEVEL_LABEL[level] : 'Not yet assessed'}</Text>
                             </TableCell>
                             <TableCell>
                               <RiskScoreBadge score={inherentScore} />
                             </TableCell>
                             <TableCell>
                               <RiskScoreBadge score={score} />
+                              {risk.residualAssessmentStatus === "legacy" && <div className="text-xs text-muted-foreground">Legacy rating · review provenance</div>}
                             </TableCell>
                           </>
                         );

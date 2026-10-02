@@ -34,6 +34,8 @@ export const statement = {
   task: ['create', 'read', 'update', 'delete'],
   framework: ['create', 'read', 'update', 'delete'],
   audit: ['create', 'read', 'update'],
+  auditWorkspace: ['read', 'update', 'observe'],
+  auditRecording: ['read', 'delete'],
   finding: ['create', 'read', 'update', 'delete'],
   questionnaire: ['create', 'read', 'update', 'delete'],
   integration: ['create', 'read', 'update', 'delete'],
@@ -75,6 +77,8 @@ export const owner = ac.newRole({
   task: ['create', 'read', 'update', 'delete'],
   framework: ['create', 'read', 'update', 'delete'],
   audit: ['create', 'read', 'update'],
+  auditWorkspace: ['read', 'update', 'observe'],
+  auditRecording: ['read', 'delete'],
   // Findings are raised by auditors only; owners/admins can view & transition status via update
   finding: ['read', 'update'],
   questionnaire: ['create', 'read', 'update', 'delete'],
@@ -113,6 +117,8 @@ export const admin = ac.newRole({
   task: ['create', 'read', 'update', 'delete'],
   framework: ['create', 'read', 'update', 'delete'],
   audit: ['create', 'read', 'update'],
+  auditWorkspace: ['read', 'update', 'observe'],
+  auditRecording: ['read', 'delete'],
   // Findings are raised by auditors only; owners/admins can view & transition status via update
   finding: ['read', 'update'],
   questionnaire: ['create', 'read', 'update', 'delete'],
@@ -149,6 +155,7 @@ export const auditor = ac.newRole({
   task: ['read'],
   framework: ['read'],
   audit: ['read'],
+  auditWorkspace: ['read', 'update'],
   finding: ['create', 'read', 'update', 'delete'], // Auditors raise and retract findings
   questionnaire: ['read'],
   integration: ['read'],

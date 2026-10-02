@@ -21,7 +21,7 @@ import { PermissionGuard } from './permission.guard';
       // Body parsing for non-auth routes is handled in main.ts with a
       // custom middleware that skips /api/auth paths. Disable the module's
       // own SkipBodyParsingMiddleware to avoid conflicts.
-      disableBodyParser: true,
+      bodyParser: { json: { enabled: false }, urlencoded: { enabled: false } },
     }),
   ],
   controllers: [AuthController],

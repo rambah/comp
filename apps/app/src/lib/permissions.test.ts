@@ -17,14 +17,14 @@ describe('canAccessApp', () => {
     expect(canAccessApp(permissions)).toBe(true);
   });
 
-  it('returns true for users with pentest permissions (custom role)', () => {
+  it('does not infer app access from pentest permissions', () => {
     const permissions: UserPermissions = { pentest: ['create', 'read', 'delete'] };
-    expect(canAccessApp(permissions)).toBe(true);
+    expect(canAccessApp(permissions)).toBe(false);
   });
 
-  it('returns true for users with any app-implying resource', () => {
+  it('does not infer app access from control permissions', () => {
     const permissions: UserPermissions = { control: ['read'] };
-    expect(canAccessApp(permissions)).toBe(true);
+    expect(canAccessApp(permissions)).toBe(false);
   });
 
   it('returns false for portal-only users (employee: policy + compliance only)', () => {
@@ -106,7 +106,6 @@ describe('canAccessRoute', () => {
     const permissions: UserPermissions = {};
     expect(canAccessRoute(permissions, 'nonexistent-route')).toBe(true);
   });
-
 });
 
 describe('getDefaultRoute', () => {
@@ -116,7 +115,7 @@ describe('getDefaultRoute', () => {
     expect(route).toBe('/org_123/security/penetration-tests');
   });
 
-  it('returns frameworks as first route for full-access users', () => {
+  it('returns overview as first route for full-access users', () => {
     const permissions: UserPermissions = {
       app: ['read'],
       framework: ['read'],
@@ -124,7 +123,7 @@ describe('getDefaultRoute', () => {
       pentest: ['read'],
     };
     const route = getDefaultRoute(permissions, 'org_123');
-    expect(route).toBe('/org_123/frameworks');
+    expect(route).toBe('/org_123/overview');
   });
 
   it('returns null for users with no permissions at all', () => {
@@ -223,14 +222,30 @@ describe('canAccessAuditorView', () => {
     // the custom role is something like "ReadOnlyViewer" without audit, the
     // tab stays hidden even though the merged permissions would pass.
     const customRolePerms: UserPermissions = { evidence: ['read'] };
-    expect(canAccessAuditorView('owner,ReadOnlyViewer', customRolePerms)).toBe(
-      false,
-    );
+    expect(canAccessAuditorView('owner,ReadOnlyViewer', customRolePerms)).toBe(false);
   });
 
   it('hides when role string is empty / null / undefined', () => {
     expect(canAccessAuditorView('', noCustom)).toBe(false);
     expect(canAccessAuditorView(null, noCustom)).toBe(false);
     expect(canAccessAuditorView(undefined, noCustom)).toBe(false);
+  });
+});
+
+describe('audit workspace routing', () => {
+  const auditor: UserPermissions = {
+    app: ['read'],
+    auditWorkspace: ['read', 'update'],
+    evidence: ['read'],
+    policy: ['read'],
+    audit: ['read'],
+  };
+  it('starts auditors in their workspace without granting SoA edit or observation access', () => {
+    expect(getDefaultRoute(auditor, 'o1')).toBe('/o1/audits');
+    expect(hasPermission(auditor, 'audit', 'update')).toBe(false);
+    expect(hasPermission(auditor, 'auditWorkspace', 'observe')).toBe(false);
+  });
+  it('does not grant the workspace to employees with only policy access', () => {
+    expect(canAccessRoute({ policy: ['read'] }, 'audits')).toBe(false);
   });
 });

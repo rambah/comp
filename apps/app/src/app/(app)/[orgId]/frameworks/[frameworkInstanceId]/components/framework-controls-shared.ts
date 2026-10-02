@@ -1,3 +1,4 @@
+import { getRequirementIdentifier } from '@/lib/requirement-identifier';
 import type { StatusType } from '@/components/status-indicator';
 import {
   type EvidenceSubmissionInfo,
@@ -23,7 +24,7 @@ export function getStatusBadge(status: StatusType): {
 } {
   switch (status) {
     case 'completed':
-      return { label: 'Satisfied', variant: 'default' };
+      return { label: 'Complete', variant: 'default' };
     case 'in_progress':
       return { label: 'In Progress', variant: 'secondary' };
     case 'not_relevant':
@@ -38,7 +39,7 @@ export function buildRequirementMap(
 ): Map<string, { id: string; name: string; identifier: string }> {
   const map = new Map<string, { id: string; name: string; identifier: string }>();
   for (const req of requirementDefinitions) {
-    map.set(req.id, { id: req.id, name: req.name, identifier: req.identifier ?? '' });
+    map.set(req.id, { id: req.id, name: req.name, identifier: getRequirementIdentifier(req) });
   }
   return map;
 }
@@ -49,7 +50,7 @@ export function buildControlItems(
 ): ControlItem[] {
   return controls.map((control) => {
     const requirements = (control.requirementsMapped ?? [])
-      .map((rm) => (rm.requirementId ? requirementMap.get(rm.requirementId) : undefined))
+      .map((rm) => requirementMap.get(rm.requirementId ?? rm.customRequirementId ?? ''))
       .filter((r): r is { id: string; name: string; identifier: string } => r != null);
     return { control, requirements };
   });
@@ -214,7 +215,7 @@ export function buildRequirementItems(
   return requirementDefinitions.map((def) => {
     const mappedControls = controls.filter(
       (control) =>
-        control.requirementsMapped?.some((rm) => rm.requirementId === def.id) ?? false,
+        control.requirementsMapped?.some((rm) => (rm.requirementId === def.id || rm.customRequirementId === def.id)) ?? false,
     );
 
     const controlStatuses = mappedControls.map((c) =>
@@ -228,6 +229,7 @@ export function buildRequirementItems(
 
     return {
       ...def,
+      identifier: getRequirementIdentifier(def),
       mappedControlsCount: mappedControls.length,
       satisfiedControlsCount,
       compliancePercent: getRequirementCompliancePercent(progressPercents),

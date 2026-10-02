@@ -1,7 +1,10 @@
 'use client';
 
+import { IsmsMarkdownEditor } from './shared/IsmsMarkdownEditor';
+import { IsmsMarkdown } from './shared/IsmsMarkdown';
+
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Badge, Button, Label, Text, Textarea } from '@trycompai/design-system';
+import { Badge, Button, Label, Text } from '@trycompai/design-system';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import type { IsmsScopeNarrative } from '../isms-types';
@@ -104,7 +107,7 @@ export function ScopeForm({ narrative, canEdit, onSave }: ScopeFormProps) {
               control={control}
               name="certificateScopeSentence"
               render={({ field: { ref: _ref, ...field } }) => (
-                <Textarea
+                <IsmsMarkdownEditor
                   {...field}
                   rows={3}
                   placeholder="The provision of … by … operating from …"
@@ -119,7 +122,7 @@ export function ScopeForm({ narrative, canEdit, onSave }: ScopeFormProps) {
             )}
           </div>
         ) : (
-          <p className="text-base font-medium">{narrative.certificateScopeSentence}</p>
+          <IsmsMarkdown>{narrative.certificateScopeSentence}</IsmsMarkdown>
         )}
       </section>
 
@@ -136,7 +139,7 @@ export function ScopeForm({ narrative, canEdit, onSave }: ScopeFormProps) {
               control={control}
               name="inScope"
               render={({ field: { ref: _ref, ...field } }) => (
-                <Textarea
+                <IsmsMarkdownEditor
                   {...field}
                   id="scope-in-scope"
                   rows={4}
@@ -150,7 +153,7 @@ export function ScopeForm({ narrative, canEdit, onSave }: ScopeFormProps) {
             )}
           </div>
         ) : (
-          <p className="whitespace-pre-wrap text-sm">{narrative.inScope}</p>
+          <IsmsMarkdown>{narrative.inScope}</IsmsMarkdown>
         )}
       </div>
 
@@ -196,7 +199,7 @@ export function ScopeForm({ narrative, canEdit, onSave }: ScopeFormProps) {
             control={control}
             name="justification"
             render={({ field: { ref: _ref, ...field } }) => (
-              <Textarea
+              <IsmsMarkdownEditor
                 {...field}
                 id="scope-justification"
                 rows={3}
@@ -206,7 +209,7 @@ export function ScopeForm({ narrative, canEdit, onSave }: ScopeFormProps) {
             )}
           />
         ) : (
-          <p className="whitespace-pre-wrap text-sm">{narrative.justification || '—'}</p>
+          <IsmsMarkdown>{narrative.justification || '—'}</IsmsMarkdown>
         )}
       </div>
 

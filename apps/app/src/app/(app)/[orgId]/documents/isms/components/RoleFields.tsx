@@ -1,6 +1,8 @@
 'use client';
 
-import { Field, FieldError, Input, Stack, Textarea } from '@trycompai/design-system';
+import { IsmsMarkdownEditor } from './shared/IsmsMarkdownEditor';
+
+import { Field, FieldError, Input, Stack } from '@trycompai/design-system';
 import { Controller, type Control } from 'react-hook-form';
 import type { RoleFormValues } from './role-schema';
 import { IsmsFieldLabel } from './shared';
@@ -40,7 +42,7 @@ export function RoleFields({ control, showName }: RoleFieldsProps) {
             control={control}
             name="description"
             render={({ field: { ref: _ref, ...field } }) => (
-              <Textarea {...field} rows={2} aria-label="Role description" />
+              <IsmsMarkdownEditor {...field} rows={2} aria-label="Role description" />
             )}
           />
         </Field>
@@ -51,7 +53,7 @@ export function RoleFields({ control, showName }: RoleFieldsProps) {
             control={control}
             name="responsibilities"
             render={({ field: { ref: _ref, ...field } }) => (
-              <Textarea {...field} rows={3} aria-label="Role responsibilities" />
+              <IsmsMarkdownEditor {...field} rows={3} aria-label="Role responsibilities" />
             )}
           />
         </Field>
@@ -62,7 +64,7 @@ export function RoleFields({ control, showName }: RoleFieldsProps) {
             control={control}
             name="authorities"
             render={({ field: { ref: _ref, ...field } }) => (
-              <Textarea {...field} rows={2} aria-label="Role authorities" />
+              <IsmsMarkdownEditor {...field} rows={2} aria-label="Role authorities" />
             )}
           />
         </Field>
@@ -84,7 +86,7 @@ export function RoleFields({ control, showName }: RoleFieldsProps) {
             control={control}
             name="requiredCompetence"
             render={({ field: { ref: _ref, ...field } }) => (
-              <Textarea {...field} rows={2} aria-label="Required competence" />
+              <IsmsMarkdownEditor {...field} rows={2} aria-label="Required competence" />
             )}
           />
         </Field>

@@ -1,0 +1,62 @@
+// Audit work stays attached to the existing ISMS register, not a second audit.
+enum AuditRequestStatus {
+  open
+  submitted
+  changes_requested
+  accepted
+}
+
+model AuditRequest {
+  id String @id @default(dbgenerated("generate_prefixed_cuid('areq'::text)"))
+  controlId String
+  control IsmsAuditControl @relation(fields: [controlId], references: [id], onDelete: Cascade)
+  question String
+  ownerMemberId String
+  dueDate DateTime @db.Date
+  status AuditRequestStatus @default(open)
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  messages AuditRequestMessage[]
+  @@index([controlId])
+  @@index([ownerMemberId, status])
+}
+
+model AuditRequestMessage {
+  id String @id @default(dbgenerated("generate_prefixed_cuid('amsg'::text)"))
+  requestId String
+  request AuditRequest @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  content String
+  authorName String
+  authorMemberId String?
+  status AuditRequestStatus
+  createdAt DateTime @default(now())
+  @@index([requestId, createdAt])
+}
+
+model AuditEvidenceLink {
+  id String @id @default(dbgenerated("generate_prefixed_cuid('aev'::text)"))
+  controlId String
+  control IsmsAuditControl @relation(fields: [controlId], references: [id], onDelete: Cascade)
+  sourceType String
+  sourceId String
+  title String
+  versionLabel String
+  // Published document content is copied at linking; subsequent edits cannot
+  // silently change the record the auditor reviewed. Attachments retain IDs.
+  snapshot Json
+  capturedBy String
+  createdAt DateTime @default(now())
+  @@unique([controlId, sourceType, sourceId, versionLabel])
+  @@index([controlId])
+}
+
+// Only the decision is retained. Live views and pointer positions are ephemeral.
+model AuditViewConsent {
+  memberId String @id
+  member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  allowed Boolean
+  noticeVersion Int
+  sessionNonce String
+  updatedAt DateTime @updatedAt
+}

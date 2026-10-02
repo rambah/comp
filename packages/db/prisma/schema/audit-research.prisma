@@ -1,0 +1,33 @@
+// Research is retained with the audit; no cache TTL or automatic history deletion.
+model AuditResearchThread {
+  id String @id @default(dbgenerated("generate_prefixed_cuid('arth'::text)"))
+  auditId String
+  audit IsmsAudit @relation(fields: [auditId], references: [id], onDelete: Cascade)
+  title String
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  turns AuditResearchTurn[]
+  @@index([auditId, updatedAt])
+}
+
+model AuditResearchTurn {
+  id String @id @default(dbgenerated("generate_prefixed_cuid('artn'::text)"))
+  threadId String
+  thread AuditResearchThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  requestId String
+  prompt String
+  answer String @default("")
+  authorName String
+  authorMemberId String
+  model String
+  status String @default("running")
+  progress String @default("Searching your audit sources")
+  citations Json @default("[]")
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+  completedAt DateTime?
+  @@unique([threadId, requestId])
+  @@index([threadId, createdAt])
+  @@index([status, expiresAt])
+}

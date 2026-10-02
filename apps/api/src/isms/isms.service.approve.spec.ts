@@ -119,89 +119,116 @@ describe('IsmsService.approve (CS-701 versioning)', () => {
     await expect(service.approve(args)).rejects.toThrow(ForbiddenException);
   });
 
-  it('freezes a published version, promotes it and marks approved', async () => {
-    (mockDb.member.findFirst as jest.Mock).mockResolvedValue({ id: 'mem_1' });
-    const reloaded = { id: 'doc_1', type: 'context_of_organization' };
-    (mockDb.ismsDocument.findFirst as jest.Mock)
-      .mockResolvedValueOnce({
+  it.each([
+    'context_of_organization',
+    'interested_parties_register',
+    'interested_parties_requirements',
+    'objectives_plan',
+  ])(
+    'publishes the reviewed %s without restoring template rows',
+    async (type) => {
+      (mockDb.member.findFirst as jest.Mock).mockResolvedValue({ id: 'mem_1' });
+      const reloaded = {
         id: 'doc_1',
-        status: 'needs_review',
-        approverId: 'mem_1',
-        frameworkId: 'fw_1',
-        type: 'context_of_organization',
-      })
-      .mockResolvedValueOnce({ id: 'doc_1', status: 'approved' });
-    mockCollect.mockResolvedValue(platformData);
-    const tx = {
-      $executeRaw: jest.fn().mockResolvedValue(0),
-      ismsDocument: {
-        updateMany: jest.fn().mockResolvedValue({ count: 1 }),
-        findUniqueOrThrow: jest.fn().mockResolvedValue(reloaded),
-        update: jest.fn().mockResolvedValue({}),
-      },
-    };
-    (mockDb.$transaction as jest.Mock).mockImplementation((cb) => cb(tx));
-    (versionService.createPublishedVersion as jest.Mock).mockResolvedValue({
-      versionId: 'isms_ver_1',
-      version: 1,
-      snapshot: {},
-    });
-    (versionService.publishRenders as jest.Mock).mockResolvedValue(undefined);
-
-    await service.approve(args);
-
-    // The baseline is collected INSIDE the approval transaction (client
-    // threaded) so it reads the same point in time as the frozen rows.
-    expect(mockCollect).toHaveBeenCalledWith({
-      organizationId: 'org_1',
-      frameworkId: 'fw_1',
-      client: expect.anything(),
-    });
-    // Re-derives in-tx from the same snapshot: persisted rows and the frozen
-    // version come from one pass.
-    expect(mockRunDerivation).toHaveBeenCalledWith({
-      tx,
-      type: 'context_of_organization',
-      documentId: 'doc_1',
-      organizationId: 'org_1',
-      frameworkId: 'fw_1',
-      data: expect.objectContaining({ organizationName: 'Acme' }),
-    });
-    // The drift baseline is refreshed on the document (CS-701).
-    expect(mockUpdateDraft).toHaveBeenCalledWith(
-      expect.objectContaining({ tx, documentId: 'doc_1' }),
-    );
-    // The approval is claimed atomically (serializes concurrent approvals): only
-    // matches while still awaiting this member's review.
-    expect(tx.ismsDocument.updateMany).toHaveBeenCalledWith({
-      where: {
-        id: 'doc_1',
-        organizationId: 'org_1',
-        status: 'needs_review',
-        approverId: 'mem_1',
-      },
-      data: expect.objectContaining({ status: 'approved', declinedAt: null }),
-    });
-    // A published version is created from the reloaded (re-derived) document.
-    expect(versionService.createPublishedVersion).toHaveBeenCalledWith(
-      expect.objectContaining({ tx, document: reloaded, memberId: 'mem_1' }),
-    );
-    // The document is promoted to the freshly-created version (status was already
-    // set by the atomic claim above).
-    expect(tx.ismsDocument.update).toHaveBeenCalledWith({
-      where: { id: 'doc_1' },
-      data: { currentVersionId: 'isms_ver_1' },
-    });
-    // Renders + uploads happen AFTER the transaction (Policies pattern).
-    expect(versionService.publishRenders).toHaveBeenCalledWith(
-      expect.objectContaining({
-        organizationId: 'org_1',
-        documentId: 'doc_1',
+        type,
+        contextIssues: [
+          {
+            id: 'issue_manual',
+            source: 'manual',
+            description: 'Reviewed context',
+          },
+        ],
+        interestedParties: [
+          {
+            id: 'party_manual',
+            source: 'manual',
+            name: 'Reviewed stakeholder',
+          },
+        ],
+        interestedPartyRequirements: [],
+        objectives: [],
+        controlLinks: [{ controlId: 'control_reviewed' }],
+        draftNarrative: { summary: 'Reviewed narrative' },
+      };
+      const reviewedContent = structuredClone(reloaded);
+      (mockDb.ismsDocument.findFirst as jest.Mock)
+        .mockResolvedValueOnce({
+          id: 'doc_1',
+          status: 'needs_review',
+          approverId: 'mem_1',
+          frameworkId: 'fw_1',
+          type,
+        })
+        .mockResolvedValueOnce({ id: 'doc_1', status: 'approved' });
+      mockCollect.mockResolvedValue(platformData);
+      const tx = {
+        $executeRaw: jest.fn().mockResolvedValue(0),
+        ismsDocument: {
+          updateMany: jest.fn().mockResolvedValue({ count: 1 }),
+          findUniqueOrThrow: jest.fn().mockResolvedValue(reloaded),
+          update: jest.fn().mockResolvedValue({}),
+        },
+      };
+      (mockDb.$transaction as jest.Mock).mockImplementation((cb) => cb(tx));
+      (versionService.createPublishedVersion as jest.Mock).mockResolvedValue({
         versionId: 'isms_ver_1',
         version: 1,
-      }),
-    );
-  });
+        snapshot: {},
+      });
+      (versionService.publishRenders as jest.Mock).mockResolvedValue(undefined);
+
+      await service.approve(args);
+
+      // The baseline is collected INSIDE the approval transaction (client
+      // threaded) so it reads the same point in time as the frozen rows.
+      expect(mockCollect).toHaveBeenCalledWith({
+        organizationId: 'org_1',
+        frameworkId: 'fw_1',
+        client: expect.anything(),
+      });
+      // Approval must neither append defaults nor resurrect removed rows.
+      expect(mockRunDerivation).not.toHaveBeenCalled();
+      expect(reloaded).toEqual(reviewedContent);
+      // The drift baseline is refreshed on the document (CS-701).
+      expect(mockUpdateDraft).toHaveBeenCalledWith(
+        expect.objectContaining({ tx, documentId: 'doc_1' }),
+      );
+      // The approval is claimed atomically (serializes concurrent approvals): only
+      // matches while still awaiting this member's review.
+      expect(tx.ismsDocument.updateMany).toHaveBeenCalledWith({
+        where: {
+          id: 'doc_1',
+          organizationId: 'org_1',
+          status: 'needs_review',
+          approverId: 'mem_1',
+        },
+        data: expect.objectContaining({ status: 'approved', declinedAt: null }),
+      });
+      // Publish exactly the reviewed rows, including intentionally empty registers.
+      expect(versionService.createPublishedVersion).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tx,
+          document: reviewedContent,
+          memberId: 'mem_1',
+        }),
+      );
+      // The document is promoted to the freshly-created version (status was already
+      // set by the atomic claim above).
+      expect(tx.ismsDocument.update).toHaveBeenCalledWith({
+        where: { id: 'doc_1' },
+        data: { currentVersionId: 'isms_ver_1' },
+      });
+      // Renders + uploads happen AFTER the transaction (Policies pattern).
+      expect(versionService.publishRenders).toHaveBeenCalledWith(
+        expect.objectContaining({
+          organizationId: 'org_1',
+          documentId: 'doc_1',
+          versionId: 'isms_ver_1',
+          version: 1,
+        }),
+      );
+    },
+  );
 
   it('aborts without creating a version when a concurrent approval already won the claim', async () => {
     (mockDb.member.findFirst as jest.Mock).mockResolvedValue({ id: 'mem_1' });

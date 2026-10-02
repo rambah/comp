@@ -443,7 +443,7 @@ export function InviteMembersModal({
       >
         <DialogHeader>
           <DialogTitle>{'Add User'}</DialogTitle>
-          <DialogDescription>{'Add an employee to your organization.'}</DialogDescription>
+          <DialogDescription>{'Invite a team member or auditor to your organization.'}</DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
@@ -522,7 +522,7 @@ export function InviteMembersModal({
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Add Another
                 </Button>
-                <FormDescription>{'Add an employee to your organization.'}</FormDescription>
+                <FormDescription>{'Invite a team member or auditor to your organization.'}</FormDescription>
               </TabsContent>
 
               <TabsContent value="csv" className="space-y-4 pt-4">
@@ -588,7 +588,8 @@ export function InviteMembersModal({
                   <div className="space-y-1 leading-none">
                     <FormLabel>Send portal invite email</FormLabel>
                     <FormDescription>
-                      If enabled, users will receive a direct link to the Employee Portal.
+                      Members with employee compliance obligations receive a portal link.
+                      Auditor-only invitations open the audit workspace.
                     </FormDescription>
                   </div>
                 </FormItem>
@@ -607,7 +608,7 @@ export function InviteMembersModal({
               </Button>
               <Button type="submit" disabled={isLoading} className="w-full sm:w-auto">
                 {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                {isLoading ? 'Adding Employee...' : 'Invite'}
+                {isLoading ? 'Sending invitation...' : 'Invite'}
               </Button>
             </DialogFooter>
           </form>

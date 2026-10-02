@@ -18,6 +18,7 @@ import {
   type PreviewAttachment,
 } from './attachment-preview-types';
 import styles from './attachment-preview.module.css';
+import { AttachmentFeedbackPanel } from './feedback/AttachmentFeedbackPanel';
 
 type PreviewContent = { text?: string; url?: string; error?: string };
 
@@ -131,6 +132,7 @@ function Preview({ attachment, onClose }: { attachment: PreviewAttachment; onClo
               Download
             </Button>
           </div>
+          <AttachmentFeedbackPanel attachmentId={attachment.id} />
         </div>
         <div
           className="min-h-0 flex-1 overflow-auto rounded-md border bg-background p-4 sm:p-8"

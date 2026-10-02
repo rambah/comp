@@ -3,7 +3,12 @@ import { APP_AWS_ORG_ASSETS_BUCKET, s3Client } from '@/app/s3';
 import { OrgInternalProvider } from '@/components/org-internal-context';
 import { TriggerTokenProvider } from '@/components/trigger-token-provider';
 import { serverApi } from '@/lib/api-server';
-import { canAccessApp, canAccessAuditorView, parseRolesString } from '@/lib/permissions';
+import {
+  canAccessApp,
+  canAccessAuditorView,
+  hasPermission,
+  parseRolesString,
+} from '@/lib/permissions';
 import { resolveCustomRolePermissions, resolveUserPermissions } from '@/lib/permissions.server';
 import { getSignedUrl } from '@/lib/s3-presigner';
 import type { OrganizationFromMe } from '@/types';
@@ -14,6 +19,8 @@ import { OrganizationIdentifier, ServerFeatureFlagsProvider } from '@trycompai/a
 import dynamic from 'next/dynamic';
 import { cookies, headers } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { AuditLiveProvider } from './audits/live/AuditLiveProvider';
+import { canPublishAuditWorkspace } from './audits/live/publication-access';
 import { AppShellWrapper } from './components/AppShellWrapper';
 
 const HotKeys = dynamic(() => import('@/components/hot-keys').then((mod) => mod.HotKeys), {
@@ -182,25 +189,32 @@ export default async function Layout({
       <OrganizationIdentifier orgId={organization.id} orgName={organization.name} />
       <ServerFeatureFlagsProvider flags={featureFlags}>
         <OrgInternalProvider isInternal={organization.isInternal}>
-          <AppShellWrapper
-            organization={organization}
-            organizations={organizations}
-            logoUrls={logoUrls}
-            onboarding={onboarding}
-            isCollapsed={isCollapsed}
-            isQuestionnaireEnabled={isQuestionnaireEnabled}
-            isTrustNdaEnabled={isTrustNdaEnabled}
-            isWebAutomationsEnabled={isWebAutomationsEnabled}
-            isSecurityEnabled={isSecurityEnabled}
-            hasAuditorRole={hasAuditorRole}
-            isOnlyAuditor={isOnlyAuditor}
-            canAccessAuditorView={auditorViewVisible}
-            permissions={permissions}
-            user={user}
-            isAdmin={isUserAdmin}
+          <AuditLiveProvider
+            key={organization.id}
+            organizationId={organization.id}
+            canPublish={canPublishAuditWorkspace({ role: member.role, customRolePermissions, permissions })}
+            canObserve={hasPermission(permissions, 'auditWorkspace', 'observe')}
           >
-            {children}
-          </AppShellWrapper>
+            <AppShellWrapper
+              organization={organization}
+              organizations={organizations}
+              logoUrls={logoUrls}
+              onboarding={onboarding}
+              isCollapsed={isCollapsed}
+              isQuestionnaireEnabled={isQuestionnaireEnabled}
+              isTrustNdaEnabled={isTrustNdaEnabled}
+              isWebAutomationsEnabled={isWebAutomationsEnabled}
+              isSecurityEnabled={isSecurityEnabled}
+              hasAuditorRole={hasAuditorRole}
+              isOnlyAuditor={isOnlyAuditor}
+              canAccessAuditorView={auditorViewVisible}
+              permissions={permissions}
+              user={user}
+              isAdmin={isUserAdmin}
+            >
+              {children}
+            </AppShellWrapper>
+          </AuditLiveProvider>
         </OrgInternalProvider>
       </ServerFeatureFlagsProvider>
       <HotKeys />

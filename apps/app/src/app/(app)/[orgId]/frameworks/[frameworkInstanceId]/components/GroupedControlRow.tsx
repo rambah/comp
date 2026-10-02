@@ -121,6 +121,7 @@ export function GroupedControlRow({
           </Text>
         </div>
       </TableCell>
+      <TableCell>{control.ismsDocumentLinks?.length ?? 0}</TableCell>
     </TableRow>
   );
 }

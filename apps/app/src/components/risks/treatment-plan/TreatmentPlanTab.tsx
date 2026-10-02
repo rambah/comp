@@ -1,5 +1,7 @@
 'use client';
 
+import { TreatmentTaskProgress } from './TreatmentTaskProgress';
+import type { TaskItemEntityType } from '@/hooks/use-task-items';
 import { cn } from '@/lib/utils';
 import { Impact, Likelihood, RiskTreatmentType, TaskStatus } from '@db';
 import { useEffect, useState } from 'react';
@@ -15,6 +17,7 @@ export interface TreatmentPlanEntity {
   inherentImpact: Impact;
   residualLikelihood: Likelihood;
   residualImpact: Impact;
+  residualAssessmentStatus?: string;
   treatmentStrategy: RiskTreatmentType;
   treatmentStrategyDescription: string | null;
   /**
@@ -35,6 +38,7 @@ export interface TreatmentPlanEntity {
 
 interface TreatmentPlanTabProps {
   orgId: string;
+  entityType: TaskItemEntityType;
   entity: TreatmentPlanEntity;
   canUpdate: boolean;
   onUpdateStrategy: (strategy: RiskTreatmentType) => Promise<void>;
@@ -83,6 +87,7 @@ interface TreatmentPlanTabProps {
 
 export function TreatmentPlanTab({
   orgId,
+  entityType,
   entity,
   canUpdate,
   onUpdateStrategy,
@@ -160,8 +165,10 @@ export function TreatmentPlanTab({
         inherentImpact={entity.inherentImpact}
         residualLikelihood={entity.residualLikelihood}
         residualImpact={entity.residualImpact}
+        residualAssessmentStatus={entity.residualAssessmentStatus}
         strategy={strategy}
         tasks={entity.tasks}
+        taskProgress={<TreatmentTaskProgress orgId={orgId} entityId={entity.id} entityType={entityType} tasks={entity.tasks} />}
         isEmpty={isMitigate && !hasPlan && !hasLinkedWork}
       />
 

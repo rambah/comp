@@ -120,6 +120,7 @@
         "safe-stable-stringify": "^2.5.0",
         "stripe": "^20.4.0",
         "swagger-ui-express": "^5.0.1",
+        "ws": "^8.21.0",
         "zod": "^4.0.14"
     },
     "devDependencies": {
@@ -136,6 +137,7 @@
         "@types/node": "^24.0.3",
         "@types/supertest": "^6.0.2",
         "@types/swagger-ui-express": "^4.1.8",
+        "@types/ws": "^8.18.2",
         "eslint": "^9.18.0",
         "eslint-config-prettier": "^10.0.1",
         "eslint-plugin-prettier": "^5.2.2",

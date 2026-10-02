@@ -1,5 +1,8 @@
 'use client';
 
+import { IsmsMarkdownEditor } from './shared/IsmsMarkdownEditor';
+import { IsmsMarkdown } from './shared/IsmsMarkdown';
+
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Button,
@@ -9,7 +12,6 @@ import {
   HStack,
   Stack,
   Text,
-  Textarea,
 } from '@trycompai/design-system';
 import { Edit } from '@trycompai/design-system/icons';
 import { useEffect, useState } from 'react';
@@ -122,7 +124,7 @@ export function ProcedureCard({ narrative, canEdit, onSave }: ProcedureCardProps
             name="procedure"
             render={({ field: { ref: _ref, ...field }, fieldState }) => (
               <>
-                <Textarea {...field} rows={4} aria-label="Review procedure" />
+                <IsmsMarkdownEditor {...field} rows={4} aria-label="Review procedure" />
                 <FieldError>{fieldState.error?.message}</FieldError>
               </>
             )}
@@ -131,8 +133,8 @@ export function ProcedureCard({ narrative, canEdit, onSave }: ProcedureCardProps
       ) : (
         // whitespace-pre-wrap inherits into the Text span, preserving the
         // paragraph breaks a multi-line procedure was written with.
-        <div className="whitespace-pre-wrap">
-          <Text size="sm">{procedure || 'No procedure recorded yet.'}</Text>
+        <div className="max-w-prose">
+          <IsmsMarkdown>{procedure || 'No procedure recorded yet.'}</IsmsMarkdown>
         </div>
       )}
     </IsmsRegisterCard>

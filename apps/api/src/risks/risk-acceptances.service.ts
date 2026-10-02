@@ -11,7 +11,7 @@ import {
   type RiskAcceptance,
 } from '@db';
 import { CreateRiskAcceptanceDto } from './dto/create-risk-acceptance.dto';
-import { LEVEL_LABEL, ratingLevel, type RiskLevel } from './risk-level';
+import { LEVEL_LABEL, LEGACY_LEVEL_LABEL, legacyAcceptanceLevel, ratingLevel, SCORING_VERSION, type RiskLevel } from './risk-level';
 
 // Residual-risk acceptance events (ISO 27001 Clause 6.1.3(f), CS-727).
 //
@@ -37,6 +37,7 @@ export interface RiskAcceptanceView {
 interface ResidualRating {
   residualLikelihood: Likelihood;
   residualImpact: Impact;
+  residualAssessmentStatus?: string;
 }
 
 @Injectable()
@@ -49,6 +50,7 @@ export class RiskAcceptancesService {
         assigneeId: true,
         residualLikelihood: true,
         residualImpact: true,
+        residualAssessmentStatus: true,
       },
     });
     if (!risk) {
@@ -89,6 +91,7 @@ export class RiskAcceptancesService {
           assigneeId: true,
           residualLikelihood: true,
           residualImpact: true,
+        residualAssessmentStatus: true,
         },
       });
       if (!risk) {
@@ -153,6 +156,7 @@ export class RiskAcceptancesService {
         assigneeId: true,
         residualProbability: true,
         residualImpact: true,
+        residualAssessmentStatus: true,
       },
     });
     if (!vendor) {
@@ -167,6 +171,7 @@ export class RiskAcceptancesService {
       rating: {
         residualLikelihood: vendor.residualProbability,
         residualImpact: vendor.residualImpact,
+        residualAssessmentStatus: vendor.residualAssessmentStatus,
       },
     };
   }
@@ -195,6 +200,7 @@ export class RiskAcceptancesService {
   }): Promise<RiskAcceptanceView> {
     const { tx, organizationId, subject, dto, ownerMemberId, current } = params;
 
+    if (current.residualAssessmentStatus === "unassessed") throw new BadRequestException("Record a current residual assessment before acceptance.");
     const acceptorId = dto.acceptedById ?? ownerMemberId;
     if (!acceptorId) {
       throw new BadRequestException(
@@ -229,6 +235,7 @@ export class RiskAcceptancesService {
         // removal or renaming.
         acceptedByName: member.user.name?.trim() || member.user.email,
         notes: dto.notes?.trim() || null,
+        scoringVersion: SCORING_VERSION,
         residualLikelihood: current.residualLikelihood,
         residualImpact: current.residualImpact,
       },
@@ -238,7 +245,8 @@ export class RiskAcceptancesService {
   }
 
   private toView(row: RiskAcceptance, current: ResidualRating) {
-    const level = ratingLevel(row.residualLikelihood, row.residualImpact);
+    const legacy = row.scoringVersion === "legacy-10";
+    const level = (legacy ? legacyAcceptanceLevel : ratingLevel)(row.residualLikelihood, row.residualImpact);
     return {
       id: row.id,
       acceptedById: row.acceptedById,
@@ -247,7 +255,8 @@ export class RiskAcceptancesService {
       residualLikelihood: row.residualLikelihood,
       residualImpact: row.residualImpact,
       level,
-      levelLabel: LEVEL_LABEL[level],
+      levelLabel: (legacy ? LEGACY_LEVEL_LABEL : LEVEL_LABEL)[level],
+      scoringVersion: row.scoringVersion,
       stale:
         row.residualLikelihood !== current.residualLikelihood ||
         row.residualImpact !== current.residualImpact,

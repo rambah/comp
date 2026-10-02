@@ -37,7 +37,8 @@ import {
   type IsmsExportFormat,
   type IsmsExportResult,
 } from './export-generator';
-import type { IsmsExportMetadata } from './export-shared';
+import type { IsmsExportMetadata, IsmsExportSection } from './export-shared';
+import { buildRiskMethodologySections as buildLegacyRiskMethodologySections } from '../documents/legacy-risk-methodology';
 
 /**
  * The immutable content snapshot stored on a published IsmsDocumentVersion.
@@ -47,6 +48,7 @@ import type { IsmsExportMetadata } from './export-shared';
  */
 export interface IsmsExportSnapshot {
   type: IsmsDocumentType;
+  sections?: IsmsExportSection[];
   input: DocumentExportInput;
   metadata: IsmsExportMetadata;
 }
@@ -319,7 +321,7 @@ export async function buildDraftSnapshot(
     organizationName: document.organization.name,
     primaryColor: document.organization.primaryColor,
   });
-  return { type: document.type, input, metadata };
+  return { type: document.type, input, metadata, sections: buildExportSections({ type: document.type, input }) };
 }
 
 /** Render a document's current DRAFT to a file (used by the export endpoint). */
@@ -344,10 +346,9 @@ export function renderSnapshot(
   snapshot: IsmsExportSnapshot,
   format: IsmsExportFormat,
 ): Promise<IsmsExportResult> {
-  const sections = buildExportSections({
-    type: snapshot.type,
-    input: snapshot.input,
-  });
+  const sections = snapshot.sections ?? (snapshot.type === "risk_assessment_methodology"
+    ? buildLegacyRiskMethodologySections(snapshot.input)
+    : buildExportSections({ type: snapshot.type, input: snapshot.input }));
   return generateIsmsExportFile({
     sections,
     metadata: snapshot.metadata,

@@ -98,7 +98,7 @@ export function getRequirementStatus(controlStatuses: StatusType[]): Requirement
 
   const allCompleted = controlStatuses.every((s) => s === 'completed');
   if (allCompleted) {
-    return { label: 'Satisfied', variant: 'default' };
+    return { label: 'Complete', variant: 'default' };
   }
 
   const allNotRelevant = controlStatuses.every((s) => s === 'not_relevant');

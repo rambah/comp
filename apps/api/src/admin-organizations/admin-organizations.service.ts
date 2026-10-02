@@ -369,6 +369,7 @@ export class AdminOrganizationsService {
           organizationName: org.name,
           inviteLink,
           email: normalizedEmail,
+          auditor: role === 'auditor',
         }),
       });
     } catch (err) {

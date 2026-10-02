@@ -19,6 +19,7 @@ interface ResidualAcceptanceCardProps {
   /** Live residual rating — drives the confirmed level + client stale hints. */
   residualLikelihood: Likelihood;
   residualImpact: Impact;
+  residualAssessmentStatus?: string;
   /** Owner (assignee) member id — the default acceptor. */
   ownerId: string | null;
   /** Active members offered as acceptor. */
@@ -56,6 +57,7 @@ export function ResidualAcceptanceCard({
   subjectId,
   residualLikelihood,
   residualImpact,
+  residualAssessmentStatus,
   ownerId,
   acceptorOptions,
   canUpdate,
@@ -66,7 +68,8 @@ export function ResidualAcceptanceCard({
   );
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const currentLevelLabel =
+  const assessed = residualAssessmentStatus !== "unassessed";
+  const currentLevelLabel = !assessed ? "Not yet assessed" : `${getRiskScore(residualLikelihood, residualImpact).score}/25 · ` +
     LEVEL_LABEL[
       getRiskLevelFromScore(getRiskScore(residualLikelihood, residualImpact).score)
     ];
@@ -107,7 +110,7 @@ export function ResidualAcceptanceCard({
             6.1.3(f)). Rendered into the Risk Treatment Plan.
           </div>
         </div>
-        {canUpdate && (
+        {canUpdate && assessed && (
           <Button
             type="button"
             variant="secondary"
@@ -119,6 +122,8 @@ export function ResidualAcceptanceCard({
         )}
       </div>
 
+      <Text>Current residual assessment: {currentLevelLabel}</Text>
+      <Text variant="muted">Historical acceptance labels use the scoring method in effect when recorded; stored ratings and decisions are retained.</Text>
       {error ? (
         // A failed load must never read as "no acceptance recorded" — that
         // could prompt a duplicate record of an existing formal acceptance.

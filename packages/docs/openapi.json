@@ -5330,14 +5330,14 @@
             "description": ""
           }
         },
-        "summary": "Switch the AWS scan engine for a connection (Comp AI scanners ↔ Security Hub)",
+        "summary": "Switch the AWS scan engine for a connection (Comp AI scanners \u2194 Security Hub)",
         "tags": [
           "CloudSecurity"
         ],
         "x-mint": {
           "metadata": {
             "title": "Switch the AWS scan engine for a connection | Comp AI API",
-            "sidebarTitle": "Switch the AWS scan engine for a connection (Comp AI scanners ↔ Security Hub)",
+            "sidebarTitle": "Switch the AWS scan engine for a connection (Comp AI scanners \u2194 Security Hub)",
             "description": "Accepts session, API key, or service token auth. For API key / service token callers without an explicit user attribution, the action is attributed to the.",
             "og:title": "Switch the AWS scan engine for a connection | Comp AI API",
             "og:description": "Accepts session, API key, or service token auth. For API key / service token callers without an explicit user attribution, the action is attributed to the."
@@ -6389,6 +6389,15 @@
                           "example": "user@example.com"
                         }
                       }
+                    },
+                    "residualAssessmentStatus": {
+                      "type": "string",
+                      "enum": [
+                        "unassessed",
+                        "legacy",
+                        "assessed"
+                      ],
+                      "description": "Residual assessment provenance; legacy stored ratings require provenance review."
                     }
                   }
                 }
@@ -6743,6 +6752,15 @@
                           "example": "user@example.com"
                         }
                       }
+                    },
+                    "residualAssessmentStatus": {
+                      "type": "string",
+                      "enum": [
+                        "unassessed",
+                        "legacy",
+                        "assessed"
+                      ],
+                      "description": "Residual assessment provenance; legacy stored ratings require provenance review."
                     }
                   }
                 }
@@ -7025,6 +7043,15 @@
                           "example": "user@example.com"
                         }
                       }
+                    },
+                    "residualAssessmentStatus": {
+                      "type": "string",
+                      "enum": [
+                        "unassessed",
+                        "legacy",
+                        "assessed"
+                      ],
+                      "description": "Residual assessment provenance; legacy stored ratings require provenance review."
                     }
                   }
                 }
@@ -7437,6 +7464,15 @@
                             "type": "string",
                             "format": "date-time",
                             "description": "When the vendor was last updated"
+                          },
+                          "residualAssessmentStatus": {
+                            "type": "string",
+                            "enum": [
+                              "unassessed",
+                              "legacy",
+                              "assessed"
+                            ],
+                            "description": "Residual assessment provenance; legacy stored ratings require provenance review."
                           }
                         }
                       }
@@ -7695,6 +7731,15 @@
                           "example": "user@example.com"
                         }
                       }
+                    },
+                    "residualAssessmentStatus": {
+                      "type": "string",
+                      "enum": [
+                        "unassessed",
+                        "legacy",
+                        "assessed"
+                      ],
+                      "description": "Residual assessment provenance; legacy stored ratings require provenance review."
                     }
                   }
                 }
@@ -7957,6 +8002,15 @@
                           "example": "user@example.com"
                         }
                       }
+                    },
+                    "residualAssessmentStatus": {
+                      "type": "string",
+                      "enum": [
+                        "unassessed",
+                        "legacy",
+                        "assessed"
+                      ],
+                      "description": "Residual assessment provenance; legacy stored ratings require provenance review."
                     }
                   }
                 }
@@ -8196,6 +8250,15 @@
                           "example": "user@example.com"
                         }
                       }
+                    },
+                    "residualAssessmentStatus": {
+                      "type": "string",
+                      "enum": [
+                        "unassessed",
+                        "legacy",
+                        "assessed"
+                      ],
+                      "description": "Residual assessment provenance; legacy stored ratings require provenance review."
                     }
                   }
                 }
@@ -9675,7 +9738,7 @@
             "name": "excludeContent",
             "required": false,
             "in": "query",
-            "description": "When true, omits `content` and `draftContent` from each policy in the response. Use this when listing policies to find one by name/ID — fetch the full content via GET /v1/policies/{id} after.",
+            "description": "When true, omits `content` and `draftContent` from each policy in the response. Use this when listing policies to find one by name/ID \u2014 fetch the full content via GET /v1/policies/{id} after.",
             "schema": {
               "type": "boolean"
             }
@@ -10320,7 +10383,7 @@
     },
     "/v1/policies/{id}/pdf": {
       "post": {
-        "description": "Uploads a PDF via multipart `file` or base64 `fileData` JSON. Defaults to the latest draft if no `versionId`; 400 if no draft is available. UI-only — AI clients should use the presigned `/pdf/upload-url` + `/pdf/confirm` flow.",
+        "description": "Uploads a PDF via multipart `file` or base64 `fileData` JSON. Defaults to the latest draft if no `versionId`; 400 if no draft is available. UI-only \u2014 AI clients should use the presigned `/pdf/upload-url` + `/pdf/confirm` flow.",
         "operationId": "PoliciesController_uploadPolicyPdf_v1",
         "parameters": [
           {
@@ -10465,9 +10528,9 @@
           "metadata": {
             "title": "Upload a PDF to a policy version (UI-only) | Comp AI API",
             "sidebarTitle": "Upload a PDF to a policy version (UI-only)",
-            "description": "Uploads a PDF via multipart `file` or base64 `fileData` JSON. Defaults to the latest draft if no `versionId`; 400 if no draft is available. UI-only — AI.",
+            "description": "Uploads a PDF via multipart `file` or base64 `fileData` JSON. Defaults to the latest draft if no `versionId`; 400 if no draft is available. UI-only \u2014 AI.",
             "og:title": "Upload a PDF to a policy version (UI-only) | Comp AI API",
-            "og:description": "Uploads a PDF via multipart `file` or base64 `fileData` JSON. Defaults to the latest draft if no `versionId`; 400 if no draft is available. UI-only — AI."
+            "og:description": "Uploads a PDF via multipart `file` or base64 `fileData` JSON. Defaults to the latest draft if no `versionId`; 400 if no draft is available. UI-only \u2014 AI."
           }
         }
       },
@@ -10534,7 +10597,7 @@
     },
     "/v1/policies/{id}/pdf/upload-url": {
       "post": {
-        "description": "Generates a presigned S3 URL for uploading a policy PDF directly to storage. Use this when attaching a PDF to a compliance policy — the file bytes are uploaded straight to S3 without passing through the API. Requires the policy ID; if you only know the policy name, look it up first via the list-compliance-policies tool. After uploading the file to the returned URL, finalize the attachment by calling confirm-policy-pdf-uploaded with the same s3Key.",
+        "description": "Generates a presigned S3 URL for uploading a policy PDF directly to storage. Use this when attaching a PDF to a compliance policy \u2014 the file bytes are uploaded straight to S3 without passing through the API. Requires the policy ID; if you only know the policy name, look it up first via the list-compliance-policies tool. After uploading the file to the returned URL, finalize the attachment by calling confirm-policy-pdf-uploaded with the same s3Key.",
         "operationId": "PoliciesController_requestPolicyPdfUploadUrl_v1",
         "parameters": [
           {
@@ -10595,9 +10658,9 @@
           "metadata": {
             "title": "Request a presigned URL to upload a policy PDF | Comp AI API",
             "sidebarTitle": "Request a presigned URL to upload a policy PDF",
-            "description": "Generates a presigned S3 URL for uploading a policy PDF directly to storage. Use this when attaching a PDF to a compliance policy — the file bytes are.",
+            "description": "Generates a presigned S3 URL for uploading a policy PDF directly to storage. Use this when attaching a PDF to a compliance policy \u2014 the file bytes are.",
             "og:title": "Request a presigned URL to upload a policy PDF | Comp AI API",
-            "og:description": "Generates a presigned S3 URL for uploading a policy PDF directly to storage. Use this when attaching a PDF to a compliance policy — the file bytes are."
+            "og:description": "Generates a presigned S3 URL for uploading a policy PDF directly to storage. Use this when attaching a PDF to a compliance policy \u2014 the file bytes are."
           }
         }
       }
@@ -11278,7 +11341,7 @@
         }
       },
       "post": {
-        "description": "Creates a new draft version of a policy, cloned from the current published version (or a specified source version). Use this when you need to make any change to a published policy — content edits, PDF attachments, anything. Published.",
+        "description": "Creates a new draft version of a policy, cloned from the current published version (or a specified source version). Use this when you need to make any change to a published policy \u2014 content edits, PDF attachments, anything. Published.",
         "operationId": "PoliciesController_createPolicyVersion_v1",
         "parameters": [
           {
@@ -11773,7 +11836,7 @@
     },
     "/v1/policies/{id}/versions/publish": {
       "post": {
-        "description": "Publishes a draft policy version, making it the active/current version of the policy. Pass the versionId of the draft you want to publish — for example one created via create-policy-version and then edited.",
+        "description": "Publishes a draft policy version, making it the active/current version of the policy. Pass the versionId of the draft you want to publish \u2014 for example one created via create-policy-version and then edited.",
         "operationId": "PoliciesController_publishPolicyVersion_v1",
         "parameters": [
           {
@@ -11891,9 +11954,9 @@
           "metadata": {
             "title": "Publish policy version | Comp AI API",
             "sidebarTitle": "Publish policy version",
-            "description": "Publishes a draft policy version, making it the active/current version of the policy. Pass the versionId of the draft you want to publish — for example one.",
+            "description": "Publishes a draft policy version, making it the active/current version of the policy. Pass the versionId of the draft you want to publish \u2014 for example one.",
             "og:title": "Publish policy version | Comp AI API",
-            "og:description": "Publishes a draft policy version, making it the active/current version of the policy. Pass the versionId of the draft you want to publish — for example one."
+            "og:description": "Publishes a draft policy version, making it the active/current version of the policy. Pass the versionId of the draft you want to publish \u2014 for example one."
           }
         }
       }
@@ -18717,7 +18780,7 @@
     },
     "/v1/roles/built-in/{name}/obligations": {
       "get": {
-        "description": "Returns the effective obligations for a built-in role (owner, admin, auditor, employee, contractor) — DB override if present, else the hardcoded default.",
+        "description": "Returns the effective obligations for a built-in role (owner, admin, auditor, employee, contractor) \u2014 DB override if present, else the hardcoded default.",
         "operationId": "RolesController_getBuiltInObligations_v1",
         "parameters": [
           {
@@ -18769,9 +18832,9 @@
           "metadata": {
             "title": "Get obligations for a built-in role | Comp AI API",
             "sidebarTitle": "Get obligations for a built-in role",
-            "description": "Returns the effective obligations for a built-in role (owner, admin, auditor, employee, contractor) — DB override if present, else the hardcoded default.",
+            "description": "Returns the effective obligations for a built-in role (owner, admin, auditor, employee, contractor) \u2014 DB override if present, else the hardcoded default.",
             "og:title": "Get obligations for a built-in role | Comp AI API",
-            "og:description": "Returns the effective obligations for a built-in role (owner, admin, auditor, employee, contractor) — DB override if present, else the hardcoded default."
+            "og:description": "Returns the effective obligations for a built-in role (owner, admin, auditor, employee, contractor) \u2014 DB override if present, else the hardcoded default."
           }
         },
         "x-speakeasy-mcp": {
@@ -25677,7 +25740,7 @@
     },
     "/v1/security-penetration-tests/{id}/events": {
       "get": {
-        "description": "Returns the real-time agent activity log emitted during a run (tool calls, observations, etc.). Noisy — meant for activity feeds and debugging.",
+        "description": "Returns the real-time agent activity log emitted during a run (tool calls, observations, etc.). Noisy \u2014 meant for activity feeds and debugging.",
         "operationId": "SecurityPenetrationTestsController_getEvents_v1",
         "parameters": [
           {
@@ -25716,9 +25779,9 @@
           "metadata": {
             "title": "Get penetration test agent events | Comp AI API",
             "sidebarTitle": "Get penetration test agent events",
-            "description": "Returns the real-time agent activity log emitted during a run (tool calls, observations, etc.). Noisy — meant for activity feeds and debugging.",
+            "description": "Returns the real-time agent activity log emitted during a run (tool calls, observations, etc.). Noisy \u2014 meant for activity feeds and debugging.",
             "og:title": "Get penetration test agent events | Comp AI API",
-            "og:description": "Returns the real-time agent activity log emitted during a run (tool calls, observations, etc.). Noisy — meant for activity feeds and debugging."
+            "og:description": "Returns the real-time agent activity log emitted during a run (tool calls, observations, etc.). Noisy \u2014 meant for activity feeds and debugging."
           }
         },
         "x-speakeasy-mcp": {
@@ -26735,6 +26798,1165 @@
           }
         }
       }
+    },
+    "/v1/audit-workspace": {
+      "get": {
+        "description": "Open the audit workspace in Comp AI.",
+        "operationId": "AuditWorkspaceController_list_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Open the audit workspace",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Open the audit workspace | Comp AI API",
+            "sidebarTitle": "Open the audit workspace",
+            "description": "Open the audit workspace in Comp AI.",
+            "og:title": "Open the audit workspace | Comp AI API",
+            "og:description": "Open the audit workspace in Comp AI."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "list"
+        }
+      }
+    },
+    "/v1/audit-workspace/sources": {
+      "get": {
+        "description": "Search published policies, ISMS documents and existing evidence files to link to an audit check. Returns 50 per category; use nextOffset to fetch remaining sources.",
+        "operationId": "AuditWorkspaceController_sources_v1",
+        "parameters": [
+          {
+            "name": "search",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Pagination offset returned as nextOffset; starts at zero.",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Find audit evidence",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Find audit evidence | Comp AI API",
+            "sidebarTitle": "Find audit evidence",
+            "description": "Search published policies, ISMS documents and existing evidence files to link to an audit check. Returns 50 per category; use nextOffset to fetch remaining.",
+            "og:title": "Find audit evidence | Comp AI API",
+            "og:description": "Search published policies, ISMS documents and existing evidence files to link to an audit check. Returns 50 per category; use nextOffset to fetch remaining."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "sources"
+        }
+      }
+    },
+    "/v1/audit-workspace/checks/{id}/review": {
+      "patch": {
+        "description": "Save review notes or complete a check with a conclusion. Uses optimistic conflict detection and requires outstanding requests to be reviewed.",
+        "operationId": "AuditWorkspaceController_review_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditReviewDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Save an audit review",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Save an audit review | Comp AI API",
+            "sidebarTitle": "Save an audit review",
+            "description": "Save review notes or complete a check with a conclusion. Uses optimistic conflict detection and requires outstanding requests to be reviewed.",
+            "og:title": "Save an audit review | Comp AI API",
+            "og:description": "Save review notes or complete a check with a conclusion. Uses optimistic conflict detection and requires outstanding requests to be reviewed."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "review"
+        }
+      }
+    },
+    "/v1/audit-workspace/checks/{id}/requests": {
+      "post": {
+        "description": "Ask a specific audit question, assign an eligible response coordinator and set a due date. Reopens the linked check for review.",
+        "operationId": "AuditWorkspaceController_createRequest_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Request audit evidence",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Request audit evidence | Comp AI API",
+            "sidebarTitle": "Request audit evidence",
+            "description": "Ask a specific audit question, assign an eligible response coordinator and set a due date. Reopens the linked check for review.",
+            "og:title": "Request audit evidence | Comp AI API",
+            "og:description": "Ask a specific audit question, assign an eligible response coordinator and set a due date. Reopens the linked check for review."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "create-request"
+        }
+      }
+    },
+    "/v1/audit-workspace/requests/{id}/responses": {
+      "post": {
+        "description": "Append an attributed response and submit it, request changes, accept it or reopen the request. Prior responses are retained.",
+        "operationId": "AuditWorkspaceController_respond_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditResponseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Respond to an audit request",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Respond to an audit request | Comp AI API",
+            "sidebarTitle": "Respond to an audit request",
+            "description": "Append an attributed response and submit it, request changes, accept it or reopen the request. Prior responses are retained.",
+            "og:title": "Respond to an audit request | Comp AI API",
+            "og:description": "Append an attributed response and submit it, request changes, accept it or reopen the request. Prior responses are retained."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "respond"
+        }
+      }
+    },
+    "/v1/audit-workspace/checks/{id}/evidence": {
+      "post": {
+        "description": "Capture a published document version or link an existing evidence file. Source documents remain unchanged and the check returns to review.",
+        "operationId": "AuditWorkspaceController_link_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditSourceDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Link evidence to an audit check",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Link evidence to an audit check | Comp AI API",
+            "sidebarTitle": "Link evidence to an audit check",
+            "description": "Capture a published document version or link an existing evidence file. Source documents remain unchanged and the check returns to review.",
+            "og:title": "Link evidence to an audit check | Comp AI API",
+            "og:description": "Capture a published document version or link an existing evidence file. Source documents remain unchanged and the check returns to review."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "link"
+        }
+      }
+    },
+    "/v1/audit-workspace/checks/{id}/findings": {
+      "post": {
+        "description": "Create a finding in the existing internal audit register, linked to the tested check, with a follow-up owner and optional due date.",
+        "operationId": "AuditWorkspaceController_finding_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorkspaceFindingDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Record an internal audit finding",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Record an internal audit finding | Comp AI API",
+            "sidebarTitle": "Record an internal audit finding",
+            "description": "Create a finding in the existing internal audit register, linked to the tested check, with a follow-up owner and optional due date.",
+            "og:title": "Record an internal audit finding | Comp AI API",
+            "og:description": "Create a finding in the existing internal audit register, linked to the tested check, with a follow-up owner and optional due date."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "finding"
+        }
+      }
+    },
+    "/v1/audit-workspace/findings/{id}": {
+      "patch": {
+        "description": "Update audit finding follow-up in Comp AI.",
+        "operationId": "AuditWorkspaceController_followup_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditFindingFollowupDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Update audit finding follow-up",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Update audit finding follow-up | Comp AI API",
+            "sidebarTitle": "Update audit finding follow-up",
+            "description": "Update audit finding follow-up in Comp AI.",
+            "og:title": "Update audit finding follow-up | Comp AI API",
+            "og:description": "Update audit finding follow-up in Comp AI."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "followup"
+        }
+      }
+    },
+    "/v1/audit-workspace/audits/{id}/conclusion": {
+      "patch": {
+        "description": "Draft the audit conclusion in Comp AI.",
+        "operationId": "AuditWorkspaceController_conclusion_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditConclusionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Draft the audit conclusion",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Draft the audit conclusion | Comp AI API",
+            "sidebarTitle": "Draft the audit conclusion",
+            "description": "Draft the audit conclusion in Comp AI.",
+            "og:title": "Draft the audit conclusion | Comp AI API",
+            "og:description": "Draft the audit conclusion in Comp AI."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "conclusion"
+        }
+      }
+    },
+    "/v1/audit-workspace/evidence/{id}/preview": {
+      "get": {
+        "description": "Get short-lived preview and download links for the exact published PDF version attached to a check. Never substitutes a newer version.",
+        "operationId": "AuditWorkspaceController_preview_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Preview captured audit evidence",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-mint": {
+          "metadata": {
+            "title": "Preview captured audit evidence | Comp AI API",
+            "sidebarTitle": "Preview captured audit evidence",
+            "description": "Get short-lived preview and download links for the exact published PDF version attached to a check. Never substitutes a newer version.",
+            "og:title": "Preview captured audit evidence | Comp AI API",
+            "og:description": "Get short-lived preview and download links for the exact published PDF version attached to a check. Never substitutes a newer version."
+          }
+        },
+        "x-speakeasy-mcp": {
+          "name": "preview"
+        }
+      }
+    },
+    "/v1/audit-workspace/audits/{id}/finish": {
+      "post": {
+        "description": "Confirm completed sampling and the saved conclusion under your own name. Blocks unfinished checks and requests. Does not publish or approve the document for management.",
+        "operationId": "AuditWorkspaceController_finish_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditFinishDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Complete your internal audit",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Complete your internal audit | Comp AI API",
+            "sidebarTitle": "Complete your internal audit",
+            "description": "Confirm completed sampling and the saved conclusion under your own name. Blocks unfinished checks and requests. Does not publish or approve the document.",
+            "og:title": "Complete your internal audit | Comp AI API",
+            "og:description": "Confirm completed sampling and the saved conclusion under your own name. Blocks unfinished checks and requests. Does not publish or approve the document."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/session/initialize": {
+      "post": {
+        "description": "Initialize live workspace reconstruction for this visit, or revoke it. Includes dialogs and unsaved inputs. Requires your own browser session.",
+        "operationId": "AuditLiveController_consent_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditViewConsentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Initialize an audit workspace session",
+        "tags": [
+          "Audit workspace"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Initialize an audit workspace session | Comp AI API",
+            "sidebarTitle": "Initialize an audit workspace session",
+            "description": "Initialize or disable live audit view sharing for this workspace visit. Disabling revokes the previous session. Requires your own browser session.",
+            "og:title": "Initialize an audit workspace session | Comp AI API",
+            "og:description": "Initialize or disable live audit view sharing for this workspace visit. Disabling revokes the previous session. Requires your own browser session."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/session/ticket": {
+      "post": {
+        "description": "Issue a single-use 20-second WebSocket ticket for your browser session. Publish with a session nonce; observe with auditWorkspace:observe permission.",
+        "operationId": "AuditLiveController_ticket_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditLiveTicketDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Connect an audit workspace session",
+        "tags": [
+          "Audit workspace"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Connect an audit workspace session | Comp AI API",
+            "sidebarTitle": "Connect an audit workspace session",
+            "description": "Issue a single-use 20-second WebSocket ticket for your browser session. Publish with a session nonce; observe with auditWorkspace:observe permission.",
+            "og:title": "Connect an audit workspace session | Comp AI API",
+            "og:description": "Issue a single-use 20-second WebSocket ticket for your browser session. Publish with a session nonce; observe with auditWorkspace:observe permission."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/research/audits/{id}/threads": {
+      "get": {
+        "description": "Browser session: list shared research conversations for an audit and the configured AI model. Requires read access to all research source categories.",
+        "operationId": "AuditResearchController_list_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List saved audit research topics",
+        "tags": [
+          "Audit Research"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "List saved audit research topics | Comp AI API",
+            "sidebarTitle": "List saved audit research topics",
+            "description": "Browser session: list shared research conversations for an audit and the configured AI model. Requires read access to all research source categories.",
+            "og:title": "List saved audit research topics | Comp AI API",
+            "og:description": "Browser session: list shared research conversations for an audit and the configured AI model. Requires read access to all research source categories."
+          }
+        }
+      },
+      "post": {
+        "description": "Browser session: create a permanently saved research topic shared with authorized audit team members. Does not change evidence or audit conclusions.",
+        "operationId": "AuditResearchController_create_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditResearchThreadDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "summary": "Create an audit research topic",
+        "tags": [
+          "Audit Research"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Create an audit research topic | Comp AI API",
+            "sidebarTitle": "Create an audit research topic",
+            "description": "Browser session: create a permanently saved research topic shared with authorized audit team members. Does not change evidence or audit conclusions.",
+            "og:title": "Create an audit research topic | Comp AI API",
+            "og:description": "Browser session: create a permanently saved research topic shared with authorized audit team members. Does not change evidence or audit conclusions."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/research/threads/{id}": {
+      "get": {
+        "description": "Browser session: retrieve saved questions, answers, source excerpts and progress. Poll this endpoint while a research turn is running; interrupted partial answers remain saved.",
+        "operationId": "AuditResearchController_get_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "before",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Read audit research history",
+        "tags": [
+          "Audit Research"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Read audit research history | Comp AI API",
+            "sidebarTitle": "Read audit research history",
+            "description": "Browser session: retrieve saved questions, answers, source excerpts and progress. Poll this endpoint while a research turn is running; interrupted partial.",
+            "og:title": "Read audit research history | Comp AI API",
+            "og:description": "Browser session: retrieve saved questions, answers, source excerpts and progress. Poll this endpoint while a research turn is running; interrupted partial."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/research/threads/{id}/turns/{turnId}/sources/{label}": {
+      "get": {
+        "description": "Browser session: read the exact source excerpt retained with an AI answer, including its version and retrieval date. Requires access to all research source categories.",
+        "operationId": "AuditResearchController_source_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "turnId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "label",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Read a captured research source",
+        "tags": [
+          "Audit Research"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Read a captured research source | Comp AI API",
+            "sidebarTitle": "Read a captured research source",
+            "description": "Browser session: read the exact source excerpt retained with an AI answer, including its version and retrieval date. Requires access to all research source.",
+            "og:title": "Read a captured research source | Comp AI API",
+            "og:description": "Browser session: read the exact source excerpt retained with an AI answer, including its version and retrieval date. Requires access to all research source."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/research/threads/{id}/turns": {
+      "post": {
+        "description": "Browser session: start a read-only AI research turn. Returns runId; poll GET research/threads/{id}. Reuse requestId after an uncertain network outcome to avoid duplicate generation.",
+        "operationId": "AuditResearchController_ask_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuditResearchPromptDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": ""
+          }
+        },
+        "summary": "Ask an audit research question",
+        "tags": [
+          "Audit Research"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Ask an audit research question | Comp AI API",
+            "sidebarTitle": "Ask an audit research question",
+            "description": "Browser session: start a read-only AI research turn. Returns runId; poll GET research/threads/{id}. Reuse requestId after an uncertain network outcome.",
+            "og:title": "Ask an audit research question | Comp AI API",
+            "og:description": "Browser session: start a read-only AI research turn. Returns runId; poll GET research/threads/{id}. Reuse requestId after an uncertain network outcome."
+          }
+        }
+      }
+    },
+    "/v1/audit-recordings": {
+      "get": {
+        "description": "List a page of up to 100 unexpired session recordings in your organization. Administrator browser session required. Recordings expire after 30 days.",
+        "operationId": "AuditRecordingController_list_v1",
+        "parameters": [
+          {
+            "name": "cursor",
+            "required": false,
+            "in": "query",
+            "description": "Cursor returned by the previous page.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "List private auditor recordings",
+        "tags": [
+          "Audit recordings"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "List private auditor recordings | Comp AI API",
+            "sidebarTitle": "List private auditor recordings",
+            "description": "List a page of up to 100 unexpired session recordings in your organization. Administrator browser session required. Recordings expire after 30 days.",
+            "og:title": "List private auditor recordings | Comp AI API",
+            "og:description": "List a page of up to 100 unexpired session recordings in your organization. Administrator browser session required. Recordings expire after 30 days."
+          }
+        }
+      }
+    },
+    "/v1/audit-recordings/{id}": {
+      "get": {
+        "description": "Get metadata, expiry and ordered chunk indices for a private recording in your organization. An administrator browser session is required for playback.",
+        "operationId": "AuditRecordingController_detail_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Read a private recording manifest",
+        "tags": [
+          "Audit recordings"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Read a private recording manifest | Comp AI API",
+            "sidebarTitle": "Read a private recording manifest",
+            "description": "Get metadata, expiry and ordered chunk indices for a private recording in your organization. An administrator browser session is required for playback.",
+            "og:title": "Read a private recording manifest | Comp AI API",
+            "og:description": "Get metadata, expiry and ordered chunk indices for a private recording in your organization. An administrator browser session is required for playback."
+          }
+        }
+      },
+      "delete": {
+        "description": "Remove access to a recording and delete its stored chunks. Only administrators in the owning organization may delete recordings.",
+        "operationId": "AuditRecordingController_remove_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Delete a private auditor recording",
+        "tags": [
+          "Audit recordings"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Delete a private auditor recording | Comp AI API",
+            "sidebarTitle": "Delete a private auditor recording",
+            "description": "Remove access to a recording and delete its stored chunks. Only administrators in the owning organization may delete recordings.",
+            "og:title": "Delete a private auditor recording | Comp AI API",
+            "og:description": "Remove access to a recording and delete its stored chunks. Only administrators in the owning organization may delete recordings."
+          }
+        }
+      }
+    },
+    "/v1/audit-recordings/{id}/chunks/{index}": {
+      "get": {
+        "description": "Load a bounded chunk for read-only playback. Organization access and expiry are checked on every request. Administrator browser session required.",
+        "operationId": "AuditRecordingController_chunk_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "index",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "summary": "Read a private recording chunk",
+        "tags": [
+          "Audit recordings"
+        ],
+        "x-speakeasy-mcp": {
+          "disabled": true
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Read a private recording chunk | Comp AI API",
+            "sidebarTitle": "Read a private recording chunk",
+            "description": "Load a bounded chunk for read-only playback. Organization access and expiry are checked on every request. Administrator browser session required.",
+            "og:title": "Read a private recording chunk | Comp AI API",
+            "og:description": "Load a bounded chunk for read-only playback. Organization access and expiry are checked on every request. Administrator browser session required."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/attachment-feedback": {
+      "get": {
+        "description": "List flagged evidence files and attributed responses across the organization. Filter by attachment or status; use nextOffset to retrieve the next page.",
+        "operationId": "AttachmentFeedbackController_list_v1",
+        "parameters": [
+          {
+            "name": "attachmentId",
+            "required": false,
+            "in": "query",
+            "description": "Filter feedback for this attachment.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Omit to include all statuses.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "open",
+                "resolved"
+              ]
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Pagination offset; 50 feedback items per page.",
+            "schema": {
+              "default": 0,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "List attachment feedback",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-speakeasy-mcp": {
+          "name": "list-attachment-feedback"
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "List attachment feedback | Comp AI API",
+            "sidebarTitle": "List attachment feedback",
+            "description": "List flagged evidence files and attributed responses across the organization. Filter by attachment or status; use nextOffset to retrieve the next page.",
+            "og:title": "List attachment feedback | Comp AI API",
+            "og:description": "List flagged evidence files and attributed responses across the organization. Filter by attachment or status; use nextOffset to retrieve the next page."
+          }
+        }
+      },
+      "post": {
+        "description": "Record a concern about an existing evidence file with a required comment. Preserves file identity and author; does not change evidence, audit decisions or approvals.",
+        "operationId": "AttachmentFeedbackController_create_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAttachmentFeedbackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Flag an evidence attachment",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-speakeasy-mcp": {
+          "name": "flag-evidence-attachment"
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Flag an evidence attachment | Comp AI API",
+            "sidebarTitle": "Flag an evidence attachment",
+            "description": "Record a concern about an existing evidence file with a required comment. Preserves file identity and author; does not change evidence, audit decisions.",
+            "og:title": "Flag an evidence attachment | Comp AI API",
+            "og:description": "Record a concern about an existing evidence file with a required comment. Preserves file identity and author; does not change evidence, audit decisions."
+          }
+        }
+      }
+    },
+    "/v1/audit-workspace/attachment-feedback/{id}/responses": {
+      "post": {
+        "description": "Append a comment and keep open, resolve or reopen a flagged file. Requires its latest updatedAt to avoid overwriting concurrent changes. Resolution does not approve evidence.",
+        "operationId": "AttachmentFeedbackController_respond_v1",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RespondAttachmentFeedbackDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "security": [
+          {
+            "apikey": []
+          }
+        ],
+        "summary": "Respond to attachment feedback",
+        "tags": [
+          "Audit Workspace"
+        ],
+        "x-speakeasy-mcp": {
+          "name": "respond-to-attachment-feedback"
+        },
+        "x-mint": {
+          "metadata": {
+            "title": "Respond to attachment feedback | Comp AI API",
+            "sidebarTitle": "Respond to attachment feedback",
+            "description": "Append a comment and keep open, resolve or reopen a flagged file. Requires its latest updatedAt to avoid overwriting concurrent changes. Resolution does not.",
+            "og:title": "Respond to attachment feedback | Comp AI API",
+            "og:description": "Append a comment and keep open, resolve or reopen a flagged file. Requires its latest updatedAt to avoid overwriting concurrent changes. Resolution does not."
+          }
+        }
+      }
     }
   },
   "info": {
@@ -26882,6 +28104,9 @@
     {
       "name": "Vendors",
       "description": "Manage third-party vendors, global vendor search, risk assessment triggers, and Trust Center vendor visibility."
+    },
+    {
+      "name": "Audit recordings"
     }
   ],
   "servers": [
@@ -27282,12 +28507,12 @@
           },
           "fileData": {
             "type": "string",
-            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=attachment) and pass `s3Key` — base64 through an LLM is impractically slow and times out. Provide exactly one of fileData or s3Key.",
+            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=attachment) and pass `s3Key` \u2014 base64 through an LLM is impractically slow and times out. Provide exactly one of fileData or s3Key.",
             "example": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
           },
           "s3Key": {
             "type": "string",
-            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=attachment). The server fetches the bytes from storage — no base64 needed. Provide exactly one of fileData or s3Key.",
+            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=attachment). The server fetches the bytes from storage \u2014 no base64 needed. Provide exactly one of fileData or s3Key.",
             "example": "org_abc123/uploads/attachment/1700000000000-rbac-matrix.xlsx"
           },
           "description": {
@@ -27387,12 +28612,12 @@
           },
           "fileData": {
             "type": "string",
-            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=attachment) and pass `s3Key` — base64 through an LLM is impractically slow and times out. Provide exactly one of fileData or s3Key.",
+            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=attachment) and pass `s3Key` \u2014 base64 through an LLM is impractically slow and times out. Provide exactly one of fileData or s3Key.",
             "example": "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=="
           },
           "s3Key": {
             "type": "string",
-            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=attachment). The server fetches the bytes from storage — no base64 needed. Provide exactly one of fileData or s3Key.",
+            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=attachment). The server fetches the bytes from storage \u2014 no base64 needed. Provide exactly one of fileData or s3Key.",
             "example": "org_abc123/uploads/attachment/1700000000000-rbac-matrix.xlsx"
           },
           "description": {
@@ -27510,7 +28735,7 @@
         "properties": {
           "uploadUrl": {
             "type": "string",
-            "description": "Presigned S3 URL. Send the raw file bytes with a plain HTTP PUT to this URL — no Content-Type or auth headers are required (the signature is in the URL). Then call the feature endpoint with the s3Key below.",
+            "description": "Presigned S3 URL. Send the raw file bytes with a plain HTTP PUT to this URL \u2014 no Content-Type or auth headers are required (the signature is in the URL). Then call the feature endpoint with the s3Key below.",
             "example": "https://bucket.s3.us-east-1.amazonaws.com/org_x/uploads/...?X-Amz-Signature=..."
           },
           "s3Key": {
@@ -27544,7 +28769,7 @@
           },
           "credentials": {
             "type": "object",
-            "description": "Provider-specific credential fields. Keys differ by provider — call get-provider-details for the exact shape. For AWS (Cloud Tests) the fields are: connectionName (display name), awsType ('aws-commercial' or 'aws-govcloud'), roleArn (auditor role), externalId (typically your org id), regions (string array), and optionally remediationRoleArn and awsScanMode ('comp_scanners' or 'security_hub'). Omit credentials for OAuth providers — use POST /v1/integrations/oauth/start instead.",
+            "description": "Provider-specific credential fields. Keys differ by provider \u2014 call get-provider-details for the exact shape. For AWS (Cloud Tests) the fields are: connectionName (display name), awsType ('aws-commercial' or 'aws-govcloud'), roleArn (auditor role), externalId (typically your org id), regions (string array), and optionally remediationRoleArn and awsScanMode ('comp_scanners' or 'security_hub'). Omit credentials for OAuth providers \u2014 use POST /v1/integrations/oauth/start instead.",
             "additionalProperties": true,
             "example": {
               "connectionName": "Production AWS",
@@ -27632,7 +28857,7 @@
           },
           "variables": {
             "type": "object",
-            "description": "Map of variable id → value to persist for this connection. Values can be string, number, boolean, or string[] (the shape is provider-defined — call get-connection-variables to see what each connection accepts). Pass only the variables you want to set; existing ones not included are left untouched.",
+            "description": "Map of variable id \u2192 value to persist for this connection. Values can be string, number, boolean, or string[] (the shape is provider-defined \u2014 call get-connection-variables to see what each connection accepts). Pass only the variables you want to set; existing ones not included are left untouched.",
             "additionalProperties": true,
             "example": {
               "scan-interval-hours": 24,
@@ -27662,7 +28887,7 @@
           },
           "checkId": {
             "type": "string",
-            "description": "ID of the integration check to run (from the provider manifest — call list-checks-for-task to find available ones).",
+            "description": "ID of the integration check to run (from the provider manifest \u2014 call list-checks-for-task to find available ones).",
             "example": "aws-s3-bucket-public-access"
           }
         },
@@ -27703,7 +28928,7 @@
           },
           "provider": {
             "type": "object",
-            "description": "Provider slug to use for employee sync (must have the \"sync\" capability in its manifest — call list-providers to see options). Pass null or omit the field to disable employee sync for this org.",
+            "description": "Provider slug to use for employee sync (must have the \"sync\" capability in its manifest \u2014 call list-providers to see options). Pass null or omit the field to disable employee sync for this org.",
             "example": "google-workspace",
             "nullable": true
           }
@@ -27718,7 +28943,7 @@
           },
           "provider": {
             "type": "object",
-            "description": "Provider slug whose 2FA check feeds the People-tab 2FA column (must be bound to the 2FA task — call available-2fa-sources for options). Pass null or omit to clear the source.",
+            "description": "Provider slug whose 2FA check feeds the People-tab 2FA column (must be bound to the 2FA task \u2014 call available-2fa-sources for options). Pass null or omit to clear the source.",
             "example": "google-workspace",
             "nullable": true
           }
@@ -27886,6 +29111,15 @@
             "type": "string",
             "description": "ID of the user assigned to this risk",
             "example": "mem_abc123def456"
+          },
+          "residualAssessmentStatus": {
+            "type": "string",
+            "enum": [
+              "unassessed",
+              "legacy",
+              "assessed"
+            ],
+            "description": "Residual assessment provenance; legacy stored ratings require provenance review."
           }
         },
         "required": [
@@ -28022,6 +29256,15 @@
             "type": "string",
             "description": "ID of the user assigned to this risk",
             "example": "mem_abc123def456"
+          },
+          "residualAssessmentStatus": {
+            "type": "string",
+            "enum": [
+              "unassessed",
+              "legacy",
+              "assessed"
+            ],
+            "description": "Residual assessment provenance; legacy stored ratings require provenance review."
           }
         }
       },
@@ -28131,6 +29374,15 @@
             "type": "string",
             "description": "ID of the user assigned to manage this vendor",
             "example": "mem_abc123def456"
+          },
+          "residualAssessmentStatus": {
+            "type": "string",
+            "enum": [
+              "unassessed",
+              "legacy",
+              "assessed"
+            ],
+            "description": "Residual assessment provenance; legacy stored ratings require provenance review."
           }
         },
         "required": [
@@ -28250,6 +29502,15 @@
           "assigneeId": {
             "type": "string",
             "description": "Assignee member ID"
+          },
+          "residualAssessmentStatus": {
+            "type": "string",
+            "enum": [
+              "unassessed",
+              "legacy",
+              "assessed"
+            ],
+            "description": "Residual assessment provenance; legacy stored ratings require provenance review."
           }
         }
       },
@@ -29127,7 +30388,7 @@
           },
           "fileType": {
             "type": "string",
-            "description": "MIME type of the file. Must be \"application/pdf\" — the presigned URL enforces this at upload time.",
+            "description": "MIME type of the file. Must be \"application/pdf\" \u2014 the presigned URL enforces this at upload time.",
             "example": "application/pdf"
           }
         },
@@ -29141,7 +30402,7 @@
         "properties": {
           "uploadUrl": {
             "type": "string",
-            "description": "Presigned S3 URL. PUT the raw file bytes to this URL with header `Content-Type: application/pdf`. No auth headers required — the signature is in the URL.",
+            "description": "Presigned S3 URL. PUT the raw file bytes to this URL with header `Content-Type: application/pdf`. No auth headers required \u2014 the signature is in the URL.",
             "example": "https://bucket.s3.us-east-1.amazonaws.com/org_xxx/policies/pol_xxx/...?X-Amz-Signature=..."
           },
           "s3Key": {
@@ -29171,7 +30432,7 @@
           },
           "versionId": {
             "type": "string",
-            "description": "Optional version ID — must match the versionId passed to the upload-url endpoint. Omit if attaching at the policy level.",
+            "description": "Optional version ID \u2014 must match the versionId passed to the upload-url endpoint. Omit if attaching at the policy level.",
             "example": "pv_abc123def456"
           }
         },
@@ -29472,7 +30733,7 @@
         "properties": {
           "versionId": {
             "type": "string",
-            "description": "Version ID to publish. PASS THIS after update-version to publish your edits — omitting it publishes stale draftContent (loses your changes).",
+            "description": "Version ID to publish. PASS THIS after update-version to publish your edits \u2014 omitting it publishes stale draftContent (loses your changes).",
             "example": "pv_abc123def456"
           },
           "setAsActive": {
@@ -30621,7 +31882,7 @@
           },
           "publicAccessToken": {
             "type": "string",
-            "description": "Token for tracking the run via Trigger.dev realtime. Optional — MCP/agent clients should poll GET /v1/questionnaire/:id instead.",
+            "description": "Token for tracking the run via Trigger.dev realtime. Optional \u2014 MCP/agent clients should poll GET /v1/questionnaire/:id instead.",
             "example": "pat_..."
           },
           "status": {
@@ -30729,11 +31990,11 @@
           },
           "fileData": {
             "type": "string",
-            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign and pass `s3Key` — base64 through an LLM is impractically slow. Provide exactly one of fileData or s3Key."
+            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign and pass `s3Key` \u2014 base64 through an LLM is impractically slow. Provide exactly one of fileData or s3Key."
           },
           "s3Key": {
             "type": "string",
-            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=questionnaire). The server fetches the bytes from storage — no base64 needed. Provide exactly one of fileData or s3Key.",
+            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=questionnaire). The server fetches the bytes from storage \u2014 no base64 needed. Provide exactly one of fileData or s3Key.",
             "example": "org_abc/uploads/questionnaire/1735000000-questionnaire.xlsx"
           }
         },
@@ -30774,11 +32035,11 @@
           },
           "fileData": {
             "type": "string",
-            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=document) and pass `s3Key` — base64 through an LLM is impractically slow and times out. Provide exactly one of fileData or s3Key."
+            "description": "Base64-encoded file contents. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=document) and pass `s3Key` \u2014 base64 through an LLM is impractically slow and times out. Provide exactly one of fileData or s3Key."
           },
           "s3Key": {
             "type": "string",
-            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=document). The server fetches the bytes from storage — no base64 needed. Provide exactly one of fileData or s3Key."
+            "description": "Key of a file already uploaded via /v1/uploads/presign (purpose=document). The server fetches the bytes from storage \u2014 no base64 needed. Provide exactly one of fileData or s3Key."
           },
           "description": {
             "type": "string",
@@ -31281,7 +32542,7 @@
           },
           "organizationId": {
             "type": "string",
-            "description": "Organization ID (deprecated — use auth context)",
+            "description": "Organization ID (deprecated \u2014 use auth context)",
             "example": "org_abc123"
           }
         },
@@ -31722,13 +32983,327 @@
           },
           "fileData": {
             "type": "string",
-            "description": "Base64-encoded evidence file. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=evidence) and pass `s3Key` — base64 through an LLM is impractically slow and times out. Provide fileData or s3Key (not both)."
+            "description": "Base64-encoded evidence file. For the web UI / direct callers. AI/MCP clients should instead upload via /v1/uploads/presign (purpose=evidence) and pass `s3Key` \u2014 base64 through an LLM is impractically slow and times out. Provide fileData or s3Key (not both)."
           },
           "s3Key": {
             "type": "string",
-            "description": "Key of an evidence file already uploaded via /v1/uploads/presign (purpose=evidence). The server fetches the bytes from storage — no base64 needed. Provide fileData or s3Key (not both)."
+            "description": "Key of an evidence file already uploaded via /v1/uploads/presign (purpose=evidence). The server fetches the bytes from storage \u2014 no base64 needed. Provide fileData or s3Key (not both)."
           }
         }
+      },
+      "AuditReviewDto": {
+        "type": "object",
+        "properties": {
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "Last observed check update timestamp, for conflict detection."
+          },
+          "notes": {
+            "type": "string",
+            "description": "Sampling details, evidence examined and reviewer observations."
+          },
+          "result": {
+            "type": "string",
+            "enum": [
+              "conformity_confirmed",
+              "nonconformity_raised",
+              "observation_raised",
+              "not_sampled"
+            ],
+            "description": "Omit to save a draft. Supply to complete the review."
+          }
+        },
+        "required": [
+          "expectedUpdatedAt",
+          "notes"
+        ]
+      },
+      "AuditRequestDto": {
+        "type": "object",
+        "properties": {
+          "question": {
+            "type": "string",
+            "description": "Exact record, period or clarification requested."
+          },
+          "ownerMemberId": {
+            "type": "string",
+            "description": "Active organization member responsible for coordinating the response."
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "Due date in ISO format."
+          }
+        },
+        "required": [
+          "question",
+          "ownerMemberId",
+          "dueDate"
+        ]
+      },
+      "AuditResponseDto": {
+        "type": "object",
+        "properties": {
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "Last observed request update timestamp."
+          },
+          "content": {
+            "type": "string",
+            "description": "Response, clarification or reason for the review decision."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "submitted",
+              "changes_requested",
+              "accepted"
+            ]
+          }
+        },
+        "required": [
+          "expectedUpdatedAt",
+          "content",
+          "status"
+        ]
+      },
+      "AuditSourceDto": {
+        "type": "object",
+        "properties": {
+          "sourceType": {
+            "type": "string",
+            "enum": [
+              "attachment",
+              "policy",
+              "document"
+            ]
+          },
+          "sourceId": {
+            "type": "string",
+            "description": "Existing organization-scoped attachment, policy or ISMS document ID."
+          }
+        },
+        "required": [
+          "sourceType",
+          "sourceId"
+        ]
+      },
+      "WorkspaceFindingDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "nc_major",
+              "nc_minor",
+              "ofi",
+              "observation"
+            ]
+          },
+          "description": {
+            "type": "string",
+            "description": "Observed condition, supporting evidence and audit criterion."
+          },
+          "ownerMemberId": {
+            "type": "string",
+            "description": "Organization member responsible for follow-up."
+          },
+          "dueDate": {
+            "type": "string",
+            "description": "Follow-up due date."
+          }
+        },
+        "required": [
+          "type",
+          "description"
+        ]
+      },
+      "AuditFindingFollowupDto": {
+        "type": "object",
+        "properties": {
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "Last observed finding update timestamp."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "in_progress",
+              "closed"
+            ]
+          },
+          "closureEvidence": {
+            "type": "string",
+            "description": "Follow-up actions and evidence of resolution. Required to close."
+          }
+        },
+        "required": [
+          "expectedUpdatedAt",
+          "status",
+          "closureEvidence"
+        ]
+      },
+      "AuditConclusionDto": {
+        "type": "object",
+        "properties": {
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "Last observed audit update timestamp."
+          },
+          "conclusionVerdict": {
+            "type": "string",
+            "enum": [
+              "conform",
+              "substantially_conform",
+              "not_yet_conform"
+            ]
+          },
+          "conclusionNotes": {
+            "type": "string",
+            "description": "Overall audit conclusion and limitations; saving does not sign or approve the report."
+          }
+        },
+        "required": [
+          "expectedUpdatedAt",
+          "conclusionVerdict",
+          "conclusionNotes"
+        ]
+      },
+      "AuditViewConsentDto": {
+        "type": "object",
+        "properties": {
+          "allowed": {
+            "type": "boolean",
+            "description": "Whether live audit view sharing is enabled for this workspace visit."
+          },
+          "noticeVersion": {
+            "type": "number",
+            "enum": [
+              2
+            ],
+            "description": "Optional live reconstruction version for compatibility with existing clients."
+          }
+        },
+        "required": [
+          "allowed"
+        ]
+      },
+      "AuditLiveTicketDto": {
+        "type": "object",
+        "properties": {
+          "mode": {
+            "type": "string",
+            "enum": [
+              "publish",
+              "observe"
+            ],
+            "description": "Publish an initialized audit view or observe as an authorized administrator."
+          },
+          "nonce": {
+            "type": "string",
+            "description": "Session nonce returned by workspace initialization. Required to publish."
+          }
+        },
+        "required": [
+          "mode"
+        ]
+      },
+      "AuditFinishDto": {
+        "type": "object",
+        "properties": {
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "Last observed audit update timestamp."
+          },
+          "confirmed": {
+            "type": "boolean",
+            "description": "Explicit confirmation that you completed the audit and recorded its conclusion.",
+            "enum": [
+              true
+            ]
+          }
+        },
+        "required": [
+          "expectedUpdatedAt",
+          "confirmed"
+        ]
+      },
+      "AuditResearchThreadDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "Short topic for a persistent audit research conversation.",
+            "maxLength": 100
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "AuditResearchPromptDto": {
+        "type": "object",
+        "properties": {
+          "prompt": {
+            "type": "string",
+            "description": "Question to research against organization evidence.",
+            "maxLength": 6000
+          },
+          "requestId": {
+            "type": "string",
+            "description": "Client-generated UUID. Reuse it when retrying an uncertain HTTP outcome."
+          }
+        },
+        "required": [
+          "prompt",
+          "requestId"
+        ]
+      },
+      "CreateAttachmentFeedbackDto": {
+        "type": "object",
+        "properties": {
+          "attachmentId": {
+            "type": "string",
+            "description": "Existing attachment to flag."
+          },
+          "comment": {
+            "type": "string",
+            "description": "Explain what is insufficient or needs correction.",
+            "maxLength": 5000
+          }
+        },
+        "required": [
+          "attachmentId",
+          "comment"
+        ]
+      },
+      "RespondAttachmentFeedbackDto": {
+        "type": "object",
+        "properties": {
+          "comment": {
+            "type": "string",
+            "description": "Describe the correction, response or reason for reopening.",
+            "maxLength": 5000
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "resolved"
+            ],
+            "description": "Feedback status after this response; does not approve evidence."
+          },
+          "expectedUpdatedAt": {
+            "type": "string",
+            "description": "updatedAt from the latest feedback, for conflict detection."
+          }
+        },
+        "required": [
+          "comment",
+          "status",
+          "expectedUpdatedAt"
+        ]
       }
     }
   },

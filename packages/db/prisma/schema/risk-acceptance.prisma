@@ -26,6 +26,7 @@ model RiskAcceptance {
   acceptedByName String
 
   notes String?
+  scoringVersion String @default("matrix-25-v1")
 
   // Residual rating frozen at the moment of acceptance — the staleness baseline.
   residualLikelihood Likelihood

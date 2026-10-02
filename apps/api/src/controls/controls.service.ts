@@ -1,3 +1,4 @@
+import { ismsDocumentLinks } from './isms-document-links';
 import {
   BadRequestException,
   Injectable,
@@ -112,6 +113,7 @@ export class ControlsService {
         policies: { where: { archivedAt: null, isArchived: false } },
         tasks: { where: { archivedAt: null } },
         controlDocumentTypes: true,
+        ismsDocumentLinks: ismsDocumentLinks(organizationId),
         requirementsMapped: {
           where: { archivedAt: null },
           include: {
@@ -217,6 +219,7 @@ export class ControlsService {
         policies: { where: { archivedAt: null, isArchived: false } },
         tasks: { where: { archivedAt: null } },
         controlDocumentTypes: true,
+        ismsDocumentLinks: ismsDocumentLinks(organizationId),
         frameworkPolicyLinks: {
           where: {
             frameworkInstanceId,

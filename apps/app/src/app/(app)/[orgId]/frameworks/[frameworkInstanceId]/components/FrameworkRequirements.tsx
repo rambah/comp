@@ -1,13 +1,7 @@
 'use client';
 
-import type { StatusType } from '@/components/status-indicator';
 import {
   type EvidenceSubmissionInfo,
-  type RequirementArtifactCounts,
-  getControlProgressPercent,
-  getControlStatus,
-  getRequirementArtifactCounts,
-  getRequirementCompliancePercent,
   getRequirementStatus,
 } from '@/lib/control-compliance';
 import type { FrameworkInstanceWithControls } from '@/lib/types/framework';
@@ -27,7 +21,7 @@ import { Search } from '@trycompai/design-system/icons';
 import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { ExpandableDescription } from './ExpandableDescription';
-import { compareRequirementsByOrder } from './framework-controls-shared';
+import { buildRequirementItems, compareRequirementsByOrder } from './framework-controls-shared';
 import {
   REQUIREMENTS_TABLE_COLUMN_COUNT,
   REQUIREMENTS_TABLE_STYLE,
@@ -36,14 +30,6 @@ import {
 } from './requirements-table-layout';
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
-
-interface RequirementItem extends FrameworkEditorRequirement {
-  mappedControlsCount: number;
-  satisfiedControlsCount: number;
-  compliancePercent: number;
-  controlStatuses: StatusType[];
-  artifactCounts: RequirementArtifactCounts;
-}
 
 export function FrameworkRequirements({
   requirementDefinitions,
@@ -65,53 +51,9 @@ export function FrameworkRequirements({
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const items = useMemo(() => {
-    return requirementDefinitions.map((def) => {
-      const mappedControls = frameworkInstanceWithControls.controls.filter(
-        (control) =>
-          control.requirementsMapped?.some((reqMap) => reqMap.requirementId === def.id) ?? false,
-      );
-
-      const controlStatuses = mappedControls.map((control) =>
-        getControlStatus(
-          control.policies,
-          tasks ?? [],
-          control.id,
-          control.controlDocumentTypes,
-          evidenceSubmissions,
-        ),
-      );
-      const satisfiedControlsCount = controlStatuses.filter(
-        (status) => status === 'completed',
-      ).length;
-
-      const controlProgressPercents = mappedControls.map((control) =>
-        getControlProgressPercent(
-          control.policies,
-          tasks ?? [],
-          control.id,
-          control.controlDocumentTypes,
-          evidenceSubmissions,
-        ),
-      );
-      const compliancePercent = getRequirementCompliancePercent(controlProgressPercents);
-
-      const artifactCounts = getRequirementArtifactCounts(
-        mappedControls,
-        tasks ?? [],
-        evidenceSubmissions,
-      );
-
-      return {
-        ...def,
-        mappedControlsCount: mappedControls.length,
-        satisfiedControlsCount,
-        compliancePercent,
-        controlStatuses,
-        artifactCounts,
-      };
-    });
-  }, [requirementDefinitions, frameworkInstanceWithControls.controls, tasks, evidenceSubmissions]);
+  const items = useMemo(() => buildRequirementItems(
+    requirementDefinitions, frameworkInstanceWithControls.controls, tasks ?? [], evidenceSubmissions,
+  ), [requirementDefinitions, frameworkInstanceWithControls.controls, tasks, evidenceSubmissions]);
 
   // FRAME-18: order by the framework's configured sort order (numbered first,
   // unset last), falling back to identifier for ties.
@@ -126,7 +68,7 @@ export function FrameworkRequirements({
         item.identifier?.toLowerCase().includes(lowerSearch) ||
         item.description?.toLowerCase().includes(lowerSearch),
     );
-  }, [items, searchTerm]);
+  }, [sortedItems, searchTerm]);
 
   const pageCount = Math.max(1, Math.ceil(filteredItems.length / pageSize));
   const paginatedItems = useMemo(
