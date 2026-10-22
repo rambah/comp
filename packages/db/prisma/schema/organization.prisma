@@ -1,4 +1,6 @@
 model Organization {
+  attachmentFeedback AttachmentFeedback[]
+  auditRecordings AuditRecording[]
   id                          String      @id @default(dbgenerated("generate_prefixed_cuid('org'::text)"))
   name                        String
   slug                        String      @unique @default(dbgenerated("generate_prefixed_cuid('slug'::text)"))

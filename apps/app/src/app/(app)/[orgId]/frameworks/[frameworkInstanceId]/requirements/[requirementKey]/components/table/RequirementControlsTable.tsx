@@ -45,7 +45,7 @@ function getStatusBadge(status: string): {
 } {
   switch (status) {
     case 'completed':
-      return { label: 'Satisfied', variant: 'default' };
+      return { label: 'Complete', variant: 'default' };
     case 'in_progress':
       return { label: 'In Progress', variant: 'secondary' };
     case 'not_relevant':
@@ -138,11 +138,11 @@ export function RequirementControlsTable({
           <TableRow>
             <TableHead>Name</TableHead>
             <TableHead>Description</TableHead>
-            <TableHead>Compliance</TableHead>
+            <TableHead>Progress</TableHead>
             <TableHead>Status</TableHead>
             <TableHead>Policies</TableHead>
             <TableHead>Tasks</TableHead>
-            <TableHead>Documents</TableHead>
+            <TableHead>Forms</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>

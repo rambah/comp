@@ -8,7 +8,7 @@ jest.mock('@db', () => {
       findUnique: jest.fn(),
       update: jest.fn(),
     },
-    ismsAudit: { findFirst: jest.fn() },
+    ismsAudit: { update: jest.fn(), findFirst: jest.fn() },
     ismsAuditControl: {
       findFirst: jest.fn(),
       create: jest.fn(),

@@ -1,6 +1,6 @@
 import { db } from '@db';
 import type { Impact, Likelihood, Prisma } from '@db';
-import { LEVEL_LABEL, ratingLevel } from '../../risks/risk-level';
+import { LEVEL_LABEL, ratingLevel, getRiskScore } from '../../risks/risk-level';
 import { formatExportDate } from '../utils/export-shared';
 import type {
   AcceptanceExportState,
@@ -34,7 +34,7 @@ function humanizeEnum(value: string): string {
 }
 
 function levelLabel(likelihood: Likelihood, impact: Impact): string {
-  return LEVEL_LABEL[ratingLevel(likelihood, impact)];
+  return `${getRiskScore(likelihood, impact).raw}/25 (${LEVEL_LABEL[ratingLevel(likelihood, impact)]})`;
 }
 
 function ownerName(
@@ -98,6 +98,7 @@ export async function loadRiskTreatmentExtras({
         impact: true,
         residualLikelihood: true,
         residualImpact: true,
+        residualAssessmentStatus: true,
         treatmentStrategy: true,
         treatmentStrategyDescription: true,
         assignee: { select: { user: { select: { name: true, email: true } } } },
@@ -115,6 +116,7 @@ export async function loadRiskTreatmentExtras({
         inherentImpact: true,
         residualProbability: true,
         residualImpact: true,
+        residualAssessmentStatus: true,
         treatmentStrategy: true,
         treatmentStrategyDescription: true,
         assignee: { select: { user: { select: { name: true, email: true } } } },
@@ -155,7 +157,7 @@ export async function loadRiskTreatmentExtras({
       treatment: humanizeEnum(risk.treatmentStrategy),
       controls: risk.treatmentStrategyDescription?.trim() || '—',
       ownerName: ownerName(risk.assignee),
-      residualLevel: levelLabel(risk.residualLikelihood, risk.residualImpact),
+      residualLevel: risk.residualAssessmentStatus === "unassessed" ? "Not yet assessed" : levelLabel(risk.residualLikelihood, risk.residualImpact) + (risk.residualAssessmentStatus === "legacy" ? " [legacy stored rating; provenance unverified]" : ""),
       ...resolveAcceptance({
         latest: latestByRisk.get(risk.id),
         residualLikelihood: risk.residualLikelihood,
@@ -170,10 +172,7 @@ export async function loadRiskTreatmentExtras({
       treatment: humanizeEnum(vendor.treatmentStrategy),
       controls: vendor.treatmentStrategyDescription?.trim() || '—',
       ownerName: ownerName(vendor.assignee),
-      residualLevel: levelLabel(
-        vendor.residualProbability,
-        vendor.residualImpact,
-      ),
+      residualLevel: vendor.residualAssessmentStatus === "unassessed" ? "Not yet assessed" : levelLabel(vendor.residualProbability, vendor.residualImpact) + (vendor.residualAssessmentStatus === "legacy" ? " [legacy stored rating; provenance unverified]" : ""),
       ...resolveAcceptance({
         latest: latestByVendor.get(vendor.id),
         residualLikelihood: vendor.residualProbability,

@@ -10,11 +10,10 @@ interface LegendItem {
 }
 
 const ITEMS: LegendItem[] = [
-  { level: 'very-low', label: 'Very Low', range: 'Raw 1', color: 'bg-emerald-500/30' },
-  { level: 'low', label: 'Low', range: 'Raw 2–4', color: 'bg-green-500/30' },
+  { level: 'low', label: 'Low', range: 'Raw 1–4', color: 'bg-green-500/30' },
   { level: 'medium', label: 'Medium', range: 'Raw 5–9', color: 'bg-yellow-500/30' },
   { level: 'high', label: 'High', range: 'Raw 10–16', color: 'bg-orange-500/30' },
-  { level: 'very-high', label: 'Very High', range: 'Raw 17–25', color: 'bg-red-500/30' },
+  { level: 'very-high', label: 'Critical', range: 'Raw 17–25', color: 'bg-red-500/30' },
 ];
 
 export function MatrixLegend() {

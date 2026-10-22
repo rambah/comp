@@ -2,6 +2,8 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AttachmentPreviewDialog } from './AttachmentPreviewDialog';
 
+vi.mock('./feedback/AttachmentFeedbackPanel', () => ({ AttachmentFeedbackPanel: () => null }));
+
 const fetchMock = vi.fn();
 beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock);

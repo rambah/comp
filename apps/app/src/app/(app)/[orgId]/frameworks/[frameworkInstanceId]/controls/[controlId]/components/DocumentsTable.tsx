@@ -62,7 +62,7 @@ export function DocumentsTable({
   if (rows.length === 0) {
     return (
       <div className="flex h-32 items-center justify-center">
-        <Text variant="muted">No required documents yet.</Text>
+        <Text variant="muted">No required forms yet.</Text>
       </div>
     );
   }

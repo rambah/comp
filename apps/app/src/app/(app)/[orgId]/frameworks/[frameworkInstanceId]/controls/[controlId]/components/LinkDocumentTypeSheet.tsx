@@ -69,12 +69,12 @@ export function LinkDocumentTypeSheet({
         { formTypes: Array.from(selected) },
       );
       if (response.error) throw new Error(response.error);
-      toast.success('Documents linked');
+      toast.success('Forms linked');
       setIsOpen(false);
       router.refresh();
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : 'Failed to link documents',
+        error instanceof Error ? error.message : 'Failed to link forms',
       );
     } finally {
       setIsSubmitting(false);
@@ -88,17 +88,17 @@ export function LinkDocumentTypeSheet({
         iconLeft={<LinkIcon size={16} />}
         onClick={() => setIsOpen(true)}
       >
-        Link Document
+        Link Form
       </Button>
       <Sheet open={isOpen} onOpenChange={setIsOpen}>
         <SheetContent>
           <SheetHeader>
-            <SheetTitle>Link Required Documents</SheetTitle>
+            <SheetTitle>Link Required Forms</SheetTitle>
           </SheetHeader>
           <SheetBody>
             {options.length === 0 ? (
               <Text size="sm" variant="muted">
-                All document types are already linked.
+                All form types are already linked.
               </Text>
             ) : (
               <div className="space-y-2">
@@ -123,7 +123,7 @@ export function LinkDocumentTypeSheet({
                     onClick={handleSubmit}
                     disabled={selected.size === 0 || isSubmitting}
                   >
-                    Link {selected.size || ''} Document
+                    Link {selected.size || ''} Form
                     {selected.size === 1 ? '' : 's'}
                   </Button>
                 </div>

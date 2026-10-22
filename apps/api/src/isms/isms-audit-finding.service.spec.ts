@@ -8,8 +8,8 @@ jest.mock('@db', () => {
       findUnique: jest.fn(),
       update: jest.fn(),
     },
-    ismsAudit: { findFirst: jest.fn() },
-    ismsAuditControl: { findFirst: jest.fn() },
+    ismsAudit: { update: jest.fn(), findFirst: jest.fn() },
+    ismsAuditControl: { updateMany: jest.fn(), findFirst: jest.fn() },
     member: { findFirst: jest.fn() },
     ismsAuditFinding: {
       findFirst: jest.fn(),
@@ -181,7 +181,9 @@ describe('IsmsAuditFindingService', () => {
       const { data } = (mockDb.ismsAuditFinding.update as jest.Mock).mock
         .calls[0][0];
       expect(data.status).toBe('closed');
-      expect(data.closureEvidence).toBe('Restore test evidenced in task ev_123.');
+      expect(data.closureEvidence).toBe(
+        'Restore test evidenced in task ev_123.',
+      );
       expect(data.dueDate).toBeNull();
       // The server-generated reference is never updatable.
       expect(data.reference).toBeUndefined();

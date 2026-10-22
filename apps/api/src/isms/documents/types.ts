@@ -222,6 +222,7 @@ export interface SeedReviewInputDefinition {
 
 /** One Inputs (9.3.2) row, resolved for export (discussed humanized). */
 export interface ReviewInputExportRow {
+  scopeExclusionReason?: string | null;
   inputRef: string;
   whatItCovers: string;
   whereToFind: string;
@@ -243,6 +244,8 @@ export interface ReviewActionExportRow {
 
 /** A review instance, resolved for export: fields + child tables + sign-off. */
 export interface ReviewExportRow {
+  reviewScope?: string;
+  scopeNotes?: string | null;
   reference: string;
   meetingDate: string | null;
   /** Server-set recording date ("Recorded on"), never editable. */

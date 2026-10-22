@@ -54,9 +54,9 @@ function makeRequirement(overrides: Partial<FrameworkEditorRequirement> = {}) {
 // ---------------------------------------------------------------------------
 
 describe('getStatusBadge', () => {
-  it('returns Satisfied / default for completed', () => {
+  it('returns Complete / default for completed', () => {
     expect(getStatusBadge('completed')).toEqual({
-      label: 'Satisfied',
+      label: 'Complete',
       variant: 'default',
     });
   });

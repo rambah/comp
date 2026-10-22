@@ -79,6 +79,10 @@ export class RiskResponseDto {
   })
   residualImpact: Impact;
 
+  @ApiProperty({ description: 'Residual assessment provenance. Legacy ratings are preserved but provenance is unverified.', enum: ['unassessed', 'legacy', 'assessed'] })
+  residualAssessmentStatus: string;
+
+
   @ApiProperty({
     description: 'Description of the treatment strategy',
     nullable: true,

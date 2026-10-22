@@ -9,7 +9,9 @@
  */
 
 import type { ReadonlyHeaders } from 'next/dist/server/web/spec-extension/adapters/headers';
+import { cache } from 'react';
 import { ac, allRoles } from './permissions';
+import { readAuthSession } from './read-auth-session';
 
 // Re-export permissions for convenience
 export { ac, allRoles };
@@ -134,29 +136,18 @@ function headersToObject(headers: ReadonlyHeaders | Headers): Record<string, str
  * @param options.headers - The request headers (must include cookies)
  * @returns The session data or null if not authenticated
  */
-async function getSession(options: { headers: ReadonlyHeaders | Headers }): Promise<Session | null> {
-  try {
-    const response = await fetch(`${API_URL}/api/auth/get-session`, {
-      method: 'GET',
-      headers: {
-        ...headersToObject(options.headers),
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store',
-    });
+// React cache is limited to this server render, never shared across users or requests.
+const getSessionForHeaders = cache((headers: ReadonlyHeaders | Headers) =>
+  readAuthSession<Session>({
+    url: `${API_URL}/api/auth/get-session`,
+    headers: { ...headersToObject(headers), 'Content-Type': 'application/json' },
+  }),
+);
 
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = await response.json();
-    return data as Session;
-  } catch (error) {
-    if (IS_DEVELOPMENT) {
-      console.error('[auth] Failed to get session:', error);
-    }
-    return null;
-  }
+async function getSession(options: {
+  headers: ReadonlyHeaders | Headers;
+}): Promise<Session | null> {
+  return getSessionForHeaders(options.headers);
 }
 
 /**
@@ -168,28 +159,10 @@ async function getSession(options: { headers: ReadonlyHeaders | Headers }): Prom
 async function getFullSession(options: {
   headers: ReadonlyHeaders | Headers;
 }): Promise<FullSession | null> {
-  try {
-    const response = await fetch(`${API_URL}/api/auth/get-full-session`, {
-      method: 'GET',
-      headers: {
-        ...headersToObject(options.headers),
-        'Content-Type': 'application/json',
-      },
-      cache: 'no-store',
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = await response.json();
-    return data as FullSession;
-  } catch (error) {
-    if (IS_DEVELOPMENT) {
-      console.error('[auth] Failed to get full session:', error);
-    }
-    return null;
-  }
+  return readAuthSession<FullSession>({
+    url: `${API_URL}/api/auth/get-full-session`,
+    headers: { ...headersToObject(options.headers), 'Content-Type': 'application/json' },
+  });
 }
 
 /**

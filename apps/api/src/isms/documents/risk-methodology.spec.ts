@@ -36,7 +36,7 @@ describe('deriveRiskMethodologyNarrative', () => {
     expect(narrative.approach).toContain('Acme Corp');
     expect(narrative.likelihoodDescriptions).toHaveLength(5);
     expect(narrative.impactDescriptions).toHaveLength(5);
-    expect(narrative.acceptanceThresholds).toHaveLength(5);
+    expect(narrative.acceptanceThresholds).toHaveLength(4);
     expect(narrative.treatmentOptions).toHaveLength(4);
   });
 
@@ -93,11 +93,11 @@ describe('buildRiskMethodologySections', () => {
     // Rows run likelihood 5 -> 1; banding = score bands (matches
     // RiskScoreBadge / TreatmentHero, not the raw getRiskLevel bands).
     expect(matrix?.table?.rows?.[0]?.[0]).toBe('Likelihood 5');
-    expect(matrix?.table?.rows?.[0]?.[5]).toBe('Very high'); // 25 -> score 10
-    expect(matrix?.table?.rows?.[4]?.[1]).toBe('Very low'); // 1 -> score 1
-    expect(matrix?.table?.rows?.[2]?.[3]).toBe('Low'); // 9 -> score 4
-    expect(matrix?.table?.rows?.[1]?.[3]).toBe('Medium'); // 12 -> score 5
-    expect(matrix?.table?.rows?.[0]?.[4]).toBe('High'); // 20 -> score 8
+    expect(matrix?.table?.rows?.[0]?.[5]).toBe('Critical'); // 25 -> score 10
+    expect(matrix?.table?.rows?.[4]?.[1]).toBe('Low'); // 1 -> score 1
+    expect(matrix?.table?.rows?.[2]?.[3]).toBe('Medium'); // 9 -> score 4
+    expect(matrix?.table?.rows?.[1]?.[3]).toBe('High'); // 12 -> score 5
+    expect(matrix?.table?.rows?.[0]?.[4]).toBe('Critical'); // 20 -> score 8
     // cellFills align with rows; the label column carries no fill.
     expect(matrix?.table?.cellFills).toHaveLength(5);
     expect(matrix?.table?.cellFills?.[0]?.[0]).toBeNull();
@@ -111,11 +111,10 @@ describe('buildRiskMethodologySections', () => {
     );
 
     expect(thresholds?.table?.rows?.map((row) => row[0])).toEqual([
-      'Very low',
-      'Low',
-      'Medium',
-      'High',
-      'Very high',
+      'Low (1-4)',
+      'Medium (5-9)',
+      'High (10-16)',
+      'Critical (17-25)',
     ]);
   });
 

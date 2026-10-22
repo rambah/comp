@@ -9,11 +9,11 @@ import type { Impact, Likelihood } from '@db';
 
 export interface RiskScoreBadgeProps {
   /**
-   * Provide a precomputed 1-10 score directly, or pass `likelihood` + `impact`
+   * Provide a precomputed raw 1-25 score directly, or pass `likelihood` + `impact`
    * to have the badge derive it via `getRiskScore`. The score-derived path is
-   * what callers use when they want a current/interpolated value.
+   * what callers use when they want a saved current value or explicitly labelled suggestion.
    */
-  score?: number;
+  score?: number | null;
   likelihood?: Likelihood;
   impact?: Impact;
   /**
@@ -34,7 +34,8 @@ export function RiskScoreBadge({
   className,
 }: RiskScoreBadgeProps) {
   const resolvedScore =
-    score ?? (likelihood && impact ? getRiskScore(likelihood, impact).score : 1);
+    score === null ? null : score ?? (likelihood && impact ? getRiskScore(likelihood, impact).score : null);
+  if (resolvedScore === null) return <span className="text-xs text-muted-foreground">Not yet assessed</span>;
   const level = getRiskLevelFromScore(resolvedScore);
   return (
     <span
@@ -53,7 +54,7 @@ export function RiskScoreBadge({
       }
       title={`${LEVEL_LABEL[level]} risk`}
     >
-      {labelOnly ? LEVEL_LABEL[level] : `${resolvedScore}/10`}
+      {labelOnly ? LEVEL_LABEL[level] : `${resolvedScore}/25`}
     </span>
   );
 }

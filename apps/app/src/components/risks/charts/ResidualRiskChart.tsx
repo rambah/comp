@@ -30,6 +30,7 @@ export function ResidualRiskChart({ risk }: ResidualRiskChartProps) {
 
   return (
     <RiskMatrixChart
+      assessmentStatus={risk.residualAssessmentStatus}
       title={'Residual Risk'}
       description={
         'Risk level after the treatment plan is applied. The dashed cell is the suggestion computed from your strategy and linked task completion.'

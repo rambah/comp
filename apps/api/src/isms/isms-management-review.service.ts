@@ -84,6 +84,8 @@ export class IsmsManagementReviewService {
       const review = await tx.ismsManagementReview.create({
         data: {
           documentId,
+          reviewScope: dto.reviewScope ?? 'full',
+          scopeNotes: this.optionalText(dto.scopeNotes),
           reference: await this.nextReference({ tx, documentId }),
           meetingDate: meetingDate ?? null,
           chairName: dto.chairName?.trim() || defaults.chairName,
@@ -121,8 +123,6 @@ export class IsmsManagementReviewService {
         : dedupeReviewAttendees(dto.attendees);
 
     return db.$transaction(async (tx) => {
-      // Same per-document lock submit/approve take, so an edit can't race the
-      // submission's completeness check.
       await lockDocument(tx, review.documentId);
       // Signed state re-read UNDER the lock: a concurrent sign-off can commit
       // after the pre-read, and the locked minutes must win (TOCTOU).
@@ -133,6 +133,8 @@ export class IsmsManagementReviewService {
         where: { id: reviewId },
         data: {
           meetingDate: parseOptionalDate(dto.meetingDate),
+          reviewScope: dto.reviewScope,
+          scopeNotes: this.optionalText(dto.scopeNotes),
           chairName: this.optionalText(dto.chairName),
           attendees:
             attendees === undefined

@@ -964,8 +964,8 @@ export const vendorRiskAssessmentTask: Task<
         // Only write risk fields when the assessment payload produced a valid
         // inherentRisk — otherwise preserve whatever the vendor row already has
         // (e.g. pre-ENG-221 globalVendors.riskAssessmentData that lacks
-        // likelihood/impact). Residual defaults to inherent until a human
-        // mitigates. Preserved behavior.
+        // likelihood/impact). A residual is a separate explicit assessment;
+        // automated inherent reassessment must never overwrite it.
         await db.vendor.update({
           where: { id: vendor.id },
           data: {
@@ -973,8 +973,7 @@ export const vendorRiskAssessmentTask: Task<
               ? {
                   inherentProbability: inherentRisk.likelihood,
                   inherentImpact: inherentRisk.impact,
-                  residualProbability: inherentRisk.likelihood,
-                  residualImpact: inherentRisk.impact,
+
                 }
               : {}),
             ...(complianceBadges ? { complianceBadges } : {}),

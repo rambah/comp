@@ -1,0 +1,28 @@
+// Private, short-lived session replays. No reference to mutable audit evidence.
+model AuditRecording {
+  id             String @id @default(dbgenerated("generate_prefixed_cuid('arec'::text)"))
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  memberId       String
+  auditorName    String
+  startedAt      DateTime @default(now())
+  lastEventAt    DateTime @default(now())
+  endedAt        DateTime?
+  expiresAt      DateTime
+  deletedAt      DateTime?
+  state          String @default("recording")
+  chunks         AuditRecordingChunk[]
+  @@index([organizationId, startedAt])
+  @@index([expiresAt])
+}
+
+model AuditRecordingChunk {
+  id          String @id @default(dbgenerated("generate_prefixed_cuid('arch'::text)"))
+  recordingId String
+  recording   AuditRecording @relation(fields: [recordingId], references: [id], onDelete: Cascade)
+  index       Int
+  objectKey   String @unique
+  bytes       Int
+  createdAt   DateTime @default(now())
+  @@unique([recordingId, index])
+}

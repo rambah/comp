@@ -44,6 +44,7 @@ export interface Vendor {
   inherentImpact: Impact;
   residualProbability: Likelihood;
   residualImpact: Impact;
+  residualAssessmentStatus?: string;
   website: string | null;
   isSubProcessor: boolean;
   organizationId: string;

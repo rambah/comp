@@ -6,11 +6,7 @@ import { VendorStatus } from '@/components/vendor-status';
 import { usePermissions } from '@/hooks/use-permissions';
 import { useVendors, useVendorActions, type Vendor } from '@/hooks/use-vendors';
 import { getRiskScore } from '@/lib/risk-score';
-import {
-  interpolatedResidualScore,
-  previewResidual,
-  suggestedResidual,
-} from '@/lib/suggested-residual';
+import { currentAssessmentScore } from '@/lib/risk-score';
 import type { TaskStatus } from '@db';
 import {
   AlertDialog,
@@ -48,7 +44,7 @@ import {
   Text,
 } from '@trycompai/design-system';
 import { OverflowMenuVertical, Search, TrashCan } from '@trycompai/design-system/icons';
-import { ArrowDown, ArrowUp, ArrowUpDown, Loader2, UserIcon } from 'lucide-react';
+import { ArrowDown, ArrowUp, ArrowsVertical as ArrowUpDown, Renew as Loader2, User as UserIcon } from '@trycompai/design-system/icons';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
@@ -60,38 +56,8 @@ export type VendorRow = Vendor & {
   isAssessing?: boolean;
 };
 
-/**
- * Mirrors `currentSeverityScore` in the risks table — projects the vendor's
- * inherent + treatment-strategy + linked-task completion into the same
- * interpolated 1–10 score the Treatment Plan hero shows. Falls back to
- * inherent when there's no linked work or strategy doesn't reduce.
- */
-function currentVendorSeverityScore(vendor: {
-  inherentProbability: VendorRow['inherentProbability'];
-  inherentImpact: VendorRow['inherentImpact'];
-  treatmentStrategy: VendorRow['treatmentStrategy'];
-  tasks?: Array<{ status: TaskStatus }>;
-}): number {
-  const inherent = getRiskScore(vendor.inherentProbability, vendor.inherentImpact);
-  const tasks = vendor.tasks ?? [];
-  const target = previewResidual({
-    inherentLikelihood: vendor.inherentProbability,
-    inherentImpact: vendor.inherentImpact,
-    strategy: vendor.treatmentStrategy,
-    hasLinkedWork: tasks.length > 0,
-  });
-  const targetScore = getRiskScore(target.likelihood, target.impact).score;
-  const completion = suggestedResidual({
-    likelihood: vendor.inherentProbability,
-    impact: vendor.inherentImpact,
-    strategy: vendor.treatmentStrategy,
-    tasks,
-  }).completion;
-  return interpolatedResidualScore({
-    inherentScore: inherent.score,
-    targetScore,
-    completion,
-  });
+function currentVendorSeverityScore(vendor: VendorRow): number | null {
+  return currentAssessmentScore({ ...vendor, residualLikelihood: vendor.residualProbability });
 }
 
 type AssigneeMember = {
@@ -375,7 +341,7 @@ export function VendorsTable({
       if (sort.id === 'inherentRisk') {
         const aScore = getRiskScore(a.inherentProbability, a.inherentImpact).raw;
         const bScore = getRiskScore(b.inherentProbability, b.inherentImpact).raw;
-        const comparison = aScore - bScore;
+        const comparison = (aScore ?? -1) - (bScore ?? -1);
         return sort.desc ? -comparison : comparison;
       }
       if (sort.id === 'residualRisk') {
@@ -394,7 +360,7 @@ export function VendorsTable({
         // aware), not the static residual fields.
         const aScore = currentVendorSeverityScore(a);
         const bScore = currentVendorSeverityScore(b);
-        const comparison = aScore - bScore;
+        const comparison = (aScore ?? -1) - (bScore ?? -1);
         return sort.desc ? -comparison : comparison;
       }
       const comparison = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
@@ -641,7 +607,7 @@ export function VendorsTable({
                     </TableCell>
                     <TableCell>
                       {vendor.status === 'not_assessed' ? (
-                        <Text variant="muted" size="sm">—</Text>
+                        <Text variant="muted" size="sm">Not yet assessed</Text>
                       ) : (
                         <RiskScoreBadge
                           likelihood={vendor.inherentProbability}
@@ -651,14 +617,9 @@ export function VendorsTable({
                     </TableCell>
                     <TableCell>
                       {vendor.status === 'not_assessed' ? (
-                        <Text variant="muted" size="sm">—</Text>
+                        <Text variant="muted" size="sm">Not yet assessed</Text>
                       ) : (
-                        // Show the current (interpolated) score that
-                        // reflects how far the linked tasks have driven
-                        // the residual down — same logic the risks table
-                        // uses. Static residualProbability / Impact alone
-                        // can't reflect mid-treatment progress.
-                        <RiskScoreBadge score={currentVendorSeverityScore(vendor)} />
+                        <div><RiskScoreBadge score={currentVendorSeverityScore(vendor)} />{vendor.residualAssessmentStatus === "legacy" && <div className="text-xs text-muted-foreground">Legacy rating · review provenance</div>}</div>
                       )}
                     </TableCell>
                     <TableCell>

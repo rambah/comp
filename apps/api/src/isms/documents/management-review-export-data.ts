@@ -102,6 +102,8 @@ export function mapReviews(
 ): ReviewExportRow[] {
   return reviews.map((review, index) => ({
     reference: review.reference,
+    reviewScope: review.reviewScope,
+    scopeNotes: review.scopeNotes,
     meetingDate: formatDateYmd(review.meetingDate),
     recordedOn: review.recordedAt.toISOString().slice(0, 10),
     chairName: review.chairName ?? '',
@@ -109,12 +111,13 @@ export function mapReviews(
       (attendee) => attendee.name,
     ),
     status: REVIEW_STATUS_LABELS[review.status] ?? review.status,
-    conclusion: review.conclusionVerdict
-      ? reviewConclusionSentence({
-          verdict: review.conclusionVerdict,
-          meetingDate: formatDateYmd(review.meetingDate),
-        })
-      : null,
+    conclusion:
+      review.reviewScope !== 'targeted' && review.conclusionVerdict
+        ? reviewConclusionSentence({
+            verdict: review.conclusionVerdict,
+            meetingDate: formatDateYmd(review.meetingDate),
+          })
+        : null,
     conclusionNotes: review.conclusionNotes,
     decisionsText: review.decisionsText,
     changesText: review.changesText,
@@ -126,6 +129,7 @@ export function mapReviews(
       whereToFind: input.whereToFind,
       discussionNotes: input.discussionNotes ?? '',
       discussed: input.discussed ? 'Yes' : 'No',
+      scopeExclusionReason: input.scopeExclusionReason,
     })),
     actions: review.actions.map((action) => mapAction(review, action, extras)),
     carriedForward: reviews

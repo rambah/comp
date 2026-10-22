@@ -1,5 +1,8 @@
 'use client';
 
+import { LinkedIsmsDocuments } from '@/components/linked-isms-documents';
+import type { LinkedIsmsDocument } from '@/lib/types/linked-isms-document';
+
 import type {
   Control,
   FrameworkEditorFramework,
@@ -25,6 +28,7 @@ import { TasksTable } from './TasksTable';
 
 interface SingleControlProps {
   control: Control & {
+  ismsDocumentLinks?: LinkedIsmsDocument[];
     requirementsMapped: (RequirementMap & {
       frameworkInstance: FrameworkInstance & {
         framework: FrameworkEditorFramework;
@@ -54,12 +58,17 @@ export function SingleControl({
     <Tabs defaultValue="policies">
       <Stack gap="lg">
         <TabsList variant="underline">
+            <TabsTrigger value="isms">ISMS documents ({control.ismsDocumentLinks?.length ?? 0})</TabsTrigger>
           <TabsTrigger value="policies">Policies ({relatedPolicies.length})</TabsTrigger>
           <TabsTrigger value="tasks">Tasks ({relatedTasks.length})</TabsTrigger>
           <TabsTrigger value="requirements">Requirements ({control.requirementsMapped.length})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="policies">
+        <TabsContent value="isms">
+            <LinkedIsmsDocuments links={control.ismsDocumentLinks ?? []} orgId={orgIdFromParams} />
+          </TabsContent>
+
+          <TabsContent value="policies">
           <PoliciesTable policies={relatedPolicies} orgId={orgIdFromParams} />
         </TabsContent>
 

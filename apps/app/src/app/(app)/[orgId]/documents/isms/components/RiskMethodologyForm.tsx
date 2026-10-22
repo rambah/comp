@@ -1,7 +1,10 @@
 'use client';
 
+import { IsmsMarkdownEditor } from './shared/IsmsMarkdownEditor';
+import { IsmsMarkdown } from './shared/IsmsMarkdown';
+
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Label, Text, Textarea } from '@trycompai/design-system';
+import { Button, Label, Text } from '@trycompai/design-system';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import type { IsmsRiskMethodologyNarrative } from '../isms-types';
@@ -22,7 +25,7 @@ const methodologySchema = z.object({
   approach: z.string().trim().min(1, 'Approach is required'),
   likelihoodDescriptions: z.array(z.string().trim().min(1, 'Required')).length(5),
   impactDescriptions: z.array(z.string().trim().min(1, 'Required')).length(5),
-  acceptanceThresholds: z.array(z.string().trim().min(1, 'Required')).length(5),
+  acceptanceThresholds: z.array(z.string().trim().min(1, 'Required')).min(4).max(5),
   treatmentOptions: z.array(z.string().trim().min(1, 'Required')).length(4),
   responsibilities: z.string().trim().min(1, 'Responsibilities are required'),
   frequency: z.string().trim().min(1, 'Frequency is required'),
@@ -47,7 +50,7 @@ function toDefaults(narrative: IsmsRiskMethodologyNarrative): RiskMethodologyVal
     approach: narrative.approach ?? '',
     likelihoodDescriptions: padded(narrative.likelihoodDescriptions, 5),
     impactDescriptions: padded(narrative.impactDescriptions, 5),
-    acceptanceThresholds: padded(narrative.acceptanceThresholds, 5),
+    acceptanceThresholds: padded(narrative.acceptanceThresholds, narrative.acceptanceThresholds.length === 5 ? 5 : 4),
     treatmentOptions: padded(narrative.treatmentOptions, 4),
     responsibilities: narrative.responsibilities ?? '',
     frequency: narrative.frequency ?? '',
@@ -134,7 +137,7 @@ export function RiskMethodologyForm({ narrative, canEdit, onSave }: RiskMethodol
             control={control}
             name={name}
             render={({ field: { ref: _ref, ...field } }) => (
-              <Textarea {...field} id={`methodology-${name}`} rows={rows} aria-label={label} />
+              <IsmsMarkdownEditor {...field} id={`methodology-${name}`} rows={rows} aria-label={label} />
             )}
           />
           {errors[name] && (
@@ -144,7 +147,7 @@ export function RiskMethodologyForm({ narrative, canEdit, onSave }: RiskMethodol
           )}
         </div>
       ) : (
-        <p className="whitespace-pre-wrap text-sm">{narrative[name] || '—'}</p>
+        <IsmsMarkdown>{narrative[name] || '—'}</IsmsMarkdown>
       )}
     </div>
   );
@@ -182,8 +185,8 @@ export function RiskMethodologyForm({ narrative, canEdit, onSave }: RiskMethodol
 
       <MethodologyLabelledList<RiskMethodologyValues>
         title="Acceptance thresholds"
-        helper="The acceptance requirement each risk level triggers (default: low levels accepted, medium with owner sign-off, high levels must be treated)."
-        labels={METHODOLOGY_LEVEL_LABELS}
+        helper="Existing acceptance requirements are retained under their original labels. Five legacy rows require review against the current four-band methodology; decisions are never remapped automatically."
+        labels={watch("acceptanceThresholds").length === 5 ? METHODOLOGY_LEVEL_LABELS : ["Low (1–4)", "Medium (5–9)", "High (10–16)", "Critical (17–25)"]}
         name="acceptanceThresholds"
         control={control}
         canEdit={canEdit}

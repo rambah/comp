@@ -1,5 +1,7 @@
 'use client';
 
+import { CompletionExplanation } from '@/components/completion-explanation';
+
 import type { Control, Task } from '@db';
 import { Badge, Text } from '@trycompai/design-system';
 import {
@@ -39,7 +41,7 @@ export function FrameworkProgress({ framework, tasks, evidenceSubmissions }: Pro
   return (
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center gap-6 text-sm">
-        <Badge variant={variant}>{percent}% compliant</Badge>
+        <Badge variant={variant}>{percent}% complete</Badge>
         <Text size="sm" variant="muted">
           {compliantControls} completed
         </Text>
@@ -50,6 +52,7 @@ export function FrameworkProgress({ framework, tasks, evidenceSubmissions }: Pro
           {totalControls} total controls
         </Text>
       </div>
+      <CompletionExplanation aggregation="framework" />
       <div className="h-2 w-full rounded-full bg-muted/50">
         <div
           className="h-full rounded-full bg-primary transition-all duration-300"

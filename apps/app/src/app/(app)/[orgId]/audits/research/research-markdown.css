@@ -1,0 +1,67 @@
+.audit-research-markdown {
+  font-size: 0.875rem;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.audit-research-markdown :is(h1, h2, h3, h4) {
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.015em;
+  margin: 1.5rem 0 0.65rem;
+}
+.audit-research-markdown :is(h1, h2) {
+  font-size: 1.125rem;
+}
+.audit-research-markdown :is(h3, h4) {
+  font-size: 0.9375rem;
+}
+.audit-research-markdown > :first-child {
+  margin-top: 0;
+}
+.audit-research-markdown p {
+  margin: 0.7rem 0;
+}
+.audit-research-markdown :is(ul, ol) {
+  margin: 0.8rem 0;
+  padding-left: 1.4rem;
+}
+.audit-research-markdown ul {
+  list-style: disc;
+}
+.audit-research-markdown ol {
+  list-style: decimal;
+}
+.audit-research-markdown li {
+  margin: 0.35rem 0;
+  padding-left: 0.15rem;
+}
+.audit-research-markdown blockquote {
+  margin: 1rem 0;
+  border-left: 3px solid var(--primary);
+  padding: 0.25rem 1rem;
+  color: var(--muted-foreground);
+}
+.audit-research-markdown pre {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  background: var(--muted);
+}
+.audit-research-markdown code {
+  font-size: 0.85em;
+  background: var(--muted);
+  padding: 0.1rem 0.3rem;
+  border-radius: 0.25rem;
+}
+.audit-research-markdown th {
+  white-space: normal;
+}
+.audit-research-markdown td {
+  vertical-align: top;
+  white-space: normal;
+  line-height: 1.7;
+}
+.audit-research-markdown hr {
+  margin: 1.25rem 0;
+  border-color: var(--border);
+}

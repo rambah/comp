@@ -20,11 +20,11 @@ describe('requirements table layout', () => {
     expect(screen.getByRole('columnheader', { name: 'Identifier' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Description' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Controls' })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: 'Compliance' })).toBeInTheDocument();
+    expect(screen.getByRole('columnheader', { name: 'Progress' })).toBeInTheDocument();
     expect(screen.getByRole('columnheader', { name: 'Status' })).toBeInTheDocument();
-    expect(screen.getByRole('columnheader', { name: 'Docs' })).toHaveAttribute(
+    expect(screen.getByRole('columnheader', { name: 'Forms' })).toHaveAttribute(
       'title',
-      'Documents',
+      'Evidence forms',
     );
     expect(REQUIREMENTS_TABLE_STYLE).toMatchObject({ tableLayout: 'fixed' });
   });

@@ -1,0 +1,79 @@
+/* Scoped to the audit workspace; all colors follow the application theme. */
+[data-audit-workspace] {
+  --audit-surface: var(--card);
+  --audit-canvas: color-mix(in oklab, var(--muted) 48%, var(--background));
+  --audit-line: color-mix(in oklab, var(--border) 80%, transparent);
+  background: var(--audit-canvas);
+  min-width: 0;
+}
+[data-audit-workspace] .audit-surface {
+  background: var(--audit-surface);
+  border: 1px solid var(--audit-line);
+  border-radius: 1rem;
+  box-shadow: 0 2px 6px color-mix(in oklab, var(--foreground) 3%, transparent);
+}
+[data-audit-workspace] .audit-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem;
+  background: var(--audit-surface);
+  border: 1px solid var(--audit-line);
+  border-radius: 0.875rem;
+}
+[data-audit-workspace] .audit-card {
+  background: var(--audit-surface);
+  border: 1px solid var(--audit-line);
+  border-radius: 0.875rem;
+  box-shadow: 0 2px 4px color-mix(in oklab, var(--foreground) 2%, transparent);
+  transition:
+    border-color 160ms ease,
+    box-shadow 160ms ease;
+}
+[data-audit-workspace] .audit-card:hover {
+  border-color: color-mix(in oklab, var(--primary) 30%, var(--border));
+  box-shadow: 0 4px 12px color-mix(in oklab, var(--foreground) 5%, transparent);
+}
+[data-audit-workspace] .audit-card[data-awaiting-review='true'] {
+  border-inline-start: 3px solid var(--primary);
+}
+.dark [data-audit-workspace] .text-primary {
+  color: color-mix(in oklab, var(--primary) 55%, var(--foreground));
+}
+[data-audit-workspace] .audit-eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+[data-audit-workspace] .audit-focus-card {
+  background: linear-gradient(
+    120deg,
+    color-mix(in oklab, var(--primary) 9%, var(--background)),
+    var(--background)
+  );
+}
+[data-audit-workspace] .audit-detail-heading {
+  border-bottom: 1px solid var(--audit-line);
+  padding-bottom: 1.25rem;
+}
+[data-audit-workspace] button:focus-visible,
+[data-audit-workspace] a:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+@media (max-width: 639px) {
+  [data-audit-workspace] [data-slot='button'],
+  [data-audit-workspace] [data-slot='tabs-trigger'],
+  [data-audit-workspace] [data-slot='select-trigger'],
+  [data-audit-workspace] [data-slot='input'] {
+    min-height: 2.5rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-audit-workspace] .audit-card {
+    transition: none;
+  }
+}

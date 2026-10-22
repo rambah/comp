@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { RiskTreatmentTable, type RiskTreatmentTableRow } from './RiskTreatmentTable';
 
@@ -28,7 +28,7 @@ describe('RiskTreatmentTable', () => {
       />,
     );
 
-    expect(screen.getByText('R-01')).toBeInTheDocument();
+    expect(screen.getByText(/Export reference R-01/)).toBeInTheDocument();
     expect(screen.getByText('Unauthorized data sharing')).toBeInTheDocument();
     expect(screen.getByText('Accepted')).toBeInTheDocument();
     expect(screen.getByText('Accepted 2026-04-15 (Jane Doe)')).toBeInTheDocument();
@@ -76,5 +76,40 @@ describe('RiskTreatmentTable', () => {
     );
 
     expect(screen.getByText('No risks recorded.')).toBeInTheDocument();
+  });
+});
+
+const rows: RiskTreatmentTableRow[] = [{
+  key:'R-01', title:'R13 — Finance', category:'Governance', inherentLevel:'15/25 (High)',
+  treatment:'Mitigate', controls:'## Payment controls\n\n**Second-founder approval**\n\n- Monthly review',
+  ownerName:'Ramin', residualLevel:'10/25 (High)', acceptance:'Awaiting acceptance', acceptanceState:'awaiting', status:'Open',
+}];
+describe('Treatment reading view', () => {
+  it('keeps the summary visible and expands formatted treatment text on request', () => {
+    render(<RiskTreatmentTable keyHeader="Ref" showTitle rows={rows} emptyText="Empty"/>);
+    expect(screen.getByText('15/25 (High)')).toBeVisible();
+    expect(screen.getByText('10/25 (High)')).toBeVisible();
+    expect(screen.queryByRole('heading',{name:'Payment controls'})).toBeNull();
+    fireEvent.click(screen.getByRole('button',{name:'Read treatment and evidence'}));
+    expect(screen.getByRole('heading',{name:'Payment controls'})).toBeVisible();
+    expect(screen.getByText('Second-founder approval').tagName).toBe('STRONG');
+  });
+  it('searches long treatment text and allows clearing an empty result', () => {
+    render(<RiskTreatmentTable keyHeader="Ref" showTitle rows={rows} emptyText="Empty"/>);
+    const search = screen.getByRole('textbox',{name:'Search organisational risks'});
+    fireEvent.change(search,{target:{value:'Monthly review'}});
+    expect(screen.getByText('R13 — Finance')).toBeVisible();
+    fireEvent.change(search,{target:{value:'missing'}});
+    expect(screen.queryByText('R13 — Finance')).toBeNull();
+    fireEvent.click(screen.getByRole('button',{name:'Clear search'}));
+    expect(screen.getByText('R13 — Finance')).toBeVisible();
+  });
+  it('supports supplier risks and expands all without an edit permission', () => {
+    render(<RiskTreatmentTable keyHeader="Vendor" showTitle={false} rows={rows} emptyText="Empty"/>);
+    expect(screen.getByRole('textbox',{name:'Search supplier risks'})).toBeVisible();
+    fireEvent.click(screen.getByRole('button',{name:'Expand all'}));
+    expect(screen.getByRole('heading',{name:'Payment controls'})).toBeVisible();
+    fireEvent.click(screen.getByRole('button',{name:'Collapse all'}));
+    expect(screen.queryByRole('heading',{name:'Payment controls'})).toBeNull();
   });
 });

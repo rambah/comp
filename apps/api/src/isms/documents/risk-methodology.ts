@@ -40,7 +40,7 @@ export const riskMethodologyNarrativeSchema = z.object({
   /** One description per impact level, ascending (insignificant .. severe). */
   impactDescriptions: z.array(z.string()).length(5),
   /** One acceptance requirement per risk-level band, ascending (very-low .. very-high). */
-  acceptanceThresholds: z.array(z.string()).length(5),
+  acceptanceThresholds: z.array(z.string()).min(4).max(5),
   /** One description per treatment option (mitigate, avoid, transfer, accept). */
   treatmentOptions: z.array(z.string()).length(4),
   responsibilities: z.string(),
@@ -68,7 +68,7 @@ export function defaultRiskMethodologyNarrative(
     approach: defaultMethodologyApproach(organizationName),
     likelihoodDescriptions: [...DEFAULT_LIKELIHOOD_DESCRIPTIONS],
     impactDescriptions: [...DEFAULT_IMPACT_DESCRIPTIONS],
-    acceptanceThresholds: [...DEFAULT_ACCEPTANCE_THRESHOLDS],
+    acceptanceThresholds: DEFAULT_ACCEPTANCE_THRESHOLDS.slice(1),
     treatmentOptions: [...DEFAULT_TREATMENT_OPTIONS],
     responsibilities: defaultMethodologyResponsibilities(),
     frequency: defaultMethodologyFrequency(),
@@ -88,7 +88,7 @@ export const LEVEL_FILL_HEX: Record<RiskLevel, string> = {
 /**
  * The 5x5 risk level matrix, computed from the SAME banding the product's
  * badges and treatment-plan hero use (risk-level.ts getRiskLevelFromScore over
- * the normalized 1-10 score). Rows run likelihood 5 -> 1 (reference-document
+ * the raw 1-25 product). Rows run likelihood 5 -> 1 (reference-document
  * orientation); the first column is the row label.
  */
 function riskMatrixTable(): NonNullable<IsmsExportSection['table']> {
@@ -103,7 +103,7 @@ function riskMatrixTable(): NonNullable<IsmsExportSection['table']> {
     const fills: (string | null)[] = [null];
     for (let impact = 1; impact <= 5; impact += 1) {
       const level = getRiskLevelFromScore(
-        Math.max(1, Math.ceil((likelihood * impact) / 2.5)),
+        likelihood * impact,
       );
       row.push(LEVEL_LABEL[level]);
       fills.push(LEVEL_FILL_HEX[level]);
@@ -168,16 +168,16 @@ export function buildRiskMethodologySections(
     {
       heading: 'Risk level matrix',
       intro:
-        'The risk level is derived from the product of likelihood and impact (1-25), normalized to a 1-10 score (the product divided by 2.5, rounded up) and banded by score: Very low (score 1-2), Low (3-4), Medium (5-6), High (7-8), Very high (9-10). Expressed as the raw product, the bands are: Very low 1-5, Low 6-10, Medium 11-15, High 16-20, Very high 21-25. Each risk in the register carries its calculated level for both its inherent and residual states.',
+        'Likelihood x impact = score out of 25. Low 1-4; Medium 5-9; High 10-16; Critical 17-25. Current risk is the saved residual assessment. Task-derived targets and risk-owner acceptance are separate.',
       table: riskMatrixTable(),
     },
     {
       heading: 'Acceptance thresholds',
-      intro: 'Risk levels trigger different acceptance requirements:',
+      intro: narrative.acceptanceThresholds.length === 5 ? 'Legacy acceptance requirements retained verbatim under their original labels. Review these requirements against the current four-band methodology before approving a new version; no acceptance decision has been changed.' : 'Risk levels trigger these recorded acceptance requirements:',
       table: {
         headers: ['Risk level', 'Acceptance requirement'],
         rows: labelledRows(
-          METHODOLOGY_LEVEL_LABELS,
+          narrative.acceptanceThresholds.length === 5 ? METHODOLOGY_LEVEL_LABELS : ["Low (1-4)", "Medium (5-9)", "High (10-16)", "Critical (17-25)"],
           narrative.acceptanceThresholds,
         ),
       },

@@ -1,237 +1,118 @@
-import { render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import {
-  setMockPermissions,
-  mockHasPermission,
-  ADMIN_PERMISSIONS,
-  AUDITOR_PERMISSIONS,
-  NO_PERMISSIONS,
-} from '@/test-utils/mocks/permissions';
-
-// ─── Mock usePermissions ─────────────────────────────────────
-
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { evidenceFormDefinitions } from '../forms';
+import { CompanyFormPageClient } from './CompanyFormPageClient';
+const mocks = vi.hoisted(() => ({
+  create: false,
+  error: false,
+  loading: false,
+  partial: false,
+  get: vi.fn(),
+  retry: vi.fn(),
+  fetchers: [] as (() => Promise<unknown>)[],
+}));
 vi.mock('@/hooks/use-permissions', () => ({
   usePermissions: () => ({
-    permissions: {},
-    hasPermission: mockHasPermission,
+    hasPermission: (_r: string, action: string) => action === 'read' || mocks.create,
   }),
 }));
-
-// ─── Mock SWR ────────────────────────────────────────────────
-
+vi.mock('@/utils/auth-client', () => ({
+  useActiveMember: () => ({ data: { role: 'Audit-review' } }),
+}));
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  useSearchParams: () => new URLSearchParams(),
+}));
+vi.mock('@/lib/api-client', () => ({ api: { get: (...args: unknown[]) => mocks.get(...args) } }));
 vi.mock('swr', () => ({
-  default: vi.fn(() => ({
-    data: undefined,
-    isLoading: false,
-    error: null,
-    mutate: vi.fn(),
-  })),
-}));
-
-// ─── Mock api client ─────────────────────────────────────────
-
-vi.mock('@/lib/api-client', () => ({
-  api: {
-    get: vi.fn().mockResolvedValue({ data: null, error: null }),
-    post: vi.fn().mockResolvedValue({ data: null, error: null }),
+  useSWRConfig: () => ({ mutate: vi.fn() }),
+  default: (
+    key: readonly [string, string] | null,
+    fetcher: (key: readonly [string, string]) => Promise<unknown>,
+  ) => {
+    if (key) mocks.fetchers.push(() => fetcher(key));
+    const failed = mocks.error && (!mocks.partial || key?.[0].includes('risk-committee'));
+    return {
+      isLoading: mocks.loading,
+      error: failed ? new Error('Forbidden') : null,
+      mutate: mocks.retry,
+      data:
+        key && !failed && !mocks.loading
+          ? {
+              form: evidenceFormDefinitions['board-meeting'],
+              submissions: [
+                {
+                  id: `${key[0]}-sub1`,
+                  submittedAt: '2026-10-02T10:00:00Z',
+                  status: 'approved',
+                  submittedBy: { name: 'Owner', email: 'owner@example.com' },
+                  data: { meetingMinutes: 'Reviewed access controls' },
+                },
+              ],
+              total: 1,
+            }
+          : undefined,
+    };
   },
 }));
-
-// ─── Mock design system ──────────────────────────────────────
-
-vi.mock('@trycompai/design-system', () => ({
-  Badge: ({ children }: any) => <span>{children}</span>,
-  Button: ({ children, ...props }: any) => (
-    <button {...props}>{children}</button>
-  ),
-  Empty: ({ children }: any) => <div>{children}</div>,
-  EmptyDescription: ({ children }: any) => <p>{children}</p>,
-  EmptyHeader: ({ children }: any) => <div>{children}</div>,
-  EmptyMedia: ({ children }: any) => <div>{children}</div>,
-  EmptyTitle: ({ children }: any) => <h3>{children}</h3>,
-  InputGroup: ({ children }: any) => <div>{children}</div>,
-  InputGroupAddon: ({ children }: any) => <div>{children}</div>,
-  InputGroupInput: (props: any) => <input {...props} />,
-  PageHeader: ({ title, actions }: any) => (
-    <div data-testid="page-header">
-      <h1>{title}</h1>
-      {actions}
-    </div>
-  ),
-  Table: ({ children }: any) => <table>{children}</table>,
-  TableBody: ({ children }: any) => <tbody>{children}</tbody>,
-  TableCell: ({ children }: any) => <td>{children}</td>,
-  TableHead: ({ children }: any) => <th>{children}</th>,
-  TableHeader: ({ children }: any) => <thead>{children}</thead>,
-  TableRow: ({ children }: any) => <tr>{children}</tr>,
-  Text: ({ children }: any) => <span>{children}</span>,
-}));
-
-vi.mock('@trycompai/design-system/icons', () => ({
-  Add: () => <span data-testid="add-icon" />,
-  Catalog: () => <span data-testid="catalog-icon" />,
-  Download: () => <span data-testid="download-icon" />,
-  Search: () => <span data-testid="search-icon" />,
-}));
-
-// ─── Mock submission-utils ───────────────────────────────────
-
-vi.mock('./submission-utils', () => ({
-  StatusBadge: ({ status }: { status: string }) => (
-    <span data-testid="status-badge">{status}</span>
-  ),
-  formatSubmissionDate: () => '01/01/2025',
-}));
-
-// ─── Mock sonner ─────────────────────────────────────────────
-
-vi.mock('sonner', () => ({
-  toast: {
-    success: vi.fn(),
-    error: vi.fn(),
-  },
-}));
-
-// ─── Mock next/link ──────────────────────────────────────────
-
-vi.mock('next/link', () => ({
-  default: ({ children, href }: any) => <a href={href}>{children}</a>,
-}));
-
-import { CompanyFormPageClient } from './CompanyFormPageClient';
-
-// ─── Tests ───────────────────────────────────────────────────
-
-describe('CompanyFormPageClient', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.create = false;
+  mocks.error = false;
+  mocks.loading = false;
+  mocks.partial = false;
+  mocks.fetchers = [];
+});
+afterEach(cleanup);
+describe('Meeting minutes for custom audit roles', () => {
+  it('shows meeting records without offering evidence creation to a read-only auditor', () => {
+    render(<CompanyFormPageClient organizationId="org1" formType="meeting" />);
+    expect(screen.getByRole('table')).toHaveTextContent('Reviewed access controls');
+    expect(screen.queryByRole('button', { name: 'New Submission' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Upload Evidence' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Export CSV' })).toBeInTheDocument();
   });
-
-  describe('Admin user (full permissions)', () => {
-    beforeEach(() => {
-      setMockPermissions(ADMIN_PERMISSIONS);
-    });
-
-    it('renders the New Submission button when user has evidence:create', () => {
-      render(
-        <CompanyFormPageClient
-          organizationId="org-1"
-          formType="access-request"
-        />,
-      );
-
-      expect(screen.getByText('New Submission')).toBeInTheDocument();
-    });
-
-    it('renders the Export CSV button when user has evidence:read', () => {
-      render(
-        <CompanyFormPageClient
-          organizationId="org-1"
-          formType="access-request"
-        />,
-      );
-
-      expect(screen.getByText('Export CSV')).toBeInTheDocument();
-    });
-
-    it('checks evidence:create and evidence:read permissions', () => {
-      render(
-        <CompanyFormPageClient
-          organizationId="org-1"
-          formType="access-request"
-        />,
-      );
-
-      expect(mockHasPermission).toHaveBeenCalledWith('evidence', 'create');
-      expect(mockHasPermission).toHaveBeenCalledWith('evidence', 'read');
-    });
+  it('preserves upload/create controls for an authorized admin', () => {
+    mocks.create = true;
+    render(<CompanyFormPageClient organizationId="org1" formType="meeting" />);
+    expect(screen.getByRole('button', { name: 'New Submission' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Upload Evidence' })).toBeInTheDocument();
   });
-
-  describe('Auditor user (read-only)', () => {
-    beforeEach(() => {
-      setMockPermissions(AUDITOR_PERMISSIONS);
-    });
-
-    it('hides New Submission button when user lacks evidence:create', () => {
-      render(
-        <CompanyFormPageClient
-          organizationId="org-1"
-          formType="access-request"
-        />,
-      );
-
-      const hasCreate = mockHasPermission('evidence', 'create');
-      if (!hasCreate) {
-        expect(
-          screen.queryByText('New Submission'),
-        ).not.toBeInTheDocument();
-      }
-    });
-
-    it('shows Export CSV when auditor has evidence:read', () => {
-      render(
-        <CompanyFormPageClient
-          organizationId="org-1"
-          formType="access-request"
-        />,
-      );
-
-      const hasRead = mockHasPermission('evidence', 'read');
-      if (hasRead) {
-        expect(screen.getByText('Export CSV')).toBeInTheDocument();
-      }
-    });
-
-    it('still renders the findings section', () => {
-      render(
-        <CompanyFormPageClient
-          organizationId="org-1"
-          formType="access-request"
-        />,
-      );
-
-      expect(screen.getByTestId('findings-section')).toBeInTheDocument();
-    });
+  it('shows a loading state instead of a misleading empty state', () => {
+    mocks.loading = true;
+    render(<CompanyFormPageClient organizationId="org1" formType="meeting" />);
+    expect(screen.getByRole('status')).toHaveTextContent('Loading submissions');
+    expect(screen.queryByText('No submissions found')).not.toBeInTheDocument();
   });
-
-  describe('No permissions', () => {
-    beforeEach(() => {
-      setMockPermissions(NO_PERMISSIONS);
-    });
-
-    it('hides New Submission button without evidence:create', () => {
-      render(
-        <CompanyFormPageClient
-          organizationId="org-1"
-          formType="access-request"
-        />,
-      );
-
-      expect(
-        screen.queryByText('New Submission'),
-      ).not.toBeInTheDocument();
-    });
-
-    it('hides Export CSV button without evidence:read', () => {
-      render(
-        <CompanyFormPageClient
-          organizationId="org-1"
-          formType="access-request"
-        />,
-      );
-
-      expect(screen.queryByText('Export CSV')).not.toBeInTheDocument();
-    });
-
-    it('still renders the page header', () => {
-      render(
-        <CompanyFormPageClient
-          organizationId="org-1"
-          formType="access-request"
-        />,
-      );
-
-      expect(screen.getByTestId('page-header')).toBeInTheDocument();
-    });
+  it('shows access/load errors and retries all three meeting types', () => {
+    mocks.error = true;
+    render(<CompanyFormPageClient organizationId="org1" formType="meeting" />);
+    expect(screen.getByRole('alert')).toHaveTextContent('Unable to load all submissions');
+    expect(screen.queryByText('No submissions found')).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+    expect(mocks.retry).toHaveBeenCalledTimes(3);
+  });
+  it('warns when one meeting category fails instead of silently showing an incomplete list', () => {
+    mocks.error = true;
+    mocks.partial = true;
+    render(<CompanyFormPageClient organizationId="org1" formType="meeting" />);
+    expect(screen.getByRole('alert')).toHaveTextContent('incomplete');
+    expect(screen.getByRole('table')).toHaveTextContent('Reviewed access controls');
+  });
+  it('passes the selected organization to every meeting read request', async () => {
+    mocks.get.mockResolvedValue({ data: { submissions: [], total: 0 } });
+    render(<CompanyFormPageClient organizationId="org1" formType="meeting" />);
+    await Promise.all(mocks.fetchers.map((fetcher) => fetcher()));
+    expect(mocks.get).toHaveBeenCalledWith('/v1/evidence-forms/board-meeting', 'org1');
+    expect(mocks.get).toHaveBeenCalledWith('/v1/evidence-forms/it-leadership-meeting', 'org1');
+    expect(mocks.get).toHaveBeenCalledWith('/v1/evidence-forms/risk-committee-meeting', 'org1');
+  });
+  it('keeps the upload meeting selector usable inside its dialog', async () => {
+    mocks.create = true;
+    render(<CompanyFormPageClient organizationId="org1" formType="meeting" />);
+    fireEvent.click(screen.getByRole('button', { name: 'Upload Evidence' }));
+    await waitFor(() => expect(screen.getByRole('dialog')).toBeInTheDocument());
+    fireEvent.click(screen.getByRole('combobox'));
+    expect(await screen.findByRole('option', { name: /Risk Committee/ })).toBeInTheDocument();
   });
 });

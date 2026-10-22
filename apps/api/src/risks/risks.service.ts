@@ -178,6 +178,7 @@ export class RisksService {
       const risk = await db.risk.create({
         data: {
           ...createRiskDto,
+          residualAssessmentStatus: createRiskDto.residualLikelihood && createRiskDto.residualImpact ? "assessed" : "unassessed",
           organizationId,
         },
       });
@@ -215,6 +216,12 @@ export class RisksService {
       // JSON map: a Mitigate plan, an Accept rationale, and a Transfer
       // rationale all live alongside each other, swapped in/out of the active
       // `treatmentStrategyDescription` field as the user changes strategy.
+      if (existing.residualAssessmentStatus === 'unassessed' &&
+          (updateRiskDto.residualLikelihood || updateRiskDto.residualImpact) &&
+          !(updateRiskDto.residualLikelihood && updateRiskDto.residualImpact)) {
+        throw new BadRequestException('The first residual assessment requires both likelihood and impact.');
+      }
+
       const resolvedStrategyFields = resolveStrategyDescriptionUpdate(
         existing,
         updateRiskDto,
@@ -222,7 +229,9 @@ export class RisksService {
 
       const updatedRisk = await db.risk.update({
         where: { id },
-        data: { ...updateRiskDto, ...resolvedStrategyFields },
+        data: { ...updateRiskDto, ...resolvedStrategyFields,
+          ...((updateRiskDto.residualLikelihood || updateRiskDto.residualImpact) ? { residualAssessmentStatus: "assessed" } : {}),
+        },
       });
 
       this.logger.log(`Updated risk: ${updatedRisk.title} (${id})`);

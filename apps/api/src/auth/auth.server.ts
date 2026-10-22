@@ -462,6 +462,7 @@ export const auth = betterAuth({
             organizationName: data.organization.name,
             inviteLink,
             email: data.email,
+            auditor: data.invitation.role === 'auditor',
           }),
         });
       },

@@ -356,7 +356,9 @@ export class EvidenceFormsService {
     offset?: string;
   }) {
     const { organizationId, formType } = params;
-    this.requirePrivilegedEvidenceAccess(params.authContext);
+    this.requireJwtUser(params.authContext);
+    // HybridAuthGuard + PermissionGuard enforce evidence:read at the controller.
+    // Custom roles use the same permission contract as built-in roles.
 
     const parsedType = evidenceFormTypeSchema.safeParse(formType);
     if (!parsedType.success) {
@@ -426,7 +428,9 @@ export class EvidenceFormsService {
     formType: string;
     submissionId: string;
   }) {
-    this.requirePrivilegedEvidenceAccess(params.authContext);
+    this.requireJwtUser(params.authContext);
+    // HybridAuthGuard + PermissionGuard enforce evidence:read at the controller.
+    // Custom roles use the same permission contract as built-in roles.
 
     const parsedType = evidenceFormTypeSchema.safeParse(params.formType);
     if (!parsedType.success) {
@@ -750,7 +754,9 @@ export class EvidenceFormsService {
     formType: string;
     authContext: AuthContext;
   }) {
-    this.requirePrivilegedEvidenceAccess(params.authContext);
+    this.requireJwtUser(params.authContext);
+    // HybridAuthGuard + PermissionGuard enforce evidence:read at the controller.
+    // Custom roles use the same permission contract as built-in roles.
 
     const parsedType = evidenceFormTypeSchema.safeParse(params.formType);
     if (!parsedType.success) {

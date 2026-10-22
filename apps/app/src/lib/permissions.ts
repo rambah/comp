@@ -75,6 +75,15 @@ export const ROUTE_PERMISSIONS: Record<string, Array<{ resource: string; action:
   overview: [{ resource: 'framework', action: 'read' }],
   frameworks: [{ resource: 'framework', action: 'read' }],
   auditor: [{ resource: 'audit', action: 'read' }],
+  audits: [
+    { resource: 'auditWorkspace', action: 'read' },
+    { resource: 'evidence', action: 'read' },
+    { resource: 'policy', action: 'read' },
+  ],
+  'audits/recordings': [
+    { resource: 'auditRecording', action: 'read' },
+    { resource: 'auditWorkspace', action: 'observe' },
+  ],
   controls: [{ resource: 'control', action: 'read' }],
   policies: [{ resource: 'policy', action: 'read' }],
   tasks: [
@@ -113,6 +122,9 @@ export const ROUTE_PERMISSIONS: Record<string, Array<{ resource: string; action:
 export function canAccessRoute(permissions: UserPermissions, routeSegment: string): boolean {
   const required = ROUTE_PERMISSIONS[routeSegment];
   if (!required) return true; // Unknown routes accessible by default
+  if (routeSegment === 'audits' || routeSegment === 'audits/recordings') {
+    return required.every(({ resource, action }) => hasPermission(permissions, resource, action));
+  }
   return hasAnyPermission(permissions, required);
 }
 
@@ -164,6 +176,9 @@ const MAIN_NAV_ROUTES: Array<{ segment: string; path: string }> = [
  * Returns the path (e.g. "/{orgId}/policies") or null if none accessible.
  */
 export function getDefaultRoute(permissions: UserPermissions, orgId: string): string | null {
+  if (canAccessRoute(permissions, 'audits') && !hasPermission(permissions, 'evidence', 'update')) {
+    return `/${orgId}/audits`;
+  }
   for (const { segment, path } of MAIN_NAV_ROUTES) {
     if (canAccessRoute(permissions, segment)) {
       return `/${orgId}${path}`;
@@ -174,8 +189,20 @@ export function getDefaultRoute(permissions: UserPermissions, orgId: string): st
 
 /** Compliance route segments — used to determine if the Compliance rail icon should show. */
 const COMPLIANCE_ROUTE_SEGMENTS = [
-  'overview', 'frameworks', 'controls', 'policies', 'tasks', 'documents', 'people',
-  'risk', 'vendors', 'questionnaire', 'integrations', 'cloud-tests', 'auditor',
+  'overview',
+  'frameworks',
+  'controls',
+  'policies',
+  'tasks',
+  'documents',
+  'people',
+  'risk',
+  'vendors',
+  'questionnaire',
+  'integrations',
+  'cloud-tests',
+  'auditor',
+  'audits',
 ] as const;
 
 /**

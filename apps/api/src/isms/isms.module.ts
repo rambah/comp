@@ -1,3 +1,22 @@
+import { AttachmentFeedbackController } from './workspace/attachment-feedback/attachment-feedback.controller';
+import { AttachmentFeedbackService } from './workspace/attachment-feedback/attachment-feedback.service';
+import { AuditRecordingController } from './workspace/recordings/recording.controller';
+import { AuditRecordingService } from './workspace/recordings/recording.service';
+import { AuditRecordingStorage } from './workspace/recordings/recording-storage.service';
+import { AuditResearchController } from './workspace/research/research.controller';
+import { AuditResearchService } from './workspace/research/research.service';
+import { AuditResearchRunner } from './workspace/research/research-runner.service';
+import { AuditResearchFiles } from './workspace/research/research-files.service';
+import { AuditWorkspaceFinish } from './workspace/workspace-finish.service';
+import { AuditWorkspaceCompletion } from './workspace/workspace-completion.service';
+import { AuditLiveController } from './workspace/live.controller';
+import { AuditLiveAccess } from './workspace/live-access.service';
+import { AuditLiveBus } from './workspace/live-bus.service';
+import { AuditLiveGateway } from './workspace/live.gateway';
+import { AuditWorkspaceController } from './workspace/workspace.controller';
+import { AuditWorkspaceService } from './workspace/workspace.service';
+import { AuditWorkspaceRequestsService } from './workspace/workspace-requests.service';
+import { AuditWorkspaceEvidenceService } from './workspace/workspace-evidence.service';
 import { Module } from '@nestjs/common';
 import { IsmsController } from './isms.controller';
 import { IsmsRegistersController } from './isms-registers.controller';
@@ -29,11 +48,30 @@ import { AttachmentsModule } from '../attachments/attachments.module';
   // AttachmentsModule: S3 access for retaining per-version rendered exports.
   imports: [AuthModule, AttachmentsModule],
   controllers: [
+    AttachmentFeedbackController,
+    AuditRecordingController,
+    AuditResearchController,
+    AuditLiveController,
+    AuditWorkspaceController,
     IsmsController,
     IsmsRegistersController,
     IsmsProfileController,
   ],
   providers: [
+    AttachmentFeedbackService,
+    AuditRecordingService,
+    AuditRecordingStorage,
+    AuditResearchService,
+    AuditResearchRunner,
+    AuditResearchFiles,
+    AuditWorkspaceFinish,
+    AuditWorkspaceCompletion,
+    AuditLiveAccess,
+    AuditLiveBus,
+    AuditLiveGateway,
+    AuditWorkspaceService,
+    AuditWorkspaceRequestsService,
+    AuditWorkspaceEvidenceService,
     IsmsService,
     IsmsContextService,
     IsmsVersionService,

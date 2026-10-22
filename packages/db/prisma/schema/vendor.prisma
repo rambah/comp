@@ -1,4 +1,5 @@
 model Vendor {
+  residualAssessmentStatus String @default("unassessed")
   id                  String         @id @default(dbgenerated("generate_prefixed_cuid('vnd'::text)"))
   name                String
   description         String

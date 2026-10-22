@@ -47,10 +47,19 @@ const AUDIT_CONTROL_RESULT = [
   'observation_raised',
   'not_sampled',
 ] as const;
-const AUDIT_FINDING_TYPE = ['nc_major', 'nc_minor', 'ofi', 'observation'] as const;
+const AUDIT_FINDING_TYPE = [
+  'nc_major',
+  'nc_minor',
+  'ofi',
+  'observation',
+] as const;
 const AUDIT_FINDING_STATUS = ['open', 'in_progress', 'closed'] as const;
 const REVIEW_STATUS = ['planned', 'in_progress', 'complete'] as const;
-const REVIEW_CONCLUSION_VERDICT = ['suitable', 'adequate', 'effective'] as const;
+const REVIEW_CONCLUSION_VERDICT = [
+  'suitable',
+  'adequate',
+  'effective',
+] as const;
 const REVIEW_ACTION_STATUS = ['open', 'in_progress', 'closed'] as const;
 
 const schemas = {
@@ -276,12 +285,16 @@ const schemas = {
   // chair/attendees default to the Roles (5.3) Top Management + SPO holders and
   // the outputs default to the clause-9.3 template text when omitted.
   reviewCreate: z.object({
+    reviewScope: z.enum(['full', 'targeted']).optional(),
+    scopeNotes: z.string().nullish(),
     meetingDate: z.string().nullish(), // ISO date string
     chairName: z.string().nullish(),
     attendees: z.array(reviewAttendeeSchema).optional(),
     position,
   }),
   reviewUpdate: z.object({
+    reviewScope: z.enum(['full', 'targeted']).optional(),
+    scopeNotes: z.string().nullish(),
     // Nullish: undefined = leave as-is, null = clear.
     meetingDate: z.string().nullish(),
     chairName: z.string().nullish(),
@@ -297,6 +310,7 @@ const schemas = {
     position,
   }),
   reviewInputCreate: z.object({
+    scopeExclusionReason: z.string().nullish(),
     reviewId: z.string(),
     inputRef: z.string().trim().min(1),
     whatItCovers: z.string().optional(),
@@ -306,6 +320,7 @@ const schemas = {
     position,
   }),
   reviewInputUpdate: z.object({
+    scopeExclusionReason: z.string().nullish(),
     inputRef: z.string().trim().min(1).optional(),
     whatItCovers: z.string().optional(),
     whereToFind: z.string().optional(),
@@ -333,17 +348,18 @@ const schemas = {
 
 /** One-save payload for the "Metrics due" / backfill views. */
 export const measurementBulkCreateSchema = z.object({
-  measurements: z
-    .array(schemas.measurementCreate)
-    .min(1)
-    .max(200), // a backfill save is bounded by the missing-period cap per metric
+  measurements: z.array(schemas.measurementCreate).min(1).max(200), // a backfill save is bounded by the missing-period cap per metric
 });
 
 // Inferred input types — the single source of truth for register row shapes.
 // Service method signatures use these directly; the per-register DTO classes were
 // removed because they only duplicated these schemas.
-export type CreateContextIssueInput = z.infer<typeof schemas.contextIssueCreate>;
-export type UpdateContextIssueInput = z.infer<typeof schemas.contextIssueUpdate>;
+export type CreateContextIssueInput = z.infer<
+  typeof schemas.contextIssueCreate
+>;
+export type UpdateContextIssueInput = z.infer<
+  typeof schemas.contextIssueUpdate
+>;
 export type CreateInterestedPartyInput = z.infer<
   typeof schemas.interestedPartyCreate
 >;
@@ -385,12 +401,8 @@ export type UpdateAuditFindingInput = z.infer<
 >;
 export type CreateReviewInput = z.infer<typeof schemas.reviewCreate>;
 export type UpdateReviewInput = z.infer<typeof schemas.reviewUpdate>;
-export type CreateReviewInputInput = z.infer<
-  typeof schemas.reviewInputCreate
->;
-export type UpdateReviewInputInput = z.infer<
-  typeof schemas.reviewInputUpdate
->;
+export type CreateReviewInputInput = z.infer<typeof schemas.reviewInputCreate>;
+export type UpdateReviewInputInput = z.infer<typeof schemas.reviewInputUpdate>;
 export type CreateReviewActionInput = z.infer<
   typeof schemas.reviewActionCreate
 >;

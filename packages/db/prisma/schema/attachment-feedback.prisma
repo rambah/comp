@@ -1,0 +1,31 @@
+// Keep the original file reference when evidence is replaced or deleted.
+model AttachmentFeedback {
+  id String @id @default(dbgenerated("generate_prefixed_cuid('afb'::text)"))
+  organizationId String
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  attachmentId String
+  attachmentName String
+  entityId String
+  entityType String
+  comment String
+  authorName String
+  authorMemberId String?
+  status String @default("open")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  responses AttachmentFeedbackResponse[]
+  @@index([organizationId, status, createdAt])
+  @@index([organizationId, attachmentId])
+}
+
+model AttachmentFeedbackResponse {
+  id String @id @default(dbgenerated("generate_prefixed_cuid('afr'::text)"))
+  feedbackId String
+  feedback AttachmentFeedback @relation(fields: [feedbackId], references: [id], onDelete: Cascade)
+  comment String
+  authorName String
+  authorMemberId String?
+  status String
+  createdAt DateTime @default(now())
+  @@index([feedbackId, createdAt])
+}

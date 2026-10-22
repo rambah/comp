@@ -29,6 +29,7 @@ const RESOURCE_LABELS: Record<string, { label: string; description: string }> = 
   vendor: { label: 'Vendors', description: 'Manage vendor relationships' },
   task: { label: 'Tasks', description: 'Manage compliance tasks' },
   framework: { label: 'Frameworks', description: 'Manage compliance frameworks' },
+  auditWorkspace: { label: 'Audit workspace', description: 'Review audit checks and follow consented live views' },
   audit: { label: 'Audits', description: 'Manage audit activities' },
   finding: { label: 'Findings', description: 'Manage audit findings' },
   questionnaire: { label: 'Questionnaires', description: 'Manage security questionnaires' },
@@ -45,7 +46,7 @@ const RESOURCE_SECTIONS: Array<{ label: string; keys: string[] }> = [
     label: 'Compliance',
     keys: [
       'organization', 'member', 'control', 'evidence', 'policy', 'risk',
-      'vendor', 'task', 'framework', 'audit', 'finding', 'questionnaire',
+      'vendor', 'task', 'framework', 'audit', 'auditWorkspace', 'finding', 'questionnaire',
       'integration', 'apiKey', 'secret', 'trust',
     ],
   },

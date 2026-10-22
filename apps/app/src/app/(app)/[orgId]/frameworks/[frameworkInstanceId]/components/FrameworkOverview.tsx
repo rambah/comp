@@ -13,12 +13,13 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@trycompai/ui/dropdown-menu';
+} from '@trycompai/design-system';
 import { useState } from 'react';
 import { usePermissions } from '@/hooks/use-permissions';
 import {
   type EvidenceSubmissionInfo,
   getControlStatus,
+  getFrameworkAggregatePercent,
 } from '@/lib/control-compliance';
 import type { FrameworkInstanceWithControls } from '@/lib/types/framework';
 import { FrameworkDeleteDialog } from './FrameworkDeleteDialog';
@@ -54,7 +55,7 @@ export function FrameworkOverview({
   ).length;
 
   const compliancePercentage =
-    totalControls > 0 ? Math.round((compliantControls / totalControls) * 100) : 0;
+    getFrameworkAggregatePercent(allControls, tasks, evidenceSubmissions);
 
   const getComplianceBadgeVariant = (): 'default' | 'secondary' | 'destructive' => {
     if (compliancePercentage >= 80) return 'default';
@@ -87,18 +88,14 @@ export function FrameworkOverview({
             />
             {hasPermission('framework', 'delete') ? (
               <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-                <DropdownMenuTrigger asChild>
-                  <Button size="sm" variant="ghost">
-                    <OverflowMenuVertical size={16} />
-                  </Button>
-                </DropdownMenuTrigger>
+                <DropdownMenuTrigger render={<Button size="sm" variant="ghost" iconLeft={<OverflowMenuVertical size={16} />} aria-label="Framework actions" />} />
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem
                     onClick={() => {
                       setDropdownOpen(false);
                       setDeleteDialogOpen(true);
                     }}
-                    className="text-destructive focus:text-destructive"
+                    variant="destructive"
                   >
                     <TrashCan size={16} className="mr-2" />
                     Delete Framework
@@ -118,7 +115,7 @@ export function FrameworkOverview({
       )}
 
       <div className="flex items-center gap-6 text-sm">
-        <Badge variant={getComplianceBadgeVariant()}>{compliancePercentage}% compliant</Badge>
+        <Badge variant={getComplianceBadgeVariant()}>{compliancePercentage}% complete</Badge>
         <Text size="sm" variant="muted">{compliantControls} completed</Text>
         <Text size="sm" variant="muted">{inProgressControls} remaining</Text>
         <Text size="sm" variant="muted">{totalControls} total controls</Text>

@@ -1,3 +1,4 @@
+import { reopenWorkingAudit } from './workspace/audit-progress';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { db } from '@db';
 import type { Prisma } from '@db';
@@ -48,6 +49,12 @@ export class IsmsAuditFindingService {
       const position =
         dto.position ?? (await this.nextPosition({ tx, auditId: audit.id }));
       await invalidateApprovalIfNeeded({ tx, documentId: audit.documentId });
+      if (control)
+        await tx.ismsAuditControl.updateMany({
+          where: { id: control.id },
+          data: { result: null, reviewedAt: null, reviewedBy: null },
+        });
+      await reopenWorkingAudit({ tx, auditId: audit.id });
       return tx.ismsAuditFinding.create({
         data: {
           auditId: audit.id,
@@ -102,11 +109,27 @@ export class IsmsAuditFindingService {
       // submission's completeness check.
       await lockDocument(tx, finding.documentId);
       await invalidateApprovalIfNeeded({ tx, documentId: finding.documentId });
+      if (
+        dto.type !== undefined ||
+        dto.description !== undefined ||
+        dto.controlId !== undefined
+      ) {
+        await reopenWorkingAudit({ tx, auditId: finding.auditId });
+        const ids = [finding.controlId, control?.id].filter(
+          (id): id is string => !!id,
+        );
+        if (ids.length)
+          await tx.ismsAuditControl.updateMany({
+            where: { id: { in: ids } },
+            data: { result: null, reviewedAt: null, reviewedBy: null },
+          });
+      }
       return tx.ismsAuditFinding.update({
         where: { id: findingId },
         data: {
           type: dto.type ?? undefined,
-          controlId: dto.controlId === undefined ? undefined : (control?.id ?? null),
+          controlId:
+            dto.controlId === undefined ? undefined : (control?.id ?? null),
           clauseOrControl:
             dto.clauseOrControl === undefined && control === undefined
               ? undefined
@@ -137,6 +160,12 @@ export class IsmsAuditFindingService {
     await db.$transaction(async (tx) => {
       await lockDocument(tx, finding.documentId);
       await invalidateApprovalIfNeeded({ tx, documentId: finding.documentId });
+      if (finding.controlId)
+        await tx.ismsAuditControl.updateMany({
+          where: { id: finding.controlId },
+          data: { result: null, reviewedAt: null, reviewedBy: null },
+        });
+      await reopenWorkingAudit({ tx, auditId: finding.auditId });
       await tx.ismsAuditFinding.delete({ where: { id: findingId } });
     });
     return { success: true };

@@ -1,4 +1,6 @@
 'use client';
+import { IsmsMarkdown } from './shared/IsmsMarkdown';
+import { IsmsMarkdownEditor } from './shared/IsmsMarkdownEditor';
 
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -10,7 +12,6 @@ import {
   TableHeader,
   TableRow,
   Text,
-  Textarea,
 } from '@trycompai/design-system';
 import { Save } from '@trycompai/design-system/icons';
 import { useEffect } from 'react';
@@ -62,7 +63,7 @@ export function LeadershipForm({ narrative, canEdit, onSave }: LeadershipFormPro
             control={control}
             name="statement"
             render={({ field: { ref: _ref, ...field } }) => (
-              <Textarea
+              <IsmsMarkdownEditor
                 {...field}
                 id="leadership-statement"
                 rows={5}
@@ -72,7 +73,7 @@ export function LeadershipForm({ narrative, canEdit, onSave }: LeadershipFormPro
             )}
           />
         ) : (
-          <span className="text-sm">{statement || '—'}</span>
+          <IsmsMarkdown>{statement || '—'}</IsmsMarkdown>
         )}
         {formState.errors.statement && (
           <span className="text-xs text-destructive">{formState.errors.statement.message}</span>

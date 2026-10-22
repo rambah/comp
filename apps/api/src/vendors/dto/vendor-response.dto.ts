@@ -63,6 +63,10 @@ export class VendorResponseDto {
   })
   residualImpact: Impact;
 
+  @ApiProperty({ description: 'Residual assessment provenance. Legacy ratings are preserved but provenance is unverified.', enum: ['unassessed', 'legacy', 'assessed'] })
+  residualAssessmentStatus: string;
+
+
   @ApiProperty({
     description: 'Vendor website URL',
     nullable: true,

@@ -12,7 +12,8 @@ import {
   Text,
   Textarea,
 } from '@trycompai/design-system';
-import { Controller, type Control } from 'react-hook-form';
+import { Controller, useWatch, type Control } from 'react-hook-form';
+import { ReviewScopeFields } from './ReviewScopeFields';
 import {
   REVIEW_CONCLUSION_VERDICTS,
   REVIEW_CONCLUSION_VERDICT_LABELS,
@@ -65,9 +66,7 @@ function ChairSelect({
   return (
     <Select
       value={value || NO_CHAIR}
-      onValueChange={(next) =>
-        onChange(!next || next === NO_CHAIR ? '' : next)
-      }
+      onValueChange={(next) => onChange(!next || next === NO_CHAIR ? '' : next)}
     >
       <SelectTrigger aria-label="Chair">
         <SelectValue placeholder="Select the chair" />
@@ -87,8 +86,10 @@ function ChairSelect({
 
 /** Inline edit fields for a review instance's details + conclusion (clause 9.3). */
 export function ReviewFields({ control, chairOptions }: ReviewFieldsProps) {
+  const targeted = useWatch({ control, name: 'reviewScope' }) === 'targeted';
   return (
     <Stack gap="3">
+      <ReviewScopeFields control={control} />
       <Grid cols={{ base: '1', md: '2' }} gap="3">
         <IsmsFieldLabel label="Meeting date — when the review was held (can be backdated)">
           <Controller
@@ -133,33 +134,39 @@ export function ReviewFields({ control, chairOptions }: ReviewFieldsProps) {
           )}
         />
       </IsmsFieldLabel>
-      <IsmsFieldLabel label="Conclusion — overall, the ISMS was found to be ...">
-        <Controller
-          control={control}
-          name="conclusionVerdict"
-          render={({ field }) => (
-            <Select
-              value={field.value || NO_VERDICT}
-              onValueChange={(next) =>
-                field.onChange(next === NO_VERDICT ? '' : next)
-              }
-            >
-              <SelectTrigger aria-label="Conclusion verdict">
-                <SelectValue placeholder="No verdict yet" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value={NO_VERDICT}>No verdict yet</SelectItem>
-                {REVIEW_CONCLUSION_VERDICTS.map((verdict) => (
-                  <SelectItem key={verdict} value={verdict}>
-                    {REVIEW_CONCLUSION_VERDICT_LABELS[verdict]}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          )}
-        />
-      </IsmsFieldLabel>
-      <IsmsFieldLabel label="Conclusion narrative (optional)">
+      {!targeted ? (
+        <IsmsFieldLabel label="Conclusion — overall, the ISMS was found to be ...">
+          <Controller
+            control={control}
+            name="conclusionVerdict"
+            render={({ field }) => (
+              <Select
+                value={field.value || NO_VERDICT}
+                onValueChange={(next) => field.onChange(next === NO_VERDICT ? '' : next)}
+              >
+                <SelectTrigger aria-label="Conclusion verdict">
+                  <SelectValue placeholder="No verdict yet" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NO_VERDICT}>No verdict yet</SelectItem>
+                  {REVIEW_CONCLUSION_VERDICTS.map((verdict) => (
+                    <SelectItem key={verdict} value={verdict}>
+                      {REVIEW_CONCLUSION_VERDICT_LABELS[verdict]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
+          />
+        </IsmsFieldLabel>
+      ) : null}
+      <IsmsFieldLabel
+        label={
+          targeted
+            ? 'Conclusion within the stated scope (required)'
+            : 'Conclusion narrative (optional)'
+        }
+      >
         <Controller
           control={control}
           name="conclusionNotes"

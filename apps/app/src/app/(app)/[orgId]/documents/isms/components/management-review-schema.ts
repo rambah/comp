@@ -12,13 +12,12 @@ import {
  */
 
 export const reviewDetailsSchema = z.object({
+  reviewScope: z.enum(['full', 'targeted']).optional(),
+  scopeNotes: z.string().optional(),
   meetingDate: z.string(),
   chairName: z.string(),
   status: z.enum(REVIEW_STATUSES),
-  conclusionVerdict: z.union([
-    z.enum(REVIEW_CONCLUSION_VERDICTS),
-    z.literal(''),
-  ]),
+  conclusionVerdict: z.union([z.enum(REVIEW_CONCLUSION_VERDICTS), z.literal('')]),
   conclusionNotes: z.string(),
 });
 
@@ -26,6 +25,8 @@ export type ReviewDetailsFormValues = z.infer<typeof reviewDetailsSchema>;
 
 export function toReviewPayload(values: ReviewDetailsFormValues) {
   return {
+    ...(values.reviewScope === undefined ? {} : { reviewScope: values.reviewScope }),
+    ...(values.scopeNotes === undefined ? {} : { scopeNotes: values.scopeNotes || null }),
     meetingDate: values.meetingDate || null,
     chairName: values.chairName || null,
     status: values.status,
@@ -49,6 +50,7 @@ export function toOutputsPayload(values: ReviewOutputsFormValues) {
 }
 
 export const reviewInputSchema = z.object({
+  scopeExclusionReason: z.string().optional(),
   inputRef: z.string().trim().min(1, 'Input reference is required'),
   whatItCovers: z.string(),
   whereToFind: z.string(),
@@ -59,6 +61,9 @@ export type ReviewInputFormValues = z.infer<typeof reviewInputSchema>;
 
 export function toInputPayload(values: ReviewInputFormValues) {
   return {
+    ...(values.scopeExclusionReason === undefined
+      ? {}
+      : { scopeExclusionReason: values.scopeExclusionReason || null }),
     inputRef: values.inputRef,
     whatItCovers: values.whatItCovers,
     whereToFind: values.whereToFind,

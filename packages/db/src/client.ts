@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { resolveSslConfig } from './ssl-config';
+import { databasePoolConfig } from './pool-config';
 
 export type { SslConfig } from './ssl-config';
 export { resolveSslConfig } from './ssl-config';
@@ -17,7 +18,7 @@ function createPrismaClient(): PrismaClient {
   const rawUrl = process.env.DATABASE_URL!;
   const ssl = resolveSslConfig(rawUrl);
   const url = ssl !== undefined ? stripSslMode(rawUrl) : rawUrl;
-  const adapter = new PrismaPg({ connectionString: url, ssl });
+  const adapter = new PrismaPg({ connectionString: url, ssl, ...databasePoolConfig() });
   return new PrismaClient({
     adapter,
     transactionOptions: { timeout: 60000 },

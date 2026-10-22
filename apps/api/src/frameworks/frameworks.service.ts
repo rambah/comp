@@ -1,3 +1,4 @@
+import { ismsDocumentLinks } from '../controls/isms-document-links';
 import {
   BadRequestException,
   Injectable,
@@ -304,6 +305,7 @@ export class FrameworksService {
           include: {
             control: {
               include: {
+                ismsDocumentLinks: ismsDocumentLinks(organizationId),
                 frameworkPolicyLinks: {
                   where: {
                     frameworkInstanceId,

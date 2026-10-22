@@ -1,3 +1,4 @@
+import { getRiskScore } from '../../risks/risk-level';
 import { createHash } from 'node:crypto';
 import { db } from '@db';
 import type { Prisma } from '@db';
@@ -65,6 +66,7 @@ export async function collectPlatformData({
         inherentImpact: true,
         residualProbability: true,
         residualImpact: true,
+        residualAssessmentStatus: true,
         treatmentStrategy: true,
         treatmentStrategyDescription: true,
         assigneeId: true,
@@ -84,6 +86,7 @@ export async function collectPlatformData({
         id: true,
         residualLikelihood: true,
         residualImpact: true,
+        residualAssessmentStatus: true,
         // The remaining fields feed the Risk Treatment Plan fingerprint (6.1.3).
         title: true,
         category: true,
@@ -148,8 +151,8 @@ export async function collectPlatformData({
 
   const highRiskCount = risks.filter(
     (risk) =>
-      HIGH_LIKELIHOOD.includes(risk.residualLikelihood) &&
-      HIGH_IMPACT.includes(risk.residualImpact),
+      risk.residualAssessmentStatus !== "unassessed" &&
+      getRiskScore(risk.residualLikelihood, risk.residualImpact).raw >= 10,
   ).length;
 
   return {
@@ -221,6 +224,7 @@ function fingerprintRiskTreatment({
     impact: string;
     residualLikelihood: string;
     residualImpact: string;
+    residualAssessmentStatus?: string;
     treatmentStrategy: string;
     treatmentStrategyDescription: string | null;
     assigneeId: string | null;
@@ -235,6 +239,7 @@ function fingerprintRiskTreatment({
     inherentImpact: string;
     residualProbability: string;
     residualImpact: string;
+    residualAssessmentStatus?: string;
     treatmentStrategy: string;
     treatmentStrategyDescription: string | null;
     assigneeId: string | null;
@@ -266,6 +271,7 @@ function fingerprintRiskTreatment({
         risk.impact,
         risk.residualLikelihood,
         risk.residualImpact,
+        risk.residualAssessmentStatus,
         risk.treatmentStrategy,
         risk.treatmentStrategyDescription ?? '',
         risk.assigneeId ?? '',
@@ -283,6 +289,7 @@ function fingerprintRiskTreatment({
         vendor.inherentImpact,
         vendor.residualProbability,
         vendor.residualImpact,
+        vendor.residualAssessmentStatus,
         vendor.treatmentStrategy,
         vendor.treatmentStrategyDescription ?? '',
         vendor.assigneeId ?? '',

@@ -1,5 +1,6 @@
 import { HStack, Stack, Text } from '@trycompai/design-system';
 import type { ReactNode } from 'react';
+import { IsmsMarkdown } from './IsmsMarkdown';
 
 export interface IsmsFieldLabelProps {
   /** Muted label for the control beneath it. */
@@ -39,7 +40,7 @@ export interface IsmsRegisterFieldProps {
 export function IsmsRegisterField({ label, children }: IsmsRegisterFieldProps) {
   return (
     <IsmsFieldLabel label={label}>
-      <Text size="sm">{children}</Text>
+      <div className="max-w-prose">{typeof children === "string" ? <IsmsMarkdown>{children}</IsmsMarkdown> : <Text size="sm">{children}</Text>}</div>
     </IsmsFieldLabel>
   );
 }

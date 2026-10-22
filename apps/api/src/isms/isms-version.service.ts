@@ -1,3 +1,4 @@
+import { buildExportSections } from './documents/registry';
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { db } from '@db';
 import type { Prisma } from '@db';
@@ -108,7 +109,7 @@ export class IsmsVersionService {
       organizationName: document.organization.name,
       primaryColor: document.organization.primaryColor,
     });
-    const snapshot: IsmsExportSnapshot = { type: document.type, input, metadata };
+    const snapshot: IsmsExportSnapshot = { type: document.type, input, metadata, sections: buildExportSections({ type: document.type, input }) };
 
     // Keep the one-latest-per-document invariant (partial unique index).
     await tx.ismsDocumentVersion.updateMany({

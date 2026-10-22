@@ -31,6 +31,7 @@ jest.mock('./utils/export-payload', () => ({
   resolveRiskTreatmentExtras: jest.fn(),
   parseExportSnapshot: jest.fn(() => null),
 }));
+jest.mock('./documents/registry', () => ({ buildExportSections: jest.fn(() => [{ heading: 'Frozen content' }]) }));
 jest.mock('./utils/export-metadata', () => ({
   buildExportMetadata: jest.fn(() => ({ version: 0 })),
 }));
@@ -117,7 +118,7 @@ describe('IsmsVersionService', () => {
       expect(result).toEqual({
         versionId: 'isms_ver_new',
         version: 3,
-        snapshot: expect.objectContaining({ type: 'context_of_organization' }),
+        snapshot: expect.objectContaining({ type: 'context_of_organization', sections: [{ heading: 'Frozen content' }] }),
       });
     });
 

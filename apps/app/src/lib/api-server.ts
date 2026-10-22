@@ -8,6 +8,7 @@ export interface ApiResponse<T = unknown> {
 }
 
 interface CallOptions {
+  organizationId?: string;
   method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
   body?: unknown;
 }
@@ -21,12 +22,14 @@ async function call<T = unknown>(
   endpoint: string,
   options: CallOptions = {},
 ): Promise<ApiResponse<T>> {
-  const { method = 'GET', body } = options;
+  const { method = 'GET', body, organizationId } = options;
   const baseUrl = env.NEXT_PUBLIC_API_URL || 'http://localhost:3333';
 
   const requestHeaders: Record<string, string> = {
     'Content-Type': 'application/json',
   };
+
+  if (organizationId) requestHeaders['X-Organization-Id'] = organizationId;
 
   // Forward cookies for auth - better-auth handles session validation
   const headerStore = await headers();
@@ -69,8 +72,8 @@ async function call<T = unknown>(
 }
 
 export const serverApi = {
-  get: <T = unknown>(endpoint: string) =>
-    call<T>(endpoint, { method: 'GET' }),
+  get: <T = unknown>(endpoint: string, organizationId?: string) =>
+    call<T>(endpoint, { method: 'GET', organizationId }),
 
   post: <T = unknown>(endpoint: string, body?: unknown) =>
     call<T>(endpoint, { method: 'POST', body }),

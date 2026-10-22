@@ -152,6 +152,23 @@ describe('OpenAPI document', () => {
     if (app) await app.close();
   });
 
+  it('documents private recording endpoints with browser-only MCP restrictions', () => {
+    const paths = Object.fromEntries(
+      Object.entries(document.paths).filter(([path]) =>
+        path.startsWith('/v1/audit-recordings'),
+      ),
+    );
+    expect(Object.keys(paths)).toHaveLength(3);
+    const issues = collectPublicOpenApiIssues({ ...document, paths });
+    expect(issues.invalidSeo).toEqual([]);
+    expect(issues.missingMetadata).toEqual([]);
+    for (const methods of Object.values(paths)) {
+      for (const operation of Object.values(methods ?? {})) {
+        expect(operation['x-speakeasy-mcp']).toEqual({ disabled: true });
+      }
+    }
+  });
+
   describe('public metadata', () => {
     it('uses production API servers in the generated Mintlify spec', () => {
       expect(document.info.title).toBe(PUBLIC_OPENAPI_TITLE);
@@ -283,8 +300,7 @@ describe('OpenAPI document', () => {
     ): { name: string; schema: SchemaLike } | undefined => {
       const operation = (
         document.paths[routePath] as
-          | { post?: { requestBody?: unknown } }
-          | undefined
+          { post?: { requestBody?: unknown } } | undefined
       )?.post;
       const bodySchema = (
         operation?.requestBody as

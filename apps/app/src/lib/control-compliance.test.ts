@@ -108,7 +108,7 @@ describe('getRequirementStatus', () => {
 
   it('returns "Satisfied" when every control is completed', () => {
     expect(getRequirementStatus(['completed', 'completed'])).toEqual({
-      label: 'Satisfied',
+      label: 'Complete',
       variant: 'default',
     });
   });

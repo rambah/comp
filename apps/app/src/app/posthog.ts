@@ -51,10 +51,8 @@ export async function getFeatureFlags(
   options?: { groups?: Record<string, string> },
 ) {
   const client = await getPostHogClient();
-  if (!client) return {};
-
-  const flags = await client.getAllFlags(distinctId, {
-    groups: options?.groups,
-  });
-  return flags;
+  const flags = client ? await client.getAllFlags(distinctId, { groups: options?.groups }) : {};
+  // Self-hosted installations include ISMS and do not depend on a hosted
+  // rollout service. Framework and role checks still gate each document.
+  return process.env.SELF_HOSTED === 'true' ? { ...flags, 'is-isms-enabled': true } : flags;
 }

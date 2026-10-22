@@ -31,6 +31,7 @@ interface RiskMatrixChartProps {
   titleInfo?: string;
   /** When true, render a small "Preliminary — assessment still running" subtitle below the matrix. */
   preliminary?: boolean;
+  assessmentStatus?: string;
 }
 
 export function RiskMatrixChart({
@@ -45,6 +46,7 @@ export function RiskMatrixChart({
   suggestedImpact,
   titleInfo,
   preliminary,
+  assessmentStatus,
 }: RiskMatrixChartProps) {
   const [initialLikelihood, setInitialLikelihood] = useState<Likelihood>(initialLikelihoodProp);
   const [initialImpact, setInitialImpact] = useState<Impact>(initialImpactProp);
@@ -62,6 +64,7 @@ export function RiskMatrixChart({
   }, [initialImpactProp]);
 
   const riskData = buildRiskData(activeLikelihood, activeImpact);
+  if (assessmentStatus === "unassessed" && activeLikelihood === initialLikelihood && activeImpact === initialImpact) riskData.forEach(cell => { cell.value = undefined; });
 
   const handleCellClick = (probability: string, impact: string) => {
     if (readOnly) return;
@@ -71,7 +74,7 @@ export function RiskMatrixChart({
     setActiveImpact(VISUAL_IMPACT_ORDER[impactIdx]);
   };
 
-  const hasChanges = activeLikelihood !== initialLikelihood || activeImpact !== initialImpact;
+  const hasChanges = assessmentStatus === "unassessed" || assessmentStatus === "legacy" || activeLikelihood !== initialLikelihood || activeImpact !== initialImpact;
 
   const handleSave = async () => {
     setLoading(true);
@@ -109,6 +112,8 @@ export function RiskMatrixChart({
 
   const body = (
     <>
+      {assessmentStatus === "unassessed" && <Text variant="muted">Not yet assessed — select and save the current residual rating.</Text>}
+      {assessmentStatus === "legacy" && <Text variant="muted">Existing stored rating; assessment provenance has not been verified.</Text>}
       <MatrixBody
         readOnly={readOnly}
         riskData={riskData}

@@ -253,6 +253,7 @@ export class VendorsService {
       const vendor = await db.vendor.create({
         data: {
           ...createVendorDto,
+          residualAssessmentStatus: createVendorDto.residualProbability && createVendorDto.residualImpact ? "assessed" : "unassessed",
           organizationId,
         },
       });
@@ -648,6 +649,12 @@ export class VendorsService {
 
       // Keep per-strategy descriptions independent across treatment
       // strategies — see `apps/api/src/risks/strategy-descriptions.ts`.
+      if (existing.residualAssessmentStatus === 'unassessed' &&
+          (updateVendorDto.residualProbability || updateVendorDto.residualImpact) &&
+          !(updateVendorDto.residualProbability && updateVendorDto.residualImpact)) {
+        throw new BadRequestException('The first residual assessment requires both likelihood and impact.');
+      }
+
       const resolvedStrategyFields = resolveStrategyDescriptionUpdate(
         existing,
         updateVendorDto,
@@ -655,7 +662,9 @@ export class VendorsService {
 
       const updatedVendor = await db.vendor.update({
         where: { id },
-        data: { ...updateVendorDto, ...resolvedStrategyFields },
+        data: { ...updateVendorDto, ...resolvedStrategyFields,
+          ...((updateVendorDto.residualProbability || updateVendorDto.residualImpact) ? { residualAssessmentStatus: "assessed" } : {}),
+        },
       });
 
       this.logger.log(`Updated vendor: ${updatedVendor.name} (${id})`);

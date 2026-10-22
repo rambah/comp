@@ -128,6 +128,12 @@ export function reviewValidationMessages({
     attendeeCount: number;
     undiscussedInputCount: number;
     signed: boolean;
+    reviewScope?: string;
+    scopeNotes?: string | null;
+    hasConclusion?: boolean;
+    discussedInputCount?: number;
+    excludedInputCount?: number;
+    contradictoryInputCount?: number;
   }>;
 }): string[] {
   const messages: string[] = [];
@@ -140,6 +146,28 @@ export function reviewValidationMessages({
   }
   for (const review of reviews) {
     if (review.status !== 'complete') continue;
+    if (review.reviewScope === 'targeted') {
+      if (!review.scopeNotes?.trim())
+        messages.push(
+          `Review ${review.reference} needs a documented scope for its targeted follow-up.`,
+        );
+      if (!review.discussedInputCount)
+        messages.push(
+          `Review ${review.reference} needs at least one discussed input within its scope.`,
+        );
+    } else if (review.excludedInputCount) {
+      messages.push(
+        `Review ${review.reference} is a full review and cannot exclude required inputs.`,
+      );
+    }
+    if (review.contradictoryInputCount)
+      messages.push(
+        `Review ${review.reference} has inputs marked both discussed and outside scope.`,
+      );
+    if (review.hasConclusion === false)
+      messages.push(
+        `Review ${review.reference} is complete but has no conclusion for its scope.`,
+      );
     if (!review.hasMeetingDate) {
       messages.push(
         `Review ${review.reference} is complete but has no meeting date.`,

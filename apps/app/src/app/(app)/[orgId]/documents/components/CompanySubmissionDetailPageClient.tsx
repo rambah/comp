@@ -105,7 +105,7 @@ export function CompanySubmissionDetailPageClient({
   const { data, isLoading, error, mutate } = useSWR<EvidenceSubmissionResponse>(
     swrKey,
     async ([path, orgId]: readonly [string, string]) => {
-      const response = await api.get<EvidenceSubmissionResponse>(path);
+      const response = await api.get<EvidenceSubmissionResponse>(path, orgId);
       if (response.error || !response.data) {
         throw new Error(response.error ?? 'Failed to load submission');
       }
@@ -160,7 +160,21 @@ export function CompanySubmissionDetailPageClient({
     );
   }
 
-  if (error || !data?.submission) {
+  if (error) {
+    return (
+      <div role="alert" className="space-y-3 rounded-md border p-4">
+        <p>
+          Unable to load this submission. Access may be denied or the service may be temporarily
+          unavailable.
+        </p>
+        <Button variant="outline" onClick={() => void mutate()}>
+          Retry
+        </Button>
+      </div>
+    );
+  }
+
+  if (!data?.submission) {
     return (
       <Empty>
         <EmptyHeader>

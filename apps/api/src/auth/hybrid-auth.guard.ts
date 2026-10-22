@@ -6,6 +6,7 @@ import {
   Injectable,
   Logger,
   UnauthorizedException,
+  ServiceUnavailableException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { db } from '@db';
@@ -264,13 +265,29 @@ export class HybridAuthGuard implements CanActivate {
       return true;
     } catch (error) {
       // Re-throw deliberate auth/permission errors as-is (e.g. the 403 from the
-      // MCP org-resolution path). Only unexpected failures collapse to a 401.
+      // MCP org-resolution path). Infrastructure failures must not become logouts.
       if (error instanceof HttpException) {
         throw error;
       }
 
-      console.error('[HybridAuthGuard] Session verification failed:', error);
-      throw new UnauthorizedException('Invalid or expired session');
+      if (
+        error instanceof Error &&
+        'statusCode' in error &&
+        error.statusCode === 401
+      ) {
+        throw new UnauthorizedException('Invalid or expired session');
+      }
+      if (
+        error instanceof Error &&
+        'statusCode' in error &&
+        error.statusCode === 403
+      ) {
+        throw new ForbiddenException('Session access denied');
+      }
+      this.logger.error('Session verification service unavailable');
+      throw new ServiceUnavailableException(
+        'Session verification temporarily unavailable',
+      );
     }
   }
 

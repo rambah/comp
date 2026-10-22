@@ -44,9 +44,19 @@ function buildReviewSections(
         { label: 'Chair', value: review.chairName || '—' },
         {
           label: 'Attendees',
-          value: review.attendees.length > 0 ? review.attendees.join(', ') : '—',
+          value:
+            review.attendees.length > 0 ? review.attendees.join(', ') : '—',
         },
         { label: 'Status', value: review.status },
+        ...(review.reviewScope === 'targeted'
+          ? [
+              { label: 'Review scope', value: 'Targeted follow-up' },
+              {
+                label: 'Scope and reference review',
+                value: review.scopeNotes || '—',
+              },
+            ]
+          : []),
       ],
     },
   ];
@@ -72,7 +82,7 @@ function buildReviewSections(
     sections.push({
       heading: `Inputs (9.3.2)${suffix}`,
       intro:
-        'Each input required by Clause 9.3.2 was considered at the meeting. The "Where to find it" column names the location the chair and attendees referenced. The "Discussion notes" column captures what was discussed.',
+        'The table records which inputs were discussed. A targeted follow-up identifies topics outside its scope separately, with a reason; these are not marked as discussed. The referenced full review retains the other annual-review inputs.',
       table: {
         headers: [
           'Input',
@@ -80,6 +90,9 @@ function buildReviewSections(
           'Where to find it',
           'Discussion notes',
           'Discussed?',
+          ...(review.reviewScope === 'targeted'
+            ? ['Outside scope — reason']
+            : []),
         ],
         rows: review.inputs.map((input) => [
           input.inputRef,
@@ -87,6 +100,9 @@ function buildReviewSections(
           input.whereToFind,
           input.discussionNotes,
           input.discussed,
+          ...(review.reviewScope === 'targeted'
+            ? [input.scopeExclusionReason || '—']
+            : []),
         ]),
       },
     });
@@ -130,11 +146,11 @@ function buildReviewSections(
           heading: `Actions arising${suffix}`,
           emptyText: 'No actions arising from this review.',
         },
-    review.conclusion
+    review.conclusion || review.conclusionNotes
       ? {
           heading: `Conclusion${suffix}`,
           paragraphs: [
-            { text: review.conclusion },
+            ...(review.conclusion ? [{ text: review.conclusion }] : []),
             ...(review.conclusionNotes
               ? [{ text: review.conclusionNotes }]
               : []),

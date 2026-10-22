@@ -19,9 +19,16 @@ interface Props {
   inviteLink: string;
   email?: string;
   portalLink?: string;
+  auditor?: boolean;
 }
 
-export const InviteEmail = ({ organizationName, inviteLink, email, portalLink }: Props) => {
+export const InviteEmail = ({
+  organizationName,
+  inviteLink,
+  email,
+  portalLink,
+  auditor = false,
+}: Props) => {
   return (
     <Html>
       <Tailwind>
@@ -48,18 +55,30 @@ export const InviteEmail = ({ organizationName, inviteLink, email, portalLink }:
           >
             <Logo />
             <Heading className="mx-0 my-[30px] p-0 text-center text-[24px] font-normal text-[#121212]">
-              Join <strong>{organizationName}</strong> on <strong>Comp AI</strong>
+              Join <strong>{organizationName}</strong> on{' '}
+              <strong>Comp AI</strong>
             </Heading>
 
             <Text className="text-[14px] leading-[24px] text-[#121212]">
-              You've been invited to join your team on <strong>Comp AI</strong>.
+              {auditor ? (
+                <>
+                  You've been invited as an auditor for{' '}
+                  <strong>{organizationName}</strong>. Accept your invitation to
+                  open the audit workspace and review evidence.
+                </>
+              ) : (
+                <>
+                  You've been invited to join your team on{' '}
+                  <strong>Comp AI</strong>.
+                </>
+              )}
             </Text>
             <Section className="mt-[32px] mb-[42px] text-center">
               <Button
                 className="text-primary border border-solid border-[#121212] bg-transparent px-6 py-3 text-center text-[14px] font-medium text-[#121212] no-underline"
                 href={inviteLink}
               >
-                Get started
+                {auditor ? 'Open audit workspace' : 'Get started'}
               </Button>
             </Section>
 
@@ -70,12 +89,14 @@ export const InviteEmail = ({ organizationName, inviteLink, email, portalLink }:
               </Link>
             </Text>
 
-            {portalLink && (
+            {portalLink && !auditor && (
               <>
                 <Text className="text-[14px] leading-[24px] text-[#121212] mt-[24px]">
-                  You also have access to the <strong>{organizationName} Employee Portal</strong> for
-                  completing compliance tasks like signing policies and security training.
-                  Once you've accepted your invite above, you can access the portal at:
+                  You also have access to the{' '}
+                  <strong>{organizationName} Employee Portal</strong> for
+                  completing compliance tasks like signing policies and security
+                  training. Once you've accepted your invite above, you can
+                  access the portal at:
                 </Text>
                 <Text className="text-[14px] leading-[24px] break-all text-[#707070]">
                   <Link href={portalLink} className="text-[#707070] underline">

@@ -56,6 +56,7 @@ export class IsmsReviewInputService {
           whereToFind: dto.whereToFind ?? '',
           discussionNotes: dto.discussionNotes?.trim() || null,
           discussed: dto.discussed ?? false,
+          scopeExclusionReason: dto.scopeExclusionReason?.trim() || null,
           source: 'manual',
           position,
         },
@@ -90,6 +91,10 @@ export class IsmsReviewInputService {
               ? undefined
               : dto.discussionNotes?.trim() || null,
           discussed: dto.discussed ?? undefined,
+          scopeExclusionReason:
+            dto.scopeExclusionReason === undefined
+              ? undefined
+              : dto.scopeExclusionReason?.trim() || null,
           position: dto.position ?? undefined,
           // An edited seed row is the customer's row now — record the
           // override like every other ISMS register (audit-controls precedent).

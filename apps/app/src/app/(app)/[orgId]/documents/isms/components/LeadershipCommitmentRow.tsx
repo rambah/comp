@@ -1,6 +1,9 @@
 'use client';
 
-import { Badge, TableCell, TableRow, Text, Textarea } from '@trycompai/design-system';
+import { IsmsMarkdownEditor } from './shared/IsmsMarkdownEditor';
+import { IsmsMarkdown } from './shared/IsmsMarkdown';
+
+import { Badge, TableCell, TableRow, Text } from '@trycompai/design-system';
 import { Controller, type Control } from 'react-hook-form';
 import type { LeadershipCommitmentMeta, LeadershipNarrativeValues } from './leadership-schema';
 
@@ -40,7 +43,7 @@ export function LeadershipCommitmentRow({
             control={control}
             name={`commitments.${index}.text`}
             render={({ field: { ref: _ref, ...field } }) => (
-              <Textarea
+              <IsmsMarkdownEditor
                 {...field}
                 rows={3}
                 placeholder={meta.placeholder}
@@ -49,7 +52,7 @@ export function LeadershipCommitmentRow({
             )}
           />
         ) : (
-          <span className="text-sm">{text || '—'}</span>
+          <IsmsMarkdown>{text || '—'}</IsmsMarkdown>
         )}
       </TableCell>
     </TableRow>

@@ -1,3 +1,4 @@
+import type { LinkedIsmsDocument } from './linked-isms-document';
 import type {
   Control,
   CustomFramework,
@@ -11,6 +12,7 @@ export type FrameworkInstanceWithControls = FrameworkInstance & {
   framework: FrameworkEditorFramework | null;
   customFramework: CustomFramework | null;
   controls: (Control & {
+    ismsDocumentLinks?: LinkedIsmsDocument[];
     controlFamily?: string | null;
     policies: Array<{
       id: string;
