@@ -18,34 +18,19 @@ export type IsmsDocumentType =
   | 'internal_audit'
   | 'management_review';
 
-export type IsmsDocumentStatus =
-  | 'draft'
-  | 'in_progress'
-  | 'needs_review'
-  | 'approved'
-  | 'declined';
+export type IsmsDocumentStatus = 'draft' | 'in_progress' | 'needs_review' | 'approved' | 'declined';
 
 export type IsmsContextIssueKind = 'internal' | 'external';
 export type IsmsContextSource = 'derived' | 'manual';
 export type IsmsExportFormat = 'pdf' | 'docx';
 export type IsmsObjectiveStatus = 'not_started' | 'on_track' | 'at_risk' | 'met';
-export type IsmsCompetenceBasis =
-  | 'education'
-  | 'training'
-  | 'experience'
-  | 'combination';
+export type IsmsCompetenceBasis = 'education' | 'training' | 'experience' | 'combination';
 export type IsmsAuditRoute = 'in_house' | 'external' | 'training_planned';
 export type IsmsMetricCadence = 'monthly' | 'quarterly';
 export type IsmsAuditStatus = 'planned' | 'in_progress' | 'complete';
-export type IsmsAuditConclusionVerdict =
-  | 'conform'
-  | 'substantially_conform'
-  | 'not_yet_conform';
+export type IsmsAuditConclusionVerdict = 'conform' | 'substantially_conform' | 'not_yet_conform';
 export type IsmsAuditControlResult =
-  | 'conformity_confirmed'
-  | 'nonconformity_raised'
-  | 'observation_raised'
-  | 'not_sampled';
+  'conformity_confirmed' | 'nonconformity_raised' | 'observation_raised' | 'not_sampled';
 export type IsmsAuditFindingType = 'nc_major' | 'nc_minor' | 'ofi' | 'observation';
 export type IsmsAuditFindingStatus = 'open' | 'in_progress' | 'closed';
 export type IsmsReviewStatus = 'planned' | 'in_progress' | 'complete';
@@ -70,12 +55,8 @@ export const INTERNAL_ISSUE_CATEGORIES = [
   'Culture & Values',
 ] as const;
 
-export function categoriesForKind(
-  kind: IsmsContextIssueKind,
-): readonly string[] {
-  return kind === 'external'
-    ? EXTERNAL_ISSUE_CATEGORIES
-    : INTERNAL_ISSUE_CATEGORIES;
+export function categoriesForKind(kind: IsmsContextIssueKind): readonly string[] {
+  return kind === 'external' ? EXTERNAL_ISSUE_CATEGORIES : INTERNAL_ISSUE_CATEGORIES;
 }
 
 /** Register: Context of the Organization (clause 4.1). */
@@ -289,6 +270,7 @@ export interface IsmsReviewAttendee {
 
 /** One row in a review's Inputs (9.3.2) table — the meeting agenda. */
 export interface IsmsReviewInput {
+  scopeExclusionReason?: string | null;
   id: string;
   reviewId: string;
   /** Stable key for the ten seeded rows; null for custom rows. */
@@ -319,6 +301,8 @@ export interface IsmsReviewAction {
 
 /** Register: one management review instance (clause 9.3). */
 export interface IsmsManagementReview {
+  reviewScope?: 'full' | 'targeted';
+  scopeNotes?: string | null;
   id: string;
   /** Server-generated "MR-YYYY-NN", immutable. */
   reference: string;

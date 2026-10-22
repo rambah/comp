@@ -21663,6 +21663,21 @@
                   "position": {
                     "type": "integer",
                     "minimum": 0
+                  },
+                  "reviewScope": {
+                    "type": "string",
+                    "enum": [
+                      "full",
+                      "targeted"
+                    ]
+                  },
+                  "scopeNotes": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "scopeExclusionReason": {
+                    "type": "string",
+                    "nullable": true
                   }
                 }
               }
@@ -22010,6 +22025,21 @@
                   "position": {
                     "type": "integer",
                     "minimum": 0
+                  },
+                  "reviewScope": {
+                    "type": "string",
+                    "enum": [
+                      "full",
+                      "targeted"
+                    ]
+                  },
+                  "scopeNotes": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "scopeExclusionReason": {
+                    "type": "string",
+                    "nullable": true
                   }
                 }
               }

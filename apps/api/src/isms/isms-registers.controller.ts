@@ -56,7 +56,8 @@ import {
  * by the policies controller for its @Req()-bodied endpoints.
  */
 const REGISTER_ROW_BODY = {
-  description: 'Register row fields (per-register; validated at runtime by zod)',
+  description:
+    'Register row fields (per-register; validated at runtime by zod)',
   schema: {
     type: 'object',
     properties: {
@@ -185,6 +186,9 @@ const REGISTER_ROW_BODY = {
       closureEvidence: { type: 'string', nullable: true },
       // Management review register (9.3): reviews + review-inputs + review-actions
       meetingDate: { type: 'string', nullable: true },
+      reviewScope: { type: 'string', enum: ['full', 'targeted'] },
+      scopeNotes: { type: 'string', nullable: true },
+      scopeExclusionReason: { type: 'string', nullable: true },
       chairName: { type: 'string', nullable: true },
       attendees: {
         type: 'array',

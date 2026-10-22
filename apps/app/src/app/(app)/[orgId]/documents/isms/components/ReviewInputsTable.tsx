@@ -22,10 +22,7 @@ import { Add } from '@trycompai/design-system/icons';
 import { Controller, useForm } from 'react-hook-form';
 import type { IsmsManagementReview } from '../isms-types';
 import { ReviewInputRow } from './ReviewInputRow';
-import {
-  reviewInputSchema,
-  type ReviewInputFormValues,
-} from './management-review-schema';
+import { reviewInputSchema, type ReviewInputFormValues } from './management-review-schema';
 import { IsmsAddCard, IsmsFieldLabel } from './shared';
 
 interface ReviewInputsTableProps {
@@ -59,19 +56,29 @@ export function ReviewInputsTable({
 }: ReviewInputsTableProps) {
   const inputs = review.inputs;
   const discussedCount = inputs.filter((input) => input.discussed).length;
+  const excludedCount = inputs.filter((input) => input.scopeExclusionReason?.trim()).length;
 
   return (
     <Stack gap="3">
       <HStack align="center" gap="2">
         <Heading level="5">Inputs (9.3.2)</Heading>
         <Badge variant="secondary">{`${discussedCount} of ${inputs.length} discussed`}</Badge>
+        {excludedCount > 0 ? (
+          <Badge variant="secondary">{`${excludedCount} outside scope`}</Badge>
+        ) : null}
       </HStack>
       <Text size="sm" variant="muted">
         This table is the meeting agenda. For each input: open the &quot;Where to find it&quot;
-        location, review the current state before or during the meeting, add discussion notes,
-        and tick Discussed?. The ten defaults are the ISO-mandated set — not recommended to
-        remove any without justification.
+        location, review the current state before or during the meeting, add discussion notes, and
+        tick Discussed?. The ten defaults are the ISO-mandated set — not recommended to remove any
+        without justification.
       </Text>
+      {review.reviewScope === 'targeted' ? (
+        <Text size="sm" variant="muted">
+          For topics outside this follow-up, edit the row and record a reason and reference. Leave
+          Discussed unchecked. Existing notes remain part of the record.
+        </Text>
+      ) : null}
 
       {inputs.length === 0 ? (
         <Text size="sm" variant="muted">
@@ -96,6 +103,7 @@ export function ReviewInputsTable({
                   key={input.id}
                   input={input}
                   canEdit={canEdit}
+                  targeted={review.reviewScope === 'targeted'}
                   onUpdateInput={onUpdateInput}
                   onDeleteInput={onDeleteInput}
                 />

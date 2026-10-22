@@ -7,7 +7,10 @@ import {
 import { db, Prisma } from '@db';
 import type { IsmsDocumentType } from '@db';
 import { SubmitIsmsForApprovalDto } from './dto/submit-isms-for-approval.dto';
-import { deriveControlLinks, resolveDocumentPlans } from './utils/ensure-setup-plan';
+import {
+  deriveControlLinks,
+  resolveDocumentPlans,
+} from './utils/ensure-setup-plan';
 import { collectPlatformData } from './documents/data-source';
 import { roleValidationMessages, seedRolesIfMissing } from './documents/roles';
 import {
@@ -459,6 +462,10 @@ export class IsmsService {
       // same lock) on this document so they can't interleave and double-publish.
       await lockDocument(tx, documentId);
 
+      if (document.type === 'management_review') {
+        await this.assertManagementReviewComplete({ tx, documentId });
+      }
+
       // Collect the drift baseline INSIDE the transaction so it reads the same
       // point in time as the rows frozen into the published version below.
       // The transaction runs REPEATABLE READ (one MVCC snapshot for every
@@ -704,10 +711,14 @@ export class IsmsService {
           status: true,
           meetingDate: true,
           chairName: true,
+          reviewScope: true,
+          scopeNotes: true,
+          conclusionVerdict: true,
+          conclusionNotes: true,
           attendees: true,
           signoffChairName: true,
           signoffChairDate: true,
-          inputs: { select: { discussed: true } },
+          inputs: { select: { discussed: true, scopeExclusionReason: true } },
         },
       }),
     ]);
@@ -721,9 +732,28 @@ export class IsmsService {
         status: review.status,
         hasMeetingDate: review.meetingDate != null,
         hasChair: Boolean(review.chairName?.trim()),
+        reviewScope: review.reviewScope,
+        scopeNotes: review.scopeNotes,
+        hasConclusion:
+          review.reviewScope === 'targeted'
+            ? Boolean(review.conclusionNotes?.trim())
+            : Boolean(review.conclusionVerdict),
+        discussedInputCount: review.inputs.filter((input) => input.discussed)
+          .length,
+        excludedInputCount: review.inputs.filter((input) =>
+          input.scopeExclusionReason?.trim(),
+        ).length,
+        contradictoryInputCount: review.inputs.filter(
+          (input) => input.discussed && input.scopeExclusionReason?.trim(),
+        ).length,
         attendeeCount: parseReviewAttendees(review.attendees).length,
         undiscussedInputCount: review.inputs.filter(
-          (input) => !input.discussed,
+          (input) =>
+            !input.discussed &&
+            !(
+              review.reviewScope === 'targeted' &&
+              input.scopeExclusionReason?.trim()
+            ),
         ).length,
         signed: isReviewSigned(review),
       })),

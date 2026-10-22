@@ -32,6 +32,7 @@ import {
 interface ReviewInputRowProps {
   input: IsmsReviewInput;
   canEdit: boolean;
+  targeted?: boolean;
   onUpdateInput: (inputId: string, payload: Record<string, unknown>) => Promise<void>;
   onDeleteInput: (inputId: string) => Promise<void>;
 }
@@ -42,6 +43,7 @@ function toFormValues(input: IsmsReviewInput): ReviewInputFormValues {
     whatItCovers: input.whatItCovers,
     whereToFind: input.whereToFind,
     discussionNotes: input.discussionNotes ?? '',
+    scopeExclusionReason: input.scopeExclusionReason ?? '',
   };
 }
 
@@ -55,6 +57,7 @@ function toFormValues(input: IsmsReviewInput): ReviewInputFormValues {
 export function ReviewInputRow({
   input,
   canEdit,
+  targeted,
   onUpdateInput,
   onDeleteInput,
 }: ReviewInputRowProps) {
@@ -160,7 +163,25 @@ export function ReviewInputRow({
             )}
           />
         </TableCell>
-        <TableCell>—</TableCell>
+        <TableCell>
+          {targeted || input.scopeExclusionReason ? (
+            <Controller
+              control={control}
+              name="scopeExclusionReason"
+              render={({ field: { ref: _ref, ...field } }) => (
+                <Textarea
+                  {...field}
+                  value={field.value ?? ''}
+                  rows={2}
+                  aria-label="Outside scope — reason"
+                  placeholder="If not discussed, explain why it is outside this follow-up and where it is covered."
+                />
+              )}
+            />
+          ) : (
+            '—'
+          )}
+        </TableCell>
         <TableCell>
           <div className="flex items-center gap-2">
             <Button
@@ -200,7 +221,9 @@ export function ReviewInputRow({
       <TableCell>{input.whereToFind || '—'}</TableCell>
       <TableCell>{input.discussionNotes || '—'}</TableCell>
       <TableCell>
-        {canEdit ? (
+        {input.scopeExclusionReason?.trim() ? (
+          <span>Outside scope: {input.scopeExclusionReason}</span>
+        ) : canEdit ? (
           <Checkbox
             checked={input.discussed}
             onCheckedChange={(next) => void handleDiscussedChange(next === true)}

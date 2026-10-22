@@ -13,7 +13,6 @@ import {
   AlertDialogTitle,
   Badge,
   Button,
-  Grid,
   Heading,
   HStack,
   Stack,
@@ -22,23 +21,20 @@ import {
 import { Edit, Locked, TrashCan } from '@trycompai/design-system/icons';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import type {
-  IsmsManagementReview,
-  IsmsReviewAttendee,
-} from '../isms-types';
+import type { IsmsManagementReview, IsmsReviewAttendee } from '../isms-types';
 import { AttendeesField } from './AttendeesField';
 import { CarriedForwardActions } from './CarriedForwardActions';
 import type { ApproverOption } from './IsmsApprovalSection';
 import { ReviewActionsSection } from './ReviewActionsSection';
 import { ReviewFields } from './ReviewFields';
 import { ReviewInputsTable } from './ReviewInputsTable';
+import { ReviewMeetingDetails } from './ReviewMeetingDetails';
 import { ReviewOutputsSection } from './ReviewOutputsSection';
 import { ReviewSignoffCard } from './ReviewSignoffCard';
 import {
-  REVIEW_STATUS_LABELS,
   carriedForwardActions,
   isReviewSigned,
-  reviewConclusionSentence,
+  REVIEW_STATUS_LABELS,
 } from './management-review-constants';
 import {
   reviewDetailsSchema,
@@ -48,7 +44,7 @@ import {
   type ReviewOutputsFormValues,
   type ReviewSignoffFormValues,
 } from './management-review-schema';
-import { IsmsRegisterCard, IsmsRegisterField } from './shared';
+import { IsmsRegisterCard } from './shared';
 
 /** All mutations a review card (and its child sections) can perform. */
 export interface ReviewHandlers {
@@ -76,6 +72,8 @@ interface ReviewCardProps extends ReviewHandlers {
 
 function toFormValues(review: IsmsManagementReview): ReviewDetailsFormValues {
   return {
+    reviewScope: review.reviewScope ?? 'full',
+    scopeNotes: review.scopeNotes ?? '',
     meetingDate: review.meetingDate?.slice(0, 10) ?? '',
     chairName: review.chairName ?? '',
     status: review.status,
@@ -227,31 +225,13 @@ export function ReviewCard({
           {locked ? (
             <Alert variant="default" icon={<Locked />}>
               <Text size="sm">
-                This review is signed by the chair and locked. Actions still track to closure;
-                clear the sign-off below to edit anything else.
+                This review is signed by the chair and locked. Actions still track to closure; clear
+                the sign-off below to edit anything else.
               </Text>
             </Alert>
           ) : null}
 
-          <Grid cols={{ base: '1', md: '2' }} gap="3">
-            <IsmsRegisterField label="Meeting date">
-              {review.meetingDate?.slice(0, 10) ?? 'Not set'}
-            </IsmsRegisterField>
-            <IsmsRegisterField label="Recorded on">
-              {`${review.recordedAt.slice(0, 10)} — set by the platform, cannot be edited`}
-            </IsmsRegisterField>
-            <IsmsRegisterField label="Chair">
-              {review.chairName || 'Not set — assigned in ISMS > Roles'}
-            </IsmsRegisterField>
-            <IsmsRegisterField label="Conclusion">
-              {review.conclusionVerdict
-                ? `${reviewConclusionSentence({
-                    verdict: review.conclusionVerdict,
-                    meetingDate: review.meetingDate?.slice(0, 10) ?? null,
-                  })}${review.conclusionNotes ? ` ${review.conclusionNotes}` : ''}`
-                : 'No conclusion recorded yet — pick the verdict in Edit details.'}
-            </IsmsRegisterField>
-          </Grid>
+          <ReviewMeetingDetails review={review} />
 
           <AttendeesField
             review={review}
@@ -301,8 +281,8 @@ export function ReviewCard({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete review {review.reference}?</AlertDialogTitle>
             <AlertDialogDescription>
-              This permanently removes the review, its inputs, and its actions arising. This
-              cannot be undone.
+              This permanently removes the review, its inputs, and its actions arising. This cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

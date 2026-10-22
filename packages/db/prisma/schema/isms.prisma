@@ -721,6 +721,8 @@ model IsmsManagementReview {
   attendees Json @default("[]")
 
   status IsmsReviewStatus @default(planned)
+  reviewScope String @default("full")
+  scopeNotes String?
 
   // Conclusion: the customer picks the bracketed verdict and may add narrative.
   conclusionVerdict IsmsReviewConclusionVerdict?
@@ -776,6 +778,7 @@ model IsmsReviewInput {
 
   discussionNotes String? // filled during the meeting — the minutes for this input
   discussed       Boolean @default(false)
+  scopeExclusionReason String?
 
   source      IsmsContextSource @default(derived)
   derivedFrom String? // provenance for seeded rows, e.g. "seed:a_prior_actions"
